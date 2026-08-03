@@ -48,6 +48,20 @@ const blockToRef: Record<string, string> = {
   oled: "C1-C6",
 };
 
+const canvasTabs = [
+  { v: "block", l: "Block Diagram" },
+  { v: "schematic", l: "Schematic" },
+  { v: "pcb", l: "PCB Layout" },
+  { v: "3d", l: "3D View" },
+];
+
+const contextTabs = [
+  { v: "details", l: "Details" },
+  { v: "verification", l: "Verify" },
+  { v: "bom", l: "BOM" },
+  { v: "alternatives", l: "Alts" },
+];
+
 function Workspace() {
   const [stage, setStage] = useState("routing");
   const [block, setBlock] = useState<string>("mcu");
@@ -106,12 +120,7 @@ function Workspace() {
             <Tabs defaultValue="block" className="flex min-h-0 flex-1 flex-col gap-0">
               <div className="flex h-10 shrink-0 items-center border-b border-border bg-panel px-2">
                 <TabsList className="h-8 bg-transparent p-0">
-                  {[
-                    ["block", "Block Diagram"],
-                    ["schematic", "Schematic"],
-                    ["pcb", "PCB Layout"],
-                    ["3d", "3D View"],
-                  ].map(([v, l]) => (
+                  {canvasTabs.map(({ v, l }) => (
                     <TabsTrigger
                       key={v}
                       value={v}
@@ -162,12 +171,7 @@ function Workspace() {
               className="flex min-h-0 flex-1 flex-col gap-0"
             >
               <TabsList className="h-10 w-full shrink-0 justify-start rounded-none border-b border-border bg-panel p-1">
-                {[
-                  ["details", "Details"],
-                  ["verification", "Verify"],
-                  ["bom", "BOM"],
-                  ["alternatives", "Alts"],
-                ].map(([v, l]) => (
+                {contextTabs.map(({ v, l }) => (
                   <TabsTrigger
                     key={v}
                     value={v}
