@@ -71,12 +71,12 @@ export function ThreeDView() {
           <span className="label-mono">Orbit X</span>
           <span className="font-mono text-[11px] text-teal">{rotX}°</span>
         </div>
-        <Slider value={[rotX]} min={0} max={90} onValueChange={(v) => setRotX(v[0])} />
+        <Slider value={[rotX]} min={0} max={90} onValueChange={(v) => setRotX(v[0] ?? rotX)} />
         <div className="flex items-center justify-between">
           <span className="label-mono">Orbit Z</span>
           <span className="font-mono text-[11px] text-teal">{rotZ}°</span>
         </div>
-        <Slider value={[rotZ]} min={-180} max={180} onValueChange={(v) => setRotZ(v[0])} />
+        <Slider value={[rotZ]} min={-180} max={180} onValueChange={(v) => setRotZ(v[0] ?? rotZ)} />
         <div className="flex gap-1.5 pt-1">
           <Button size="sm" variant="secondary" onClick={() => setZoom((z) => Math.min(1.6, z + 0.1))}>
             <ZoomIn className="size-3.5" />
