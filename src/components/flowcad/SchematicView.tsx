@@ -1,86 +1,126 @@
-export function SchematicView() {
-  const nets = [
-    "M120 90 H300",
-    "M300 90 V150 H420",
-    "M420 150 H560",
-    "M560 150 V260 H700",
-    "M300 90 V300 H420",
-    "M420 300 H560",
-    "M700 90 V150",
-    "M120 260 H300 V300",
-  ];
+import { CadCanvas, useDragItem } from "./CadCanvas";
+import { moveSchematic, selectPart, useDesign, type Part } from "@/lib/design-store";
+import { cn } from "@/lib/utils";
 
-  const symbols = [
-    { x: 60, y: 60, label: "J1", value: "USB-C" },
-    { x: 240, y: 60, label: "U2", value: "AMS1117-3.3" },
-    { x: 400, y: 120, label: "U1", value: "ESP32-WROOM-32E", tall: true },
-    { x: 660, y: 60, label: "C7", value: "470µF" },
-    { x: 660, y: 230, label: "Q1", value: "ULN2003A" },
-    { x: 400, y: 270, label: "U4", value: "DHT22" },
-    { x: 60, y: 230, label: "R1", value: "10k" },
-  ];
+function size(p: Part) {
+  return p.tall ? { w: 120, h: 100 } : { w: 96, h: 62 };
+}
+
+function route(a: Part, b: Part) {
+  const sa = size(a);
+  const sb = size(b);
+  const x1 = a.sx + sa.w;
+  const y1 = a.sy + sa.h / 2;
+  const x2 = b.sx;
+  const y2 = b.sy + sb.h / 2;
+  const mx = x1 + (x2 - x1) / 2;
+  return { d: `M${x1} ${y1} H${mx} V${y2} H${x2}`, lx: mx, ly: (y1 + y2) / 2 };
+}
+
+export function SchematicView() {
+  const d = useDesign();
+  const drag = useDragItem();
 
   return (
-    <div className="cad-grid h-full w-full overflow-auto">
-      <svg viewBox="0 0 840 420" className="h-full min-h-[420px] w-full min-w-[840px]">
-        {nets.map((d, i) => (
-          <path key={i} d={d} className="stroke-teal/60" strokeWidth="1.4" fill="none" />
-        ))}
-        {[
-          [300, 90],
-          [560, 150],
-          [420, 300],
-        ].map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r="3.2" className="fill-teal" />
-        ))}
+    <CadCanvas
+      viewBox="0 0 900 480"
+      gridClass="cad-grid"
+      onBackgroundClick={() => selectPart(null)}
+      statusLeft={
+        <span className="label-mono rounded border border-border bg-panel/80 px-2 py-1">
+          SHEET 1/3 · IRRIGATION_CTRL · {d.parts.length} symbols · {d.nets.length} nets
+        </span>
+      }
+    >
+      {({ toLocal, snap }) => (
+        <>
+          {d.nets.map((n, i) => {
+            const a = d.parts.find((p) => p.ref === n.from);
+            const b = d.parts.find((p) => p.ref === n.to);
+            if (!a || !b) return null;
+            const r = route(a, b);
+            const hot = d.selected === a.ref || d.selected === b.ref;
+            return (
+              <g key={`${n.from}-${n.to}-${i}`}>
+                <path
+                  d={r.d}
+                  fill="none"
+                  strokeWidth={hot ? 2 : 1.4}
+                  className={hot ? "stroke-teal" : "stroke-teal/55"}
+                />
+                <text
+                  x={r.lx}
+                  y={r.ly - 5}
+                  textAnchor="middle"
+                  className="fill-muted-foreground font-mono text-[9px]"
+                >
+                  {n.net}
+                </text>
+              </g>
+            );
+          })}
 
-        {symbols.map((s) => (
-          <g key={s.label} className="cursor-pointer">
-            <rect
-              x={s.x}
-              y={s.y}
-              width={s.tall ? 120 : 90}
-              height={s.tall ? 100 : 60}
-              className="fill-panel stroke-silk/60"
-              strokeWidth="1.3"
-              rx="2"
-            />
-            {Array.from({ length: 4 }).map((_, i) => (
-              <line
-                key={i}
-                x1={s.x - 12}
-                x2={s.x}
-                y1={s.y + 12 + i * 12}
-                y2={s.y + 12 + i * 12}
-                className="stroke-silk/60"
-                strokeWidth="1.2"
-              />
-            ))}
-            <text
-              x={s.x + (s.tall ? 60 : 45)}
-              y={s.y + (s.tall ? 46 : 28)}
-              textAnchor="middle"
-              className="fill-foreground font-mono text-[11px]"
-            >
-              {s.label}
-            </text>
-            <text
-              x={s.x + (s.tall ? 60 : 45)}
-              y={s.y + (s.tall ? 64 : 44)}
-              textAnchor="middle"
-              className="fill-muted-foreground font-mono text-[9px]"
-            >
-              {s.value}
-            </text>
-          </g>
-        ))}
-
-        <g>
-          <text x={30} y={400} className="fill-muted-foreground font-mono text-[10px]">
-            SHEET 1/3 · IRRIGATION_CTRL · REV B · 41 NETS · ERC CLEAN
-          </text>
-        </g>
-      </svg>
-    </div>
+          {d.parts.map((p) => {
+            const s = size(p);
+            const active = d.selected === p.ref;
+            return (
+              <g
+                key={p.ref}
+                className="cursor-move"
+                onPointerDown={(e) =>
+                  drag(e, {
+                    toLocal,
+                    snap,
+                    start: { x: p.sx, y: p.sy },
+                    onMove: (x, y) => moveSchematic(p.ref, x, y),
+                    onSelect: () => selectPart(p.ref),
+                  })
+                }
+              >
+                <rect
+                  x={p.sx}
+                  y={p.sy}
+                  width={s.w}
+                  height={s.h}
+                  rx="2"
+                  strokeWidth={active ? 2.2 : 1.3}
+                  className={cn(
+                    "fill-panel stroke-silk/60",
+                    active && "stroke-teal fill-teal/12 [filter:drop-shadow(0_0_6px_var(--color-teal))]",
+                  )}
+                />
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <line
+                    key={i}
+                    x1={p.sx - 12}
+                    x2={p.sx}
+                    y1={p.sy + 12 + i * 12}
+                    y2={p.sy + 12 + i * 12}
+                    className="stroke-silk/60"
+                    strokeWidth="1.2"
+                  />
+                ))}
+                <text
+                  x={p.sx + s.w / 2}
+                  y={p.sy + s.h / 2 - 2}
+                  textAnchor="middle"
+                  className="fill-foreground font-mono text-[11px]"
+                >
+                  {p.ref}
+                </text>
+                <text
+                  x={p.sx + s.w / 2}
+                  y={p.sy + s.h / 2 + 14}
+                  textAnchor="middle"
+                  className="fill-muted-foreground font-mono text-[9px]"
+                >
+                  {p.value}
+                </text>
+              </g>
+            );
+          })}
+        </>
+      )}
+    </CadCanvas>
   );
 }
