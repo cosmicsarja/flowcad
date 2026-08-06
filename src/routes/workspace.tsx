@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDesign } from "@/lib/design-store";
 import { Share2, Play, Download, PanelLeftClose, PanelRightClose } from "lucide-react";
 import { Logo } from "@/components/flowcad/Logo";
 import { Button } from "@/components/ui/button";
@@ -37,17 +38,6 @@ export const Route = createFileRoute("/workspace")({
   component: Workspace,
 });
 
-const blockToRef: Record<string, string> = {
-  usb: "J1",
-  reg: "U2",
-  mcu: "U1",
-  soil: "J3",
-  temp: "U4",
-  relay: "Q1",
-  pump: "K1",
-  oled: "C1-C6",
-};
-
 const canvasTabs = [
   { v: "block", l: "Block Diagram" },
   { v: "schematic", l: "Schematic" },
@@ -64,10 +54,14 @@ const contextTabs = [
 
 function Workspace() {
   const [stage, setStage] = useState("routing");
-  const [block, setBlock] = useState<string>("mcu");
   const [rightTab, setRightTab] = useState("details");
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
+  const design = useDesign();
+
+  useEffect(() => {
+    if (design.selected) setRightTab("details");
+  }, [design.selected]);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
@@ -76,7 +70,10 @@ function Workspace() {
         <span className="hidden font-mono text-[11px] text-muted-foreground sm:inline">
           / irrigation_ctrl <span className="text-teal">rev B</span>
         </span>
-        <StatusBadge status="RUNNING" className="hidden md:inline-flex" />
+        <StatusBadge
+          status={design.verifying ? "RUNNING" : design.checks.some((c) => c.status !== "PASS") ? "WARNING" : "PASS"}
+          className="hidden md:inline-flex"
+        />
         <div className="ml-auto flex items-center gap-1.5">
           <Button
             variant="ghost"
@@ -131,19 +128,13 @@ function Workspace() {
                   ))}
                 </TabsList>
                 <span className="ml-auto hidden font-mono text-[10px] text-muted-foreground md:inline">
-                  grid 0.25 mm · units mm · zoom 100%
+                  {`grid 0.25 mm · units mm · ${design.board.w.toFixed(1)} × ${design.board.h.toFixed(1)} mm · ${design.parts.length} parts`}
                 </span>
               </div>
 
               <div className="min-h-0 flex-1 overflow-hidden bg-background">
                 <TabsContent value="block" className="m-0 h-full">
-                  <BlockDiagram
-                    selected={block}
-                    onSelect={(id) => {
-                      setBlock(id);
-                      setRightTab("details");
-                    }}
-                  />
+                  <BlockDiagram />
                 </TabsContent>
                 <TabsContent value="schematic" className="m-0 h-full">
                   <SchematicView />
@@ -183,7 +174,7 @@ function Workspace() {
               </TabsList>
               <div className="min-h-0 flex-1 overflow-y-auto">
                 <TabsContent value="details" className="m-0">
-                  <DetailsPanel refId={blockToRef[block] ?? "U1"} />
+                  <DetailsPanel />
                 </TabsContent>
                 <TabsContent value="verification" className="m-0">
                   <VerificationPanel />
