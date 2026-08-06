@@ -351,7 +351,7 @@ export function runCommand(input: string) {
     const key =
       Object.keys(catalogAdd).find((k) => t.includes(k)) ??
       (/\bled\b/.test(t) ? "led" : null);
-    const spec = key ? catalogAdd[key]! : catalogAdd.capacitor!;
+    const spec = key ? catalogAdd[key]! : catalogAdd['capacitor']!;
     const prefix = key === "led" ? "D" : key === "resistor" ? "R" : key === "capacitor" ? "C" : "U";
     const ref = refFor(prefix);
     const slot = freeSlot();
