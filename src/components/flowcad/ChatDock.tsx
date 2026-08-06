@@ -1,36 +1,23 @@
-import { useState, useRef, useEffect } from "react";
-import { ArrowUp, Terminal } from "lucide-react";
-import { chatHistory, suggestions, type ChatEntry } from "@/lib/flowcad-data";
+import { useRef, useEffect, useState } from "react";
+import { ArrowUp, Terminal, Loader2 } from "lucide-react";
+import { suggestions } from "@/lib/flowcad-data";
+import { runCommand, useDesign } from "@/lib/design-store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-const replies = [
-  "✅ Change applied. Re-placing affected components and re-running verification...",
-  "✅ Netlist updated. 41 nets revalidated · ERC clean · DRC re-queued.",
-  "✅ Constraint accepted. Auto-router restarted — 94% → 97% completion.",
-];
-
 export function ChatDock() {
-  const [entries, setEntries] = useState<ChatEntry[]>(chatHistory);
+  const d = useDesign();
   const [value, setValue] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [entries]);
+  }, [d.chat, d.verifying]);
 
   const send = (text: string) => {
-    const t = text.trim();
-    if (!t) return;
-    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    setEntries((e) => [...e, { role: "user", text: t, time }]);
+    if (!text.trim()) return;
+    runCommand(text);
     setValue("");
-    setTimeout(() => {
-      setEntries((e) => [
-        ...e,
-        { role: "system", text: replies[e.length % replies.length]!, time },
-      ]);
-    }, 550);
   };
 
   return (
@@ -39,12 +26,12 @@ export function ChatDock() {
         <Terminal className="size-3.5 text-teal" />
         <span className="label-mono">Conversational editor</span>
         <span className="ml-auto font-mono text-[10px] text-muted-foreground">
-          {entries.filter((e) => e.role === "user").length} commands
+          {d.chat.filter((e) => e.role === "user").length} commands
         </span>
       </div>
 
       <div ref={scrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
-        {entries.map((e, i) => (
+        {d.chat.map((e, i) => (
           <div key={i} className={cn("flex", e.role === "user" ? "justify-end" : "justify-start")}>
             <div
               className={cn(
@@ -54,9 +41,7 @@ export function ChatDock() {
                   : "text-foreground/85",
               )}
             >
-              {e.role === "system" && (
-                <span className="label-mono mr-2 text-teal">flowcad</span>
-              )}
+              {e.role === "system" && <span className="label-mono mr-2 text-teal">flowcad</span>}
               {e.text}
               <span
                 className={cn(
@@ -69,11 +54,22 @@ export function ChatDock() {
             </div>
           </div>
         ))}
+        {d.verifying && (
+          <div className="flex items-center gap-2 font-mono text-[11px] text-teal">
+            <Loader2 className="size-3 animate-spin" /> Verifying… running DRC / ERC / thermal
+          </div>
+        )}
       </div>
 
       <div className="px-4 pb-2">
         <div className="flex flex-wrap gap-1.5">
-          {suggestions.map((s) => (
+          {[
+            "Make the board 20% smaller",
+            "Move U1 to the center",
+            "Replace U2 with TPS62203",
+            "Add a status LED",
+            ...suggestions.slice(2),
+          ].map((s) => (
             <button
               key={s}
               onClick={() => send(s)}
@@ -96,7 +92,7 @@ export function ChatDock() {
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Make the board 20% smaller…"
+          placeholder="Make the board 20% smaller · move J1 to the left · add a buzzer…"
           className="flex-1 bg-transparent font-mono text-[12px] outline-none placeholder:text-muted-foreground"
         />
         <Button type="submit" size="sm" className="size-7 rounded-md p-0">

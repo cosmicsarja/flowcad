@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Download, FileCheck2, ArrowLeft, Package } from "lucide-react";
+import { Download, FileCheck2, ArrowLeft, Package, Loader2 } from "lucide-react";
 import { Logo } from "@/components/flowcad/Logo";
 import { Button } from "@/components/ui/button";
 import { MeterBar, StatusBadge } from "@/components/flowcad/StatusBadge";
-import { exportArtifacts, checks, confidence, bomTotal } from "@/lib/flowcad-data";
+import { exportArtifacts } from "@/lib/flowcad-data";
+import { bomTotalNow, useDesign } from "@/lib/design-store";
+import { artifactFiles, generateAll, generateArtifact } from "@/lib/export-files";
 
 export const Route = createFileRoute("/export")({
   head: () => ({
@@ -26,7 +28,17 @@ export const Route = createFileRoute("/export")({
 });
 
 function ExportPage() {
+  const d = useDesign();
   const [downloaded, setDownloaded] = useState<string[]>([]);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const run = async (name: string, fn: () => Promise<void>) => {
+    setBusy(name);
+    await new Promise((r) => setTimeout(r, 550));
+    await fn();
+    setBusy(null);
+    setDownloaded((prev) => [...new Set([...prev, name])]);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,13 +60,13 @@ function ExportPage() {
           <div className="relative flex flex-wrap items-center gap-6">
             <div>
               <p className="label-mono">Design Confidence</p>
-              <p className="mt-1 font-mono text-5xl font-semibold text-teal">{confidence}%</p>
+              <p className="mt-1 font-mono text-5xl font-semibold text-teal">{d.confidence}%</p>
               <p className="mt-2 font-mono text-[11px] text-muted-foreground">
-                IRRIGATION_CTRL · REV B · 48 × 36 mm · 23 parts · ${bomTotal.toFixed(2)} / board
+                {`IRRIGATION_CTRL · REV B · ${d.board.w.toFixed(1)} × ${d.board.h.toFixed(1)} mm · ${d.parts.length} parts · $${bomTotalNow(d).toFixed(2)} / board`}
               </p>
             </div>
             <div className="min-w-[280px] flex-1 space-y-2.5">
-              {checks.map((c) => (
+              {d.checks.map((c) => (
                 <div key={c.name} className="flex items-center gap-3">
                   <span className="w-32 shrink-0 font-mono text-[10px] tracking-wider text-muted-foreground uppercase">
                     {c.name}
@@ -89,16 +101,27 @@ function ExportPage() {
                     {a.fmt}
                   </span>
                   <button
-                    onClick={() => setDownloaded((d) => [...new Set([...d, a.name])])}
+                    onClick={() => run(a.name, () => generateArtifact(a.name))}
+                    disabled={busy === a.name}
                     aria-label={`Download ${a.name}`}
-                    className="rounded-md border border-border p-1.5 text-muted-foreground transition-colors hover:border-teal/50 hover:text-teal"
+                    className="rounded-md border border-border p-1.5 text-muted-foreground transition-colors hover:border-teal/50 hover:text-teal disabled:opacity-60"
                   >
-                    {done ? <FileCheck2 className="size-4 text-pass" /> : <Download className="size-4" />}
+                    {busy === a.name ? (
+                      <Loader2 className="size-4 animate-spin text-teal" />
+                    ) : done ? (
+                      <FileCheck2 className="size-4 text-pass" />
+                    ) : (
+                      <Download className="size-4" />
+                    )}
                   </button>
                 </div>
                 <h2 className="mt-3 text-[13px] font-medium">{a.name}</h2>
-                <p className="mt-1 truncate font-mono text-[10px] text-muted-foreground">{a.file}</p>
-                <p className="mt-2 font-mono text-[10px] text-teal">{a.size}</p>
+                <p className="mt-1 truncate font-mono text-[10px] text-muted-foreground">
+                  {artifactFiles[a.name] ?? a.file}
+                </p>
+                <p className="mt-2 font-mono text-[10px] text-teal">
+                  {busy === a.name ? "Generating…" : done ? "Downloaded ✓" : a.size}
+                </p>
               </article>
             );
           })}
@@ -108,11 +131,16 @@ function ExportPage() {
           <div>
             <p className="text-[13px] font-medium">Download complete fabrication package</p>
             <p className="mt-1 font-mono text-[10px] text-muted-foreground">
-              flowcad_irrigation_rev_b_fab.zip · 15.7 MB
+              flowcad_irrigation_rev_b_fab.zip · gerbers, drill, netlist, BOM, report
             </p>
           </div>
-          <Button className="ml-auto text-[12px]">
-            <Download className="size-3.5" /> Download all
+          <Button
+            className="ml-auto text-[12px]"
+            disabled={busy === "all"}
+            onClick={() => run("all", generateAll)}
+          >
+            {busy === "all" ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+            {busy === "all" ? "Generating…" : "Download all"}
           </Button>
         </div>
       </main>
