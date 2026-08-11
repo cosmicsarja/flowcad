@@ -45,6 +45,10 @@
   --color-warn: var(--warn);
   --color-fail: var(--fail);
   --color-progress: var(--progress);
+  --color-mask: var(--mask);
+  --color-mask-raised: var(--mask-raised);
+  --color-copper-b: var(--copper-b);
+  --color-pad: var(--pad);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
