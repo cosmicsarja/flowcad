@@ -90,7 +90,20 @@ function p(
   specs: Array<[string, string]>,
   block?: { label: string; kind: BlockKind },
 ): TemplatePart {
-  return { ref, name, value, pkg, unit, qty, sym, desc, reasoning, specs, datasheet: ds(name), block };
+  return {
+    ref,
+    name,
+    value,
+    pkg,
+    unit,
+    qty,
+    sym,
+    desc,
+    reasoning,
+    specs,
+    datasheet: ds(name),
+    ...(block ? { block } : {}),
+  };
 }
 
 /* ------------------------------------------------------------------ */

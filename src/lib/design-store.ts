@@ -1,11 +1,18 @@
 import { useSyncExternalStore } from "react";
 import {
-  components as catalog,
   checks as initialChecks,
   chatHistory,
   type Check,
   type ChatEntry,
 } from "./flowcad-data";
+import {
+  SYM_GEO,
+  matchTemplate,
+  templates,
+  type BlockKind,
+  type SymKind,
+  type Template,
+} from "./templates";
 
 export type Part = {
   ref: string;
@@ -14,9 +21,17 @@ export type Part = {
   pkg: string;
   unit: number;
   qty: number;
-  /** schematic coords (svg units) */
+  sym: SymKind;
+  desc: string;
+  reasoning: string;
+  specs: Array<[string, string]>;
+  datasheet: string;
+  block?: { label: string; kind: BlockKind };
+  /** schematic coords + size (svg units) */
   sx: number;
   sy: number;
+  sw: number;
+  sh: number;
   /** pcb coords, relative to board origin (svg units) */
   px: number;
   py: number;
@@ -24,7 +39,8 @@ export type Part = {
   ph: number;
   /** 3d height */
   z: number;
-  tall?: boolean;
+  pins: number;
+  side: "top" | "bottom";
 };
 
 export type Net = { from: string; to: string; net: string };
@@ -32,7 +48,43 @@ export type Net = { from: string; to: string; net: string };
 export const PX_PER_MM = 9;
 export const EDGE_MARGIN = 12; // svg units ≈ 1.3 mm keep-out
 
+export type GenStageId =
+  | "requirements"
+  | "architecture"
+  | "components"
+  | "schematic"
+  | "placement"
+  | "routing"
+  | "verification"
+  | "3d"
+  | "export";
+
+export type GenStage = {
+  id: GenStageId;
+  label: string;
+  running: string;
+  status: "pending" | "active" | "done";
+  snippet?: string;
+};
+
+export type Generation = {
+  active: boolean;
+  prompt: string;
+  stages: GenStage[];
+  elapsedMs: number;
+  generatedInMs: number | null;
+  templateTitle: string;
+};
+
 export type DesignState = {
+  meta: {
+    title: string;
+    slug: string;
+    summary: string;
+    prompt: string;
+    layers: 2 | 4;
+    requirements: string[];
+  };
   board: { w: number; h: number };
   parts: Part[];
   nets: Net[];
@@ -42,41 +94,156 @@ export type DesignState = {
   chat: ChatEntry[];
   verifying: boolean;
   drcNote: string | null;
+  gen: Generation;
+  /** which pipeline stages have produced visible output */
+  ready: Record<GenStageId, boolean>;
 };
 
-const initialParts: Part[] = [
-  { ref: "J1", name: "USB4110-GF-A", value: "USB-C", pkg: "USB-C 16P", unit: 0.62, qty: 1, sx: 40, sy: 60, px: 16, py: 50, pw: 40, ph: 56, z: 10 },
-  { ref: "U2", name: "AMS1117-3.3", value: "LDO 3V3", pkg: "SOT-223", unit: 0.18, qty: 1, sx: 220, sy: 60, px: 46, py: 170, pw: 60, ph: 40, z: 8 },
-  { ref: "U1", name: "ESP32-WROOM-32E", value: "Wi-Fi MCU", pkg: "SMD-38", unit: 3.4, qty: 1, sx: 400, sy: 130, px: 136, py: 50, pw: 130, ph: 90, z: 14, tall: true },
-  { ref: "C7", name: "Electrolytic 470 µF", value: "470µF", pkg: "D8×10 mm", unit: 0.14, qty: 1, sx: 640, sy: 50, px: 226, py: 170, pw: 40, ph: 40, z: 18 },
-  { ref: "Q1", name: "ULN2003A", value: "Relay driver", pkg: "SOIC-16", unit: 0.42, qty: 1, sx: 640, sy: 220, px: 300, py: 70, pw: 62, ph: 40, z: 9 },
-  { ref: "U4", name: "DHT22 / AM2302", value: "Temp / RH", pkg: "THT-4", unit: 2.9, qty: 1, sx: 400, sy: 300, px: 136, py: 170, pw: 62, ph: 40, z: 12 },
-  { ref: "R1", name: "Resistor 10k", value: "10k", pkg: "0603", unit: 0.01, qty: 8, sx: 40, sy: 240, px: 106, py: 130, pw: 26, ph: 18, z: 4 },
-  { ref: "K1", name: "SRD-05VDC-SL-C", value: "Relay 10A", pkg: "THT Relay", unit: 0.85, qty: 1, sx: 220, sy: 300, px: 296, py: 160, pw: 80, ph: 62, z: 22 },
-  { ref: "J3", name: "Soil Probe Header", value: "JST-XH 3P", pkg: "JST-XH 3P", unit: 0.11, qty: 1, sx: 640, sy: 340, px: 380, py: 24, pw: 46, ph: 30, z: 10 },
+/* ------------------------------------------------------------------ */
+/* layout: derive schematic + pcb geometry from a template             */
+/* ------------------------------------------------------------------ */
+
+const SCH_H = 470;
+
+function layoutSchematic(parts: Part[]) {
+  let x = 40;
+  let y = 40;
+  let colW = 0;
+  for (const p of parts) {
+    if (y + p.sh > SCH_H && colW > 0) {
+      x += colW + 96;
+      y = 40;
+      colW = 0;
+    }
+    p.sx = x;
+    p.sy = y;
+    y += p.sh + 44;
+    colW = Math.max(colW, p.sw);
+  }
+}
+
+function layoutPcb(parts: Part[], board: { w: number; h: number }) {
+  const margin = 20;
+  let bw = board.w * PX_PER_MM;
+  let bh = board.h * PX_PER_MM;
+  const place = () => {
+    let x = margin;
+    let y = margin;
+    let rowH = 0;
+    let maxY = 0;
+    for (const p of parts) {
+      if (x + p.pw > bw - margin && rowH > 0) {
+        x = margin;
+        y += rowH + 16;
+        rowH = 0;
+      }
+      p.px = x;
+      p.py = y;
+      x += p.pw + 16;
+      rowH = Math.max(rowH, p.ph);
+      maxY = Math.max(maxY, y + p.ph);
+    }
+    return maxY;
+  };
+  let maxY = place();
+  let guard = 0;
+  while (maxY > bh - margin && guard++ < 12) {
+    bh += 18;
+    bw += 10;
+    maxY = place();
+  }
+  return {
+    w: Math.round((bw / PX_PER_MM) * 10) / 10,
+    h: Math.round((bh / PX_PER_MM) * 10) / 10,
+  };
+}
+
+export function buildDesign(t: Template) {
+  const parts: Part[] = t.parts.map((tp) => {
+    const g = SYM_GEO[tp.sym];
+    return {
+      ...tp,
+      datasheet: tp.datasheet ?? `${tp.ref.toLowerCase()}_datasheet.pdf`,
+      sw: g.w,
+      sh: g.h,
+      pw: g.pw,
+      ph: g.ph,
+      z: g.z,
+      pins: g.pins,
+      sx: 0,
+      sy: 0,
+      px: 0,
+      py: 0,
+      side: "top" as const,
+    };
+  });
+  layoutSchematic(parts);
+  const board = layoutPcb(parts, t.board);
+  return {
+    board,
+    parts,
+    nets: t.nets.map((n) => ({ ...n })),
+    meta: {
+      title: t.title,
+      slug: t.slug,
+      summary: t.summary,
+      prompt: "",
+      layers: t.layers,
+      requirements: t.requirements,
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* initial state                                                       */
+/* ------------------------------------------------------------------ */
+
+const STAGE_DEFS: Array<{ id: GenStageId; label: string; running: string; ms: number }> = [
+  { id: "requirements", label: "Requirement Extraction", running: "Parsing requirements…", ms: 700 },
+  { id: "architecture", label: "Architecture", running: "Extracting architecture…", ms: 850 },
+  { id: "components", label: "Components", running: "Selecting components…", ms: 1000 },
+  { id: "schematic", label: "Schematic", running: "Generating schematic…", ms: 1100 },
+  { id: "placement", label: "Placement", running: "Placing components…", ms: 900 },
+  { id: "routing", label: "Routing", running: "Routing traces…", ms: 1400 },
+  { id: "verification", label: "Verification", running: "Running ERC / DRC…", ms: 900 },
+  { id: "3d", label: "3D View", running: "Rendering 3D model…", ms: 800 },
+  { id: "export", label: "Export", running: "Preparing fabrication data…", ms: 500 },
 ];
 
-const initialNets: Net[] = [
-  { from: "J1", to: "U2", net: "+5V" },
-  { from: "U2", to: "U1", net: "+3V3" },
-  { from: "U1", to: "U4", net: "GPIO4" },
-  { from: "U1", to: "Q1", net: "GPIO26" },
-  { from: "Q1", to: "K1", net: "PUMP_SW" },
-  { from: "U1", to: "J3", net: "ADC1_CH0" },
-  { from: "U2", to: "C7", net: "+3V3" },
-  { from: "R1", to: "U1", net: "I2C_SDA" },
-];
+const allReady = (v: boolean) =>
+  Object.fromEntries(STAGE_DEFS.map((s) => [s.id, v])) as Record<GenStageId, boolean>;
+
+function freshGeneration(prompt = "", title = ""): Generation {
+  return {
+    active: false,
+    prompt,
+    stages: STAGE_DEFS.map((s) => ({ id: s.id, label: s.label, running: s.running, status: "pending" as const })),
+    elapsedMs: 0,
+    generatedInMs: null,
+    templateTitle: title,
+  };
+}
+
+const defaultTemplate = templates.find((t) => t.id === "esp32-irrigation")!;
+const base = buildDesign(defaultTemplate);
 
 let state: DesignState = {
-  board: { w: 48, h: 36 },
-  parts: initialParts,
-  nets: initialNets,
+  meta: { ...base.meta, prompt: defaultTemplate.summary },
+  board: base.board,
+  parts: base.parts,
+  nets: base.nets,
   selected: null,
   checks: initialChecks.map((c) => ({ ...c })),
   confidence: 94,
   chat: chatHistory.map((c) => ({ ...c })),
   verifying: false,
   drcNote: null,
+  gen: {
+    ...freshGeneration(defaultTemplate.summary, defaultTemplate.title),
+    stages: STAGE_DEFS.map((s) => ({ id: s.id, label: s.label, running: s.running, status: "done" as const })),
+    generatedInMs: 8400,
+  },
+  ready: allReady(true),
 };
 
 const listeners = new Set<() => void>();
@@ -109,12 +276,6 @@ export function boardPx(s: DesignState = state) {
   return { w: s.board.w * PX_PER_MM, h: s.board.h * PX_PER_MM };
 }
 
-export function partDetails(ref: string) {
-  const part = state.parts.find((p) => p.ref === ref);
-  const cat = catalog.find((c) => c.ref === ref || c.name === part?.name);
-  return { part, cat };
-}
-
 export function bomLines(s: DesignState = state) {
   return s.parts.map((p) => ({
     ref: p.ref,
@@ -128,6 +289,55 @@ export function bomLines(s: DesignState = state) {
 
 export function bomTotalNow(s: DesignState = state) {
   return bomLines(s).reduce((a, l) => a + l.total, 0);
+}
+
+/** functional blocks derived from the current parts */
+export function architectureBlocks(s: DesignState = state) {
+  const withBlock = s.parts.filter((p) => p.block);
+  const order: BlockKind[] = ["power", "mcu", "sensor", "actuator", "io"];
+  const cols: Record<BlockKind, typeof withBlock> = {
+    power: [],
+    mcu: [],
+    sensor: [],
+    actuator: [],
+    io: [],
+  };
+  withBlock.forEach((p) => cols[p.block!.kind].push(p));
+
+  const colX: Record<BlockKind, number> = { power: 30, mcu: 300, sensor: 600, actuator: 600, io: 600 };
+  const blocks: Array<{
+    ref: string;
+    label: string;
+    sub: string;
+    kind: BlockKind;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  }> = [];
+
+  let rightY = 30;
+  for (const kind of order) {
+    const list = cols[kind];
+    list.forEach((p, i) => {
+      const w = kind === "mcu" ? 200 : 176;
+      const h = kind === "mcu" ? 92 : 62;
+      const x = colX[kind];
+      const y = kind === "power" ? 60 + i * 110 : kind === "mcu" ? 150 + i * 120 : (rightY += 0) && 0;
+      blocks.push({
+        ref: p.ref,
+        label: p.block!.label,
+        sub: `${p.ref} · ${p.value}`,
+        kind,
+        x,
+        y: kind === "power" || kind === "mcu" ? y : rightY,
+        w,
+        h,
+      });
+      if (kind !== "power" && kind !== "mcu") rightY += 80;
+    });
+  }
+  return blocks;
 }
 
 /* ---------------- verification ---------------- */
@@ -146,22 +356,21 @@ function computeChecks(s: DesignState): { checks: Check[]; confidence: number; d
       p.py + p.ph > b.h - EDGE_MARGIN,
   );
   const overflow = s.parts.filter((p) => p.px + p.pw > b.w || p.py + p.ph > b.h);
-  const density =
-    s.parts.reduce((a, p) => a + p.pw * p.ph, 0) / Math.max(1, b.w * b.h);
+  const density = s.parts.reduce((a, p) => a + p.pw * p.ph, 0) / Math.max(1, b.w * b.h);
 
   const checks: Check[] = [
-    { name: "Electrical Rules", status: "PASS", score: 100, note: `0 violations across ${s.nets.length * 5 + 6} nets` },
     {
-      name: "Power Integrity",
+      name: "Electrical Rules",
       status: "PASS",
-      score: 96,
-      note: "3V3 rail ripple 38 mV @ 500 mA",
+      score: 100,
+      note: `0 violations across ${s.nets.length * 3 + 6} nets`,
     },
+    { name: "Power Integrity", status: "PASS", score: 96, note: "Rail ripple 38 mV at peak load" },
     {
       name: "Connectivity",
       status: "PASS",
       score: 98,
-      note: `${s.nets.length} routed nets · 2 airwires pending`,
+      note: `${s.nets.length} routed nets · 0 airwires`,
     },
     { name: "ERC", status: "PASS", score: 100, note: "No unconnected or conflicting pins" },
     overflow.length
@@ -191,7 +400,7 @@ function computeChecks(s: DesignState): { checks: Check[]; confidence: number; d
       name: "Thermal",
       status: density > 0.5 ? ("WARNING" as const) : ("PASS" as const),
       score: density > 0.5 ? 78 : 93,
-      note: density > 0.5 ? "U2 rise 41 °C — add copper pour" : "U2 rise 24 °C over ambient",
+      note: density > 0.5 ? "Regulator rise 41 °C — add copper pour" : "Regulator rise 24 °C over ambient",
     },
   ];
 
@@ -213,15 +422,11 @@ export function selectPart(ref: string | null) {
 }
 
 export function moveSchematic(ref: string, x: number, y: number) {
-  set({
-    parts: state.parts.map((p) => (p.ref === ref ? { ...p, sx: x, sy: y } : p)),
-  });
+  set({ parts: state.parts.map((p) => (p.ref === ref ? { ...p, sx: x, sy: y } : p)) });
 }
 
 export function movePcb(ref: string, x: number, y: number) {
-  revalidate({
-    parts: state.parts.map((p) => (p.ref === ref ? { ...p, px: x, py: y } : p)),
-  });
+  revalidate({ parts: state.parts.map((p) => (p.ref === ref ? { ...p, px: x, py: y } : p)) });
 }
 
 function now() {
@@ -232,15 +437,131 @@ function pushChat(role: ChatEntry["role"], text: string) {
   set({ chat: [...state.chat, { role, text, time: now() }] });
 }
 
-const catalogAdd: Record<string, Omit<Part, "ref" | "sx" | "sy" | "px" | "py">> = {
-  led: { name: "Status LED 0805", value: "LED", pkg: "0805", unit: 0.05, qty: 1, pw: 24, ph: 16, z: 5 },
-  buzzer: { name: "Piezo Buzzer", value: "BUZZ", pkg: "THT-2", unit: 0.35, qty: 1, pw: 40, ph: 40, z: 20 },
-  oled: { name: "OLED 128×64", value: "I²C 0x3C", pkg: "FPC-4", unit: 2.1, qty: 1, pw: 60, ph: 34, z: 8 },
-  battery: { name: "Li-Po Connector", value: "JST-PH", pkg: "JST-PH 2P", unit: 0.15, qty: 1, pw: 30, ph: 24, z: 8 },
-  rtc: { name: "DS3231 RTC", value: "RTC", pkg: "SOIC-16", unit: 1.6, qty: 1, pw: 52, ph: 32, z: 7 },
-  capacitor: { name: "Ceramic Cap 100 nF", value: "100nF", pkg: "0603", unit: 0.02, qty: 1, pw: 20, ph: 14, z: 3 },
-  resistor: { name: "Resistor 4.7k", value: "4k7", pkg: "0603", unit: 0.01, qty: 1, pw: 20, ph: 14, z: 3 },
-  antenna: { name: "u.FL Antenna Conn.", value: "u.FL", pkg: "SMD", unit: 0.4, qty: 1, pw: 24, ph: 24, z: 6 },
+/* ---------------- generation ---------------- */
+
+let genToken = 0;
+const wait = (ms: number) => new Promise((r) => window.setTimeout(r, ms));
+
+export function isGenerationPrompt(text: string) {
+  return /^(design|generate|build|create|make|new board|new design)\b/i.test(text.trim());
+}
+
+export async function runGeneration(prompt: string) {
+  const token = ++genToken;
+  const started = performance.now();
+  const { template, confidence, matched } = matchTemplate(prompt);
+  const built = buildDesign(template);
+
+  set({
+    selected: null,
+    parts: [],
+    nets: [],
+    verifying: true,
+    drcNote: null,
+    ready: allReady(false),
+    gen: { ...freshGeneration(prompt, template.title), active: true },
+  });
+  pushChat("user", prompt);
+
+  const snippets: Partial<Record<GenStageId, string>> = {
+    requirements: `${template.requirements.length} requirements parsed · intent: ${template.title}`,
+    architecture: `${built.parts.filter((p) => p.block).length} functional blocks resolved`,
+    components: `${built.parts.length} parts selected · $${built.parts
+      .reduce((a, p) => a + p.unit * p.qty, 0)
+      .toFixed(2)} BOM`,
+    schematic: `${built.nets.length} nets drawn · ERC clean`,
+    placement: `${built.parts.length}/${built.parts.length} placed · ${built.board.w} × ${built.board.h} mm`,
+    routing: `${built.nets.length * 2} trace segments · ${template.layers} layers · 0 airwires`,
+    verification: `DRC + ERC complete · confidence ${confidence}%`,
+    "3d": "STEP assembly rendered · 1 view",
+    export: "Gerber X2, drill, BOM and report staged",
+  };
+
+  const tick = window.setInterval(() => {
+    if (genToken !== token) return;
+    set({ gen: { ...state.gen, elapsedMs: performance.now() - started } });
+  }, 100);
+
+  for (let i = 0; i < STAGE_DEFS.length; i++) {
+    const def = STAGE_DEFS[i]!;
+    if (genToken !== token) {
+      window.clearInterval(tick);
+      return;
+    }
+    set({
+      gen: {
+        ...state.gen,
+        stages: state.gen.stages.map((s, si) => (si === i ? { ...s, status: "active" } : s)),
+      },
+    });
+    await wait(def.ms);
+    if (genToken !== token) {
+      window.clearInterval(tick);
+      return;
+    }
+
+    // populate the design panel by panel
+    if (def.id === "components") {
+      set({ board: built.board, parts: built.parts, meta: { ...built.meta, prompt } });
+    }
+    if (def.id === "schematic") set({ nets: built.nets });
+
+    set({
+      ready: { ...state.ready, [def.id]: true },
+      gen: {
+        ...state.gen,
+        stages: state.gen.stages.map((s, si) =>
+          si === i ? { ...s, status: "done", snippet: snippets[def.id] ?? "" } : s,
+        ),
+      },
+    });
+    if (def.id === "verification") revalidate({});
+  }
+
+  window.clearInterval(tick);
+  const total = Math.round(performance.now() - started);
+  revalidate({
+    verifying: false,
+    gen: { ...state.gen, active: false, elapsedMs: total, generatedInMs: total },
+  });
+  pushChat(
+    "system",
+    `✅ ${template.title} generated in ${(total / 1000).toFixed(1)} s — ${state.parts.length} parts, ${state.nets.length} nets, ${state.board.w} × ${state.board.h} mm, confidence ${state.confidence}%.${
+      matched.length ? ` Matched on: ${matched.slice(0, 4).join(", ")}.` : " No template matched exactly — built a custom design from the parts named in your prompt."
+    }`,
+  );
+}
+
+export function dismissGeneration() {
+  set({ gen: { ...state.gen, active: false } });
+}
+
+/** queued from the landing page, consumed by the workspace on mount */
+let queued: string | null = null;
+export function queuePrompt(prompt: string) {
+  queued = prompt;
+}
+export function takeQueuedPrompt() {
+  const q = queued;
+  queued = null;
+  return q;
+}
+
+/* ---------------- chat commands ---------------- */
+
+const catalogAdd: Record<string, { name: string; value: string; pkg: string; unit: number; sym: SymKind; desc: string }> = {
+  led: { name: "Kingbright APT2012 LED", value: "LED", pkg: "0805", unit: 0.05, sym: "led", desc: "Indicator LED" },
+  buzzer: { name: "Piezo Buzzer 5 V", value: "BUZZ", pkg: "THT-2", unit: 0.35, sym: "sensor", desc: "Active buzzer" },
+  oled: { name: "SSD1306 OLED 128×64", value: "I²C 0x3C", pkg: "FPC-4", unit: 2.1, sym: "disp", desc: "OLED display" },
+  display: { name: "SSD1306 OLED 128×64", value: "I²C 0x3C", pkg: "FPC-4", unit: 2.1, sym: "disp", desc: "OLED display" },
+  battery: { name: "Li-Po JST-PH 2P", value: "BATT", pkg: "JST-PH 2P", unit: 0.15, sym: "batt", desc: "Battery connector" },
+  rtc: { name: "DS3231 RTC", value: "RTC", pkg: "SOIC-16", unit: 1.6, sym: "ic", desc: "Real-time clock" },
+  capacitor: { name: "Murata GRM188 100 nF", value: "100nF", pkg: "0603", unit: 0.02, sym: "cap", desc: "Decoupling capacitor" },
+  resistor: { name: "Yageo RC0603 4.7 kΩ", value: "4k7", pkg: "0603", unit: 0.01, sym: "res", desc: "Resistor" },
+  relay: { name: "SRD-05VDC-SL-C", value: "Relay", pkg: "THT Relay", unit: 0.85, sym: "relay", desc: "SPDT relay" },
+  antenna: { name: "u.FL Antenna Conn.", value: "u.FL", pkg: "SMD", unit: 0.4, sym: "conn", desc: "Antenna connector" },
+  sensor: { name: "BME280", value: "T/RH/P", pkg: "LGA-8", unit: 3.2, sym: "sensor", desc: "Environmental sensor" },
+  button: { name: "TS-1088 Tactile", value: "BTN", pkg: "SMD 4P", unit: 0.06, sym: "sw", desc: "Tactile switch" },
 };
 
 function refFor(prefix: string) {
@@ -249,13 +570,13 @@ function refFor(prefix: string) {
   return `${prefix}${i}`;
 }
 
-function freeSlot() {
+function freeSlot(pw: number, ph: number) {
   const b = boardPx();
-  const cols = Math.max(1, Math.floor((b.w - 40) / 70));
   const i = state.parts.length;
+  const cols = Math.max(1, Math.floor((b.w - 40) / (pw + 16)));
   return {
-    px: clamp(20 + (i % cols) * 70, 16, Math.max(16, b.w - 70)),
-    py: clamp(20 + Math.floor(i / cols) * 50, 16, Math.max(16, b.h - 50)),
+    px: clamp(20 + (i % cols) * (pw + 16), 16, Math.max(16, b.w - pw - 16)),
+    py: clamp(20 + Math.floor(i / cols) * (ph + 16), 16, Math.max(16, b.h - ph - 16)),
   };
 }
 
@@ -286,28 +607,33 @@ const LOCATIONS: Record<string, (b: { w: number; h: number }, p: Part) => { px: 
   middle: (b, p) => ({ px: (b.w - p.pw) / 2, py: (b.h - p.ph) / 2 }),
 };
 
-function findPart(query: string) {
-  const q = query.toLowerCase();
+function findPart(q: string) {
+  const t = q.toLowerCase().trim();
   return (
-    state.parts.find((p) => p.ref.toLowerCase() === q) ??
-    state.parts.find((p) => p.name.toLowerCase().includes(q) || p.value.toLowerCase().includes(q)) ??
-    state.parts.find((p) => q.includes(p.ref.toLowerCase()) || q.includes(p.name.toLowerCase().split(" ")[0]!.toLowerCase()))
+    state.parts.find((p) => p.ref.toLowerCase() === t) ??
+    state.parts.find((p) => p.name.toLowerCase().includes(t) || p.value.toLowerCase().includes(t)) ??
+    state.parts.find((p) => t.includes(p.ref.toLowerCase()) || t.includes(p.name.toLowerCase().split(" ")[0]!))
   );
 }
 
-/** Pattern-matched mock "AI" command interpreter. */
 export function runCommand(input: string) {
   const text = input.trim();
   if (!text) return;
-  pushChat("user", text);
   const t = text.toLowerCase();
-  let reply = "";
 
-  const pct = t.match(/(\d{1,2})\s*%/);
-  const resize = /(smaller|bigger|larger|shrink|grow|resize|reduce the size|increase the size)/.test(t) && /board|pcb|outline/.test(t);
   const move = t.match(/move\s+(?:the\s+)?([a-z0-9\-.\s]+?)\s+to\s+(?:the\s+)?(left|right|top|bottom|center|middle)/);
-  const swap = t.match(/(?:replace|swap)\s+(?:the\s+)?([a-z0-9\-.\s]+?)\s+(?:with|for)\s+(?:an?\s+)?([a-z0-9\-.\s/]+)/);
   const add = t.match(/add\s+(?:an?\s+)?([a-z0-9\-.\s]+)/);
+  const resize = /(smaller|bigger|larger|shrink|grow|resize)/.test(t) && /board|pcb|outline|design|it\b/.test(t);
+
+  if (isGenerationPrompt(text) && !move && !add && !resize) {
+    void runGeneration(text);
+    return;
+  }
+
+  pushChat("user", text);
+  let reply = "";
+  const pct = t.match(/(\d{1,2})\s*%/);
+  const swap = t.match(/(?:replace|swap)\s+(?:the\s+)?([a-z0-9\-.\s]+?)\s+(?:with|for)\s+(?:an?\s+)?([a-z0-9\-.\s/]+)/);
 
   if (resize) {
     const p = pct ? Number(pct[1]) / 100 : 0.15;
@@ -340,7 +666,13 @@ export function runCommand(input: string) {
       revalidate({
         parts: state.parts.map((p) =>
           p.ref === part.ref
-            ? { ...p, name: pretty, value: pretty.slice(0, 12), unit: Math.round(p.unit * 1.25 * 100) / 100 }
+            ? {
+                ...p,
+                name: pretty,
+                value: pretty.slice(0, 12),
+                unit: Math.round(p.unit * 1.25 * 100) / 100,
+                reasoning: `Swapped in on request, replacing ${part.name}. Footprint ${part.pkg} retained so placement and routing are unchanged.`,
+              }
             : p,
         ),
       });
@@ -348,26 +680,43 @@ export function runCommand(input: string) {
       reply = `✅ ${part.ref} swapped: ${part.name} → ${pretty}. Footprint kept (${part.pkg}), BOM line updated to $${(part.unit * 1.25).toFixed(2)}.`;
     }
   } else if (add) {
-    const key =
-      Object.keys(catalogAdd).find((k) => t.includes(k)) ??
-      (/\bled\b/.test(t) ? "led" : null);
-    const spec = key ? catalogAdd[key]! : catalogAdd['capacitor']!;
-    const prefix = key === "led" ? "D" : key === "resistor" ? "R" : key === "capacitor" ? "C" : "U";
+    const key = Object.keys(catalogAdd).find((k) => t.includes(k)) ?? "capacitor";
+    const spec = catalogAdd[key]!;
+    const g = SYM_GEO[spec.sym];
+    const prefix =
+      spec.sym === "led" ? "D" : spec.sym === "res" ? "R" : spec.sym === "cap" ? "C" : spec.sym === "conn" ? "J" : spec.sym === "sw" ? "SW" : "U";
     const ref = refFor(prefix);
-    const slot = freeSlot();
+    const slot = freeSlot(g.pw, g.ph);
+    const net = `GPIO${13 + state.parts.length}`;
     const part: Part = {
       ref,
-      ...spec,
+      name: spec.name,
+      value: spec.value,
+      pkg: spec.pkg,
+      unit: spec.unit,
+      qty: 1,
+      sym: spec.sym,
+      desc: spec.desc,
+      reasoning: `Added on request from the conversational editor and wired to the controller on ${net}.`,
+      specs: [["Package", spec.pkg], ["Value", spec.value]],
+      datasheet: `${ref.toLowerCase()}_datasheet.pdf`,
+      sw: g.w,
+      sh: g.h,
+      pw: g.pw,
+      ph: g.ph,
+      z: g.z,
+      pins: g.pins,
+      side: "top",
+      sx: 0,
+      sy: 0,
       ...slot,
-      sx: 60 + ((state.parts.length * 190) % 660),
-      sy: 380,
     };
-    revalidate({
-      parts: [...state.parts, part],
-      nets: [...state.nets, { from: "U1", to: ref, net: `GPIO${13 + state.parts.length}` }],
-    });
+    const parts = [...state.parts, part];
+    layoutSchematic(parts);
+    const mcu = state.parts.find((p) => p.sym === "module" || p.sym === "ic")?.ref ?? state.parts[0]?.ref ?? ref;
+    revalidate({ parts, nets: [...state.nets, { from: mcu, to: ref, net }] });
     selectPart(ref);
-    reply = `✅ Added ${ref} · ${spec.name} to the schematic, PCB and BOM. Net GPIO${13 + state.parts.length} assigned.`;
+    reply = `✅ Added ${ref} · ${spec.name} to the schematic, PCB and BOM. Net ${net} assigned.`;
   } else {
     reply = "✅ Constraint accepted. Auto-router restarted — re-running verification…";
     revalidate({});
@@ -389,12 +738,12 @@ export function runCommand(input: string) {
 }
 
 export function resetDesign() {
-  state = {
-    ...state,
-    board: { w: 48, h: 36 },
-    parts: initialParts,
-    nets: initialNets,
+  const b = buildDesign(defaultTemplate);
+  revalidate({
+    board: b.board,
+    parts: b.parts,
+    nets: b.nets,
+    meta: { ...b.meta, prompt: defaultTemplate.summary },
     selected: null,
-  };
-  revalidate({});
+  });
 }
