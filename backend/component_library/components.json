@@ -1,0 +1,541 @@
+[
+  {
+    "id": "esp32-wroom-32e",
+    "name": "ESP32-WROOM-32E",
+    "category": "mcu",
+    "footprint": "RF_Module:ESP32-WROOM-32",
+    "package": "SMD-38",
+    "datasheet_url": "https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf",
+    "unit_cost": 3.40,
+    "description": "Wi-Fi + BLE dual-core MCU module, 4MB flash, integrated antenna",
+    "specs": [
+      ["Supply", "3.0–3.6 V"],
+      ["Peak current", "500 mA (TX)"],
+      ["Flash", "4 MB"],
+      ["ADC", "18 ch · 12-bit"],
+      ["Interfaces", "I²C, SPI, UART, PWM"],
+      ["Temp range", "-40–85 °C"],
+      ["GPIO", "34 usable"]
+    ],
+    "tags": ["esp32", "wifi", "ble", "mcu", "microcontroller", "wireless"],
+    "skidl_lib": "ESP32",
+    "kicad_footprint": "RF_Module:ESP32-WROOM-32"
+  },
+  {
+    "id": "arduino-nano",
+    "name": "Arduino Nano",
+    "category": "mcu",
+    "footprint": "Module:Arduino_Nano",
+    "package": "DIP-30",
+    "datasheet_url": "https://docs.arduino.cc/hardware/nano",
+    "unit_cost": 4.10,
+    "description": "ATmega328P-based Arduino Nano, USB-B mini, 5V/3.3V pins",
+    "specs": [
+      ["Supply", "5 V USB or 7–12 V Vin"],
+      ["CPU", "ATmega328P @ 16 MHz"],
+      ["Flash", "32 KB"],
+      ["ADC", "8 ch · 10-bit"],
+      ["Interfaces", "I²C, SPI, UART"],
+      ["GPIO", "22 usable"]
+    ],
+    "tags": ["arduino", "nano", "atmega", "mcu", "microcontroller"],
+    "skidl_lib": "MCU_Module",
+    "kicad_footprint": "Module:Arduino_Nano"
+  },
+  {
+    "id": "ams1117-3v3",
+    "name": "AMS1117-3.3",
+    "category": "power",
+    "footprint": "Package_TO_SOT_SMD:SOT-223-3_TabPin2",
+    "package": "SOT-223",
+    "datasheet_url": "http://www.advanced-monolithic.com/pdf/ds1117.pdf",
+    "unit_cost": 0.18,
+    "description": "3.3V LDO linear regulator, 1A, low dropout",
+    "specs": [
+      ["V_out", "3.3 V ±1%"],
+      ["I_max", "1 A"],
+      ["Dropout", "1.3 V @ 1 A"],
+      ["θJA", "61 °C/W"],
+      ["Input range", "4.75–15 V"]
+    ],
+    "tags": ["regulator", "ldo", "3.3v", "power", "ams1117"],
+    "skidl_lib": "Regulator_Linear",
+    "kicad_footprint": "Package_TO_SOT_SMD:SOT-223-3_TabPin2"
+  },
+  {
+    "id": "dht22",
+    "name": "DHT22",
+    "category": "sensor",
+    "footprint": "Sensor:Aosong_DHT22_PTH",
+    "package": "THT-4",
+    "datasheet_url": "https://www.sparkfun.com/datasheets/Sensors/Temperature/DHT22.pdf",
+    "unit_cost": 2.90,
+    "description": "Temperature & relative humidity sensor, single-wire interface",
+    "specs": [
+      ["Accuracy", "±0.5 °C / ±2 %RH"],
+      ["Supply", "3.3–5.5 V"],
+      ["Sample rate", "0.5 Hz"],
+      ["Interface", "1-wire"],
+      ["Range", "-40–80 °C / 0–100 %RH"]
+    ],
+    "tags": ["dht22", "temperature", "humidity", "sensor", "am2302"],
+    "skidl_lib": "Sensor_Temperature",
+    "kicad_footprint": "Sensor:Aosong_DHT22_PTH"
+  },
+  {
+    "id": "dht11",
+    "name": "DHT11",
+    "category": "sensor",
+    "footprint": "Sensor:Aosong_DHT11_PTH",
+    "package": "THT-4",
+    "datasheet_url": "https://www.mouser.com/datasheet/2/758/DHT11-Technical-Data-Sheet-Translated-Version-1143054.pdf",
+    "unit_cost": 0.90,
+    "description": "Basic temperature & humidity sensor, single-wire",
+    "specs": [
+      ["Accuracy", "±2 °C / ±5 %RH"],
+      ["Supply", "3.3–5.5 V"],
+      ["Interface", "1-wire"],
+      ["Range", "0–50 °C / 20–90 %RH"]
+    ],
+    "tags": ["dht11", "temperature", "humidity", "sensor"],
+    "skidl_lib": "Sensor_Temperature",
+    "kicad_footprint": "Sensor:Aosong_DHT11_PTH"
+  },
+  {
+    "id": "soil-moisture-header",
+    "name": "Soil Probe Header",
+    "category": "connector",
+    "footprint": "Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical",
+    "package": "JST-XH 3P",
+    "datasheet_url": "https://www.jst-mfg.com/product/pdf/eng/eXH.pdf",
+    "unit_cost": 0.11,
+    "description": "Capacitive soil moisture probe input connector, keyed 3-pin JST",
+    "specs": [
+      ["Pitch", "2.5 mm"],
+      ["Pins", "3"],
+      ["Current", "3 A max"]
+    ],
+    "tags": ["soil", "moisture", "connector", "jst", "sensor"],
+    "skidl_lib": "Connector",
+    "kicad_footprint": "Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical"
+  },
+  {
+    "id": "hc-sr04",
+    "name": "HC-SR04",
+    "category": "sensor",
+    "footprint": "Sensor_Distance:HC-SR04_Ultrasonic_Sensor",
+    "package": "THT Module",
+    "datasheet_url": "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf",
+    "unit_cost": 0.85,
+    "description": "Ultrasonic distance sensor, 2cm–400cm range",
+    "specs": [
+      ["Supply", "5 V"],
+      ["Range", "2–400 cm"],
+      ["Interface", "Trigger/Echo GPIO"],
+      ["Frequency", "40 kHz"]
+    ],
+    "tags": ["ultrasonic", "distance", "hc-sr04", "sensor"],
+    "skidl_lib": "Sensor_Distance",
+    "kicad_footprint": "Sensor_Distance:HC-SR04_Ultrasonic_Sensor"
+  },
+  {
+    "id": "srd-05vdc-relay",
+    "name": "SRD-05VDC-SL-C",
+    "category": "actuator",
+    "footprint": "Relay_THT:Relay_SPDT_Songle-SRD",
+    "package": "THT Relay",
+    "datasheet_url": "https://www.sparkfun.com/datasheets/Components/General/SRD-05VDC-SL-C.pdf",
+    "unit_cost": 0.85,
+    "description": "SPDT power relay 10A, 5V coil",
+    "specs": [
+      ["Coil", "5 V · 71 mA"],
+      ["Contacts", "10 A / 250 VAC"],
+      ["Coil resistance", "70 Ω"]
+    ],
+    "tags": ["relay", "spdt", "actuator", "pump", "power"],
+    "skidl_lib": "Relay",
+    "kicad_footprint": "Relay_THT:Relay_SPDT_Songle-SRD"
+  },
+  {
+    "id": "uln2003a",
+    "name": "ULN2003A",
+    "category": "driver",
+    "footprint": "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm",
+    "package": "SOIC-16",
+    "datasheet_url": "https://www.ti.com/lit/ds/symlink/uln2003a.pdf",
+    "unit_cost": 0.42,
+    "description": "Darlington transistor array, 7-channel relay/motor driver with flyback diodes",
+    "specs": [
+      ["I_out", "500 mA/ch"],
+      ["V_max", "50 V"],
+      ["Channels", "7"],
+      ["V_in (logic)", "3.3–5 V"]
+    ],
+    "tags": ["uln2003", "driver", "relay", "darlington", "actuator"],
+    "skidl_lib": "Driver_FET",
+    "kicad_footprint": "Package_SO:SOIC-16_3.9x9.9mm_P1.27mm"
+  },
+  {
+    "id": "usb4110-usbc",
+    "name": "USB4110-GF-A",
+    "category": "connector",
+    "footprint": "Connector_USB:USB_C_Receptacle_GCT_USB4110",
+    "package": "USB-C 16P",
+    "datasheet_url": "https://gct.co/files/drawings/usb4110.pdf",
+    "unit_cost": 0.62,
+    "description": "USB-C receptacle, power-only, through-hole shield tabs",
+    "specs": [
+      ["Rating", "5 V / 3 A"],
+      ["Cycles", "10 000"],
+      ["Shield", "Through-hole tabs"]
+    ],
+    "tags": ["usb-c", "usbc", "connector", "power", "j1"],
+    "skidl_lib": "Connector",
+    "kicad_footprint": "Connector_USB:USB_C_Receptacle_GCT_USB4110"
+  },
+  {
+    "id": "cap-100nf-0603",
+    "name": "Ceramic Cap 100nF",
+    "category": "passive",
+    "footprint": "Capacitor_SMD:C_0603_1608Metric",
+    "package": "0603",
+    "datasheet_url": "https://search.murata.co.jp/Ceramy/image/img/A01X/G101/ENG/GRM188R71H104KA93-01.pdf",
+    "unit_cost": 0.02,
+    "description": "X7R 100nF ceramic decoupling capacitor, 50V",
+    "specs": [
+      ["Value", "100 nF ±10%"],
+      ["Voltage", "50 V"],
+      ["Dielectric", "X7R"]
+    ],
+    "tags": ["capacitor", "decoupling", "bypass", "100nf", "0603"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Capacitor_SMD:C_0603_1608Metric"
+  },
+  {
+    "id": "cap-10uf-0805",
+    "name": "Ceramic Cap 10µF",
+    "category": "passive",
+    "footprint": "Capacitor_SMD:C_0805_2012Metric",
+    "package": "0805",
+    "datasheet_url": "https://www.murata.com/",
+    "unit_cost": 0.08,
+    "description": "X5R 10µF ceramic capacitor, 10V",
+    "specs": [
+      ["Value", "10 µF ±20%"],
+      ["Voltage", "10 V"],
+      ["Dielectric", "X5R"]
+    ],
+    "tags": ["capacitor", "10uf", "0805"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Capacitor_SMD:C_0805_2012Metric"
+  },
+  {
+    "id": "cap-470uf-elec",
+    "name": "Electrolytic 470µF",
+    "category": "passive",
+    "footprint": "Capacitor_THT:CP_Radial_D8.0mm_P3.50mm",
+    "package": "D8×10 mm",
+    "datasheet_url": "https://www.nichicon.co.jp/",
+    "unit_cost": 0.14,
+    "description": "Aluminum electrolytic bulk cap, 470µF 25V",
+    "specs": [
+      ["Value", "470 µF"],
+      ["Voltage", "25 V"],
+      ["ESR", "0.09 Ω"]
+    ],
+    "tags": ["capacitor", "electrolytic", "bulk", "470uf"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Capacitor_THT:CP_Radial_D8.0mm_P3.50mm"
+  },
+  {
+    "id": "res-10k-0603",
+    "name": "Resistor 10kΩ",
+    "category": "passive",
+    "footprint": "Resistor_SMD:R_0603_1608Metric",
+    "package": "0603",
+    "datasheet_url": "https://www.yageo.com/",
+    "unit_cost": 0.01,
+    "description": "Thick film resistor 10kΩ ±1%, for pull-ups",
+    "specs": [
+      ["Value", "10 kΩ ±1%"],
+      ["Power", "0.1 W"],
+      ["Tolerance", "1%"]
+    ],
+    "tags": ["resistor", "10k", "pull-up", "0603"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Resistor_SMD:R_0603_1608Metric"
+  },
+  {
+    "id": "res-330r-0603",
+    "name": "Resistor 330Ω",
+    "category": "passive",
+    "footprint": "Resistor_SMD:R_0603_1608Metric",
+    "package": "0603",
+    "datasheet_url": "https://www.yageo.com/",
+    "unit_cost": 0.01,
+    "description": "Thick film resistor 330Ω ±1%, LED current limiting",
+    "specs": [
+      ["Value", "330 Ω ±1%"],
+      ["Power", "0.1 W"],
+      ["Tolerance", "1%"]
+    ],
+    "tags": ["resistor", "330", "led", "current-limit", "0603"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Resistor_SMD:R_0603_1608Metric"
+  },
+  {
+    "id": "res-4k7-0603",
+    "name": "Resistor 4.7kΩ",
+    "category": "passive",
+    "footprint": "Resistor_SMD:R_0603_1608Metric",
+    "package": "0603",
+    "datasheet_url": "https://www.yageo.com/",
+    "unit_cost": 0.01,
+    "description": "Thick film resistor 4.7kΩ ±1%, I²C pull-up",
+    "specs": [
+      ["Value", "4.7 kΩ ±1%"],
+      ["Power", "0.1 W"],
+      ["Tolerance", "1%"]
+    ],
+    "tags": ["resistor", "4k7", "i2c", "pull-up", "0603"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Resistor_SMD:R_0603_1608Metric"
+  },
+  {
+    "id": "led-red-0805",
+    "name": "LED Red 0805",
+    "category": "passive",
+    "footprint": "LED_SMD:LED_0805_2012Metric",
+    "package": "0805",
+    "datasheet_url": "https://www.kingbright.com/",
+    "unit_cost": 0.05,
+    "description": "Red indicator LED, 0805, 20mA, 630nm",
+    "specs": [
+      ["Vf", "2.0 V"],
+      ["If", "20 mA"],
+      ["Wavelength", "630 nm"]
+    ],
+    "tags": ["led", "red", "indicator", "0805", "light"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "LED_SMD:LED_0805_2012Metric"
+  },
+  {
+    "id": "led-green-0805",
+    "name": "LED Green 0805",
+    "category": "passive",
+    "footprint": "LED_SMD:LED_0805_2012Metric",
+    "package": "0805",
+    "datasheet_url": "https://www.kingbright.com/",
+    "unit_cost": 0.05,
+    "description": "Green indicator LED, 0805, 20mA, 525nm",
+    "specs": [
+      ["Vf", "2.1 V"],
+      ["If", "20 mA"],
+      ["Wavelength", "525 nm"]
+    ],
+    "tags": ["led", "green", "indicator", "0805", "light"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "LED_SMD:LED_0805_2012Metric"
+  },
+  {
+    "id": "n-mosfet-2n7000",
+    "name": "N-MOSFET 2N7000",
+    "category": "transistor",
+    "footprint": "Package_TO_SOT_THT:TO-92_Inline",
+    "package": "TO-92",
+    "datasheet_url": "https://www.onsemi.com/pub/Collateral/2N7000-D.PDF",
+    "unit_cost": 0.12,
+    "description": "N-channel MOSFET, 60V 200mA, low gate threshold",
+    "specs": [
+      ["V_DS", "60 V"],
+      ["I_D", "200 mA"],
+      ["V_GS(th)", "0.8–3 V"],
+      ["R_DS(on)", "1.8 Ω"]
+    ],
+    "tags": ["mosfet", "n-channel", "switch", "transistor", "2n7000"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Package_TO_SOT_THT:TO-92_Inline"
+  },
+  {
+    "id": "npn-2n2222",
+    "name": "NPN BJT 2N2222",
+    "category": "transistor",
+    "footprint": "Package_TO_SOT_THT:TO-92_Inline",
+    "package": "TO-92",
+    "datasheet_url": "https://www.onsemi.com/pub/Collateral/P2N2222A-D.PDF",
+    "unit_cost": 0.08,
+    "description": "NPN bipolar transistor, 40V 600mA, general purpose switch",
+    "specs": [
+      ["V_CEO", "40 V"],
+      ["I_C", "600 mA"],
+      ["h_FE", "75–300"],
+      ["f_T", "300 MHz"]
+    ],
+    "tags": ["npn", "bjt", "transistor", "switch", "2n2222"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Package_TO_SOT_THT:TO-92_Inline"
+  },
+  {
+    "id": "schottky-ss14",
+    "name": "Schottky Diode SS14",
+    "category": "passive",
+    "footprint": "Diode_SMD:D_SMA",
+    "package": "SMA",
+    "datasheet_url": "https://www.littelfuse.com/products/diodes/surface-mount-schottky/ss14.aspx",
+    "unit_cost": 0.04,
+    "description": "1A 40V Schottky diode, reverse polarity protection & flyback",
+    "specs": [
+      ["V_R", "40 V"],
+      ["I_F", "1 A"],
+      ["V_f", "0.5 V @ 1 A"]
+    ],
+    "tags": ["diode", "schottky", "protection", "flyback", "ss14"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Diode_SMD:D_SMA"
+  },
+  {
+    "id": "screw-term-2p",
+    "name": "Screw Terminal 2P",
+    "category": "connector",
+    "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MPT-0,5-2-2.54_1x02_P2.54mm_Horizontal",
+    "package": "5mm pitch",
+    "datasheet_url": "https://www.phoenix-contact.com/",
+    "unit_cost": 0.15,
+    "description": "2-pin screw terminal block, 5mm pitch, for power connections",
+    "specs": [
+      ["Pitch", "5 mm"],
+      ["Wire size", "0.2–1.5 mm²"],
+      ["Current", "10 A"]
+    ],
+    "tags": ["screw", "terminal", "connector", "power", "wiring"],
+    "skidl_lib": "Connector",
+    "kicad_footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MPT-0,5-2-2.54_1x02_P2.54mm_Horizontal"
+  },
+  {
+    "id": "pin-header-1x4",
+    "name": "Pin Header 1×4",
+    "category": "connector",
+    "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical",
+    "package": "THT 2.54mm",
+    "datasheet_url": "",
+    "unit_cost": 0.08,
+    "description": "4-pin through-hole header, 2.54mm pitch",
+    "specs": [
+      ["Pitch", "2.54 mm"],
+      ["Pins", "4"],
+      ["Current", "1 A/pin"]
+    ],
+    "tags": ["header", "connector", "gpio", "debug", "uart"],
+    "skidl_lib": "Connector",
+    "kicad_footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
+  },
+  {
+    "id": "tactile-switch",
+    "name": "Tactile Switch TS-1088",
+    "category": "passive",
+    "footprint": "Button_Switch_SMD:SW_SPST_SKQG_WithStem",
+    "package": "SMD 4P",
+    "datasheet_url": "https://www.ckswitches.com/",
+    "unit_cost": 0.06,
+    "description": "SMD tactile push button, 50mA 12V",
+    "specs": [
+      ["Rating", "50 mA / 12 V"],
+      ["Travel", "0.25 mm"],
+      ["Force", "1.6 N"]
+    ],
+    "tags": ["button", "switch", "tactile", "reset", "smd"],
+    "skidl_lib": "Switch",
+    "kicad_footprint": "Button_Switch_SMD:SW_SPST_SKQG_WithStem"
+  },
+  {
+    "id": "ferrite-600r-0603",
+    "name": "Ferrite Bead 600Ω",
+    "category": "passive",
+    "footprint": "Inductor_SMD:L_0603_1608Metric",
+    "package": "0603",
+    "datasheet_url": "https://product.tdk.com/",
+    "unit_cost": 0.05,
+    "description": "Ferrite bead 600Ω@100MHz, EMI filter for power rails",
+    "specs": [
+      ["Impedance", "600 Ω @ 100 MHz"],
+      ["DCR", "0.3 Ω"],
+      ["I_rated", "300 mA"]
+    ],
+    "tags": ["ferrite", "emi", "filter", "bead", "inductor"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Inductor_SMD:L_0603_1608Metric"
+  },
+  {
+    "id": "bme280",
+    "name": "BME280",
+    "category": "sensor",
+    "footprint": "Sensor_Barometric_Pressure:Bosch_LGA-8_2x2.5mm_P0.65mm_ClockwisePinNumbering",
+    "package": "LGA-8",
+    "datasheet_url": "https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bme280-ds002.pdf",
+    "unit_cost": 3.20,
+    "description": "Temperature, humidity, and pressure sensor. I²C/SPI interface",
+    "specs": [
+      ["Accuracy", "±1 °C / ±3 %RH / ±1 hPa"],
+      ["Supply", "1.7–3.6 V"],
+      ["Interface", "I²C / SPI"],
+      ["Consumption", "3.6 µA @ 1 Hz"]
+    ],
+    "tags": ["bme280", "temperature", "humidity", "pressure", "sensor", "i2c"],
+    "skidl_lib": "Sensor_Barometric_Pressure",
+    "kicad_footprint": "Sensor_Barometric_Pressure:Bosch_LGA-8_2x2.5mm_P0.65mm_ClockwisePinNumbering"
+  },
+  {
+    "id": "ssd1306-oled",
+    "name": "SSD1306 OLED 128×64",
+    "category": "display",
+    "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical",
+    "package": "FPC-4",
+    "datasheet_url": "https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf",
+    "unit_cost": 2.10,
+    "description": "0.96\" OLED display module, I²C address 0x3C",
+    "specs": [
+      ["Resolution", "128 × 64 px"],
+      ["Interface", "I²C 0x3C"],
+      ["Supply", "3.3–5 V"],
+      ["Current", "20 mA avg"]
+    ],
+    "tags": ["oled", "display", "ssd1306", "i2c", "screen"],
+    "skidl_lib": "Display",
+    "kicad_footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
+  },
+  {
+    "id": "usb-esd-protection",
+    "name": "PRTR5V0U2X ESD",
+    "category": "protection",
+    "footprint": "Package_TO_SOT_SMD:SOT-363_SC-70-6",
+    "package": "SOT-363",
+    "datasheet_url": "https://assets.nexperia.com/documents/data-sheet/PRTR5V0U2X.pdf",
+    "unit_cost": 0.22,
+    "description": "ESD protection for USB data lines, dual rail-to-rail",
+    "specs": [
+      ["V_clamp", "5 V"],
+      ["C", "0.35 pF per line"],
+      ["I_PP", "4 A (8/20 µs)"]
+    ],
+    "tags": ["esd", "protection", "usb", "tvs"],
+    "skidl_lib": "Protection",
+    "kicad_footprint": "Package_TO_SOT_SMD:SOT-363_SC-70-6"
+  },
+  {
+    "id": "cc-resistor-5k1",
+    "name": "Resistor 5.1kΩ",
+    "category": "passive",
+    "footprint": "Resistor_SMD:R_0603_1608Metric",
+    "package": "0603",
+    "datasheet_url": "https://www.yageo.com/",
+    "unit_cost": 0.01,
+    "description": "5.1kΩ resistor for USB-C CC pins (5V/0.9A negotiation)",
+    "specs": [
+      ["Value", "5.1 kΩ ±1%"],
+      ["Power", "0.1 W"]
+    ],
+    "tags": ["resistor", "5k1", "usb-c", "cc", "0603"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Resistor_SMD:R_0603_1608Metric"
+  }
+]

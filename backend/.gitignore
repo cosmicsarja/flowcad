@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+tmp/
+*.net
+*.kicad_pcb
+*.step
+*.zip
+*.gbr
+*.drl
