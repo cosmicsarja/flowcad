@@ -67,11 +67,16 @@ function Landing() {
   function startNewProject(promptText: string) {
     const trimmed = promptText.trim();
     if (!trimmed) return;
-    // Generate a local UUID — no backend or Supabase call needed to open the workspace.
-    // The pipeline itself will persist to Supabase when the backend is running.
     const id = crypto.randomUUID();
     resetDesign();
     queuePrompt(trimmed);
+    void navigate({ to: "/project/$id", params: { id } });
+  }
+
+  function openBlankProject() {
+    // Navigate to empty workspace — user will enter prompt there
+    const id = crypto.randomUUID();
+    resetDesign();
     void navigate({ to: "/project/$id", params: { id } });
   }
 
@@ -94,7 +99,7 @@ function Landing() {
             <Button
               size="sm"
               className="text-[12px]"
-              onClick={() => startNewProject(prompt || samplePrompt)}
+              onClick={openBlankProject}
             >
               <Plus className="size-3.5" /> New Project
             </Button>

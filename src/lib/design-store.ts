@@ -71,6 +71,9 @@ export type Generation = {
   templateTitle: string;
 };
 
+export type ArchNode = { id: string; label: string; sub: string; kind: string; x: number; y: number; w: number; h: number };
+export type ArchEdge = { from: string; to: string; net: string };
+
 export type DesignState = {
   meta: {
     title: string;
@@ -90,6 +93,8 @@ export type DesignState = {
   verifying: boolean;
   drcNote: string | null;
   gen: Generation;
+  /** architecture block diagram from Gemini API */
+  architecture: { nodes: ArchNode[]; edges: ArchEdge[] } | null;
   /** which pipeline stages have produced visible output */
   ready: Record<GenStageId, boolean>;
 };
@@ -231,6 +236,7 @@ function blankState(): DesignState {
     chat: [],
     verifying: false,
     drcNote: null,
+    architecture: null,
     gen: { ...freshGeneration("", ""), active: false },
     ready: allReady(false),
   };
@@ -508,6 +514,9 @@ export async function runGeneration(prompt: string, projectId?: string) {
               checks: ds.checks || [],
               confidence: ds.confidence || 0,
               drcNote: ds.drc_note || null,
+              architecture: ds.architecture
+                ? { nodes: ds.architecture.nodes || [], edges: ds.architecture.edges || [] }
+                : state.architecture,
               ready: {
                 requirements: stagesDone.includes("requirements"),
                 architecture: stagesDone.includes("architecture"),
@@ -681,7 +690,7 @@ function findPart(q: string) {
   );
 }
 
-export function runCommand(input: string) {
+export function runCommand(input: string, projectId?: string) {
   const text = input.trim();
   if (!text) return;
   const t = text.toLowerCase();
@@ -691,7 +700,7 @@ export function runCommand(input: string) {
   const resize = /(smaller|bigger|larger|shrink|grow|resize)/.test(t) && /board|pcb|outline|design|it\b/.test(t);
 
   if (isGenerationPrompt(text) && !move && !add && !resize) {
-    void runGeneration(text);
+    void runGeneration(text, projectId);
     return;
   }
 

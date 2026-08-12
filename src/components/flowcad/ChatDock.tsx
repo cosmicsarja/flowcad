@@ -4,9 +4,11 @@ import { suggestions } from "@/lib/flowcad-data";
 import { runCommand, useDesign } from "@/lib/design-store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useParams } from "@tanstack/react-router";
 
 export function ChatDock() {
   const d = useDesign();
+  const { id: projectId } = useParams({ strict: false });
   const [value, setValue] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -16,7 +18,7 @@ export function ChatDock() {
 
   const send = (text: string) => {
     if (!text.trim()) return;
-    runCommand(text);
+    runCommand(text, projectId as string);
     setValue("");
   };
 

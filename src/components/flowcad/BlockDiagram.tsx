@@ -22,9 +22,10 @@ export const blockToRef: Record<string, string> = {
   oled: "C7",
 };
 
-function edge(fromId: string, toId: string) {
-  const a = blocks.find((b) => b.id === fromId)!;
-  const b = blocks.find((b) => b.id === toId)!;
+function edge(fromId: string, toId: string, allBlocks: typeof blocks) {
+  const a = allBlocks.find((b) => b.id === fromId);
+  const b = allBlocks.find((b) => b.id === toId);
+  if (!a || !b) return { d: "", lx: 0, ly: 0 };
   const x1 = a.x + a.w;
   const y1 = a.y + a.h / 2;
   const x2 = b.x;
@@ -35,20 +36,26 @@ function edge(fromId: string, toId: string) {
 
 export function BlockDiagram() {
   const d = useDesign();
+
+  // Use dynamic architecture from API if available, otherwise fallback to static
+  const renderBlocks = d.architecture?.nodes.length ? d.architecture.nodes : blocks;
+  const renderConns = d.architecture?.edges.length ? d.architecture.edges : connections;
+
   return (
     <CadCanvas
       viewBox="0 0 900 440"
       onBackgroundClick={() => selectPart(null)}
       statusLeft={
         <span className="label-mono rounded border border-border bg-panel/80 px-2 py-1">
-          ARCHITECTURE · {blocks.length} functional blocks
+          ARCHITECTURE · {renderBlocks.length} functional blocks
         </span>
       }
     >
       {() => (
         <>
-          {connections.map((c) => {
-            const e = edge(c.from, c.to);
+          {renderConns.map((c) => {
+            const e = edge(c.from, c.to, renderBlocks as typeof blocks);
+            if (!e.d) return null;
             return (
               <g key={`${c.from}-${c.to}`}>
                 <path d={e.d} fill="none" className="trace-flow stroke-primary/70" strokeWidth="1.6" />
@@ -73,14 +80,16 @@ export function BlockDiagram() {
             );
           })}
 
-          {blocks.map((b) => {
-            const active = d.selected === blockToRef[b.id];
+          {renderBlocks.map((b) => {
+            // "U1 · Wi-Fi MCU" -> "U1"
+            const ref = b.sub ? b.sub.split(" ")[0] : null;
+            const active = d.selected === ref;
             return (
               <g
                 key={b.id}
                 onPointerDown={(e) => {
                   e.stopPropagation();
-                  selectPart(blockToRef[b.id] ?? null);
+                  selectPart(ref);
                 }}
                 className="cursor-pointer transition-opacity hover:opacity-90"
               >
@@ -91,7 +100,7 @@ export function BlockDiagram() {
                   height={b.h}
                   rx={8}
                   strokeWidth={active ? 2 : 1.3}
-                  className={cn(kindTone[b.kind], active && "stroke-teal fill-teal/18")}
+                  className={cn(kindTone[b.kind] || kindTone.io, active && "stroke-teal fill-teal/18")}
                 />
                 <text
                   x={b.x + b.w / 2}
