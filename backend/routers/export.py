@@ -31,3 +31,13 @@ def endpoint_download(project_id: str):
         raise HTTPException(404, detail="Export not found — run /export first")
     return FileResponse(zip_path, media_type="application/zip",
                         filename=f"flowcad_{project_id[:8]}.zip")
+
+
+@router.get("/export/model/{project_id}")
+def endpoint_model(project_id: str):
+    """Serve the GLB 3D model directly for the frontend viewer."""
+    from core.config import settings
+    glb_path = os.path.join(settings.work_dir, project_id, "export", "board.glb")
+    if not os.path.exists(glb_path):
+        raise HTTPException(404, detail="3D model not found")
+    return FileResponse(glb_path, media_type="model/gltf-binary")

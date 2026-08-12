@@ -28,17 +28,7 @@ from services import supabase_client as db
 
 logger = logging.getLogger(__name__)
 
-_LIBRARY_PATH = Path(
-    os.environ.get(
-        "COMPONENT_LIB_PATH",
-        Path(__file__).parent.parent / "component_library" / "components.json",
-    )
-)
-
-
-def _load_library() -> list[dict[str, Any]]:
-    with open(_LIBRARY_PATH) as f:
-        return json.load(f)
+from services.kicad_library import get_library
 
 
 SYSTEM_PROMPT = """\
@@ -74,12 +64,31 @@ Rules:
 def select_components(inp: ComponentsInput) -> ComponentsOutput:
     arch = inp.architecture
     reqs = inp.requirements
-    library = _load_library()
+    library_subset = []
+    seen_ids = set()
+    lib = get_library()
+
+    for node in arch.nodes:
+        # Provide more context to the search (e.g. "USB-C 5V IN")
+        query = f"{node.label} {node.sub}"
+        # We mapped node.kind directly to category
+        candidates = lib.search_components(query, category=node.kind, limit=10)
+        for c in candidates:
+            if c["id"] not in seen_ids:
+                seen_ids.add(c["id"])
+                library_subset.append(c)
+                
+    # Also include some common passives so the LLM can add them (decoupling caps, resistors)
+    for q in ["100nF capacitor", "10uF capacitor", "10k resistor", "330 resistor"]:
+        for c in lib.search_components(q, category="passive", limit=3):
+            if c["id"] not in seen_ids:
+                seen_ids.add(c["id"])
+                library_subset.append(c)
 
     logger.info(
-        "Selecting components for %d nodes from library of %d parts",
+        "Selecting components for %d nodes from dynamic candidate pool of %d parts",
         len(arch.nodes),
-        len(library),
+        len(library_subset),
     )
 
     # Build compact library summary for the LLM context
@@ -88,11 +97,10 @@ def select_components(inp: ComponentsInput) -> ComponentsOutput:
             "id": c["id"],
             "name": c["name"],
             "category": c["category"],
-            "package": c["package"],
-            "unit_cost": c["unit_cost"],
-            "tags": c["tags"],
+            "footprint": c["footprint"],
+            "description": c["description"],
         }
-        for c in library
+        for c in library_subset
     ]
 
     user_prompt = f"""Architecture nodes:
@@ -115,8 +123,8 @@ Select components and return JSON."""
     )
 
     # Build lookup maps
-    lib_by_id = {c["id"]: c for c in library}
-    lib_by_name = {c["name"].lower(): c for c in library}
+    lib_by_id = {c["id"]: c for c in library_subset}
+    lib_by_name = {c["name"].lower(): c for c in library_subset}
 
     selections: list[ComponentSelection] = []
     refs_used: set[str] = set()
@@ -139,24 +147,22 @@ Select components and return JSON."""
             logger.warning("LLM selected unknown library_id '%s' — skipping", lib_id)
             continue
 
-        ref = sel.get("ref", "U")
-        # Make ref unique
-        base = "".join(c for c in ref if not c.isdigit()) or "U"
-        ref = unique_ref(base)
-
-        selections.append(ComponentSelection(
-            node_id=sel.get("node_id", ""),
-            ref=ref,
-            name=comp["name"],
-            footprint=comp["footprint"],
-            package=comp["package"],
-            datasheet_url=comp["datasheet_url"],
-            unit_cost=comp["unit_cost"],
-            qty=int(sel.get("qty", 1)),
-            justification=sel.get("justification", ""),
-            specs=comp.get("specs", []),
-            description=comp.get("description", ""),
-        ))
+        selections.append(
+            ComponentSelection(
+                node_id=sel.get("node_id", ""),
+                ref=unique_ref(sel.get("ref", "U")),
+                name=comp["name"],
+                library=comp.get("lib", "Device"),
+                footprint=comp.get("footprint") or "Device:R", # Fallback to resistor if empty
+                package=comp.get("package", "SMD"),
+                datasheet_url=comp.get("datasheet", ""),
+                unit_cost=comp.get("unit_cost", 0.10),
+                qty=int(sel.get("qty", 1)),
+                justification=sel.get("justification", ""),
+                specs=comp.get("specs", []),
+                description=comp.get("description", ""),
+            )
+        )
 
     bom_total = sum(s.unit_cost * s.qty for s in selections)
 
@@ -185,6 +191,7 @@ Select components and return JSON."""
             "qty": s.qty,
             "justification": s.justification,
             "specs": json.dumps(s.specs),
+            "library": s.library,
         })
 
     logger.info(

@@ -78,49 +78,106 @@ def place_and_route(inp: PlaceRouteInput) -> PlaceRouteOutput:
 
 
 def _place_via_pcbnew(pcb_path: str, bc: BoardConstraints) -> None:
-    """Grid-based placement using pcbnew Python API."""
-    if KICAD_SCRIPTING:
-        import sys
-        sys.path.insert(0, KICAD_SCRIPTING)
+    """Intelligent placement using pcbnew Python API via subprocess."""
+    script = f"""
+import pcbnew
+import sys
+import math
 
-    import pcbnew  # type: ignore
-
-    board = pcbnew.LoadBoard(pcb_path)
+try:
+    board = pcbnew.LoadBoard('{pcb_path}')
+    
+    # 1. Net Classes: Set wider traces for Power nets
+    nc_power = pcbnew.NETCLASS('Power')
+    nc_power.SetTrackWidth(pcbnew.FromMM(0.5)) # Wider for power
+    nc_power.SetClearance(pcbnew.FromMM(0.2))
+    board.GetDesignSettings().GetNetClasses().Add(nc_power)
+    
+    for net in board.GetNetsByName().values():
+        name = net.GetNetname().upper()
+        if 'V' in name or 'GND' in name or 'POWER' in name:
+            net.SetNetClass(nc_power)
+            
+    # 2. Intelligent Placement
+    margin = pcbnew.FromMM(3.0)
+    gap = pcbnew.FromMM(2.0)
+    board_w = pcbnew.FromMM({bc.max_width_mm})
+    board_h = pcbnew.FromMM({bc.max_height_mm})
+    
     footprints = list(board.GetFootprints())
-
-    def area(fp):
-        bb = fp.GetBoundingBox()
-        return bb.GetWidth() * bb.GetHeight()
-
-    footprints.sort(key=area, reverse=True)
-
-    margin_nm = pcbnew.FromMM(3.0)   # 3mm board edge keepout
-    gap_nm = pcbnew.FromMM(1.5)      # 1.5mm gap between parts
-    board_w = pcbnew.FromMM(bc.max_width_mm)
-    board_h = pcbnew.FromMM(bc.max_height_mm)
-
-    x = margin_nm
-    y = margin_nm
-    row_h = 0
-
+    
+    # Categorize components
+    connectors = []
+    ics = []
+    caps = []
+    others = []
+    
     for fp in footprints:
+        ref = fp.GetReference().upper()
+        if ref.startswith('J') or ref.startswith('P'):
+            connectors.append(fp)
+        elif ref.startswith('U'):
+            ics.append(fp)
+        elif ref.startswith('C'):
+            caps.append(fp)
+        else:
+            others.append(fp)
+            
+    # Place connectors on the left edge
+    cy = margin
+    for fp in connectors:
         bb = fp.GetBoundingBox()
-        fp_w = bb.GetWidth()
-        fp_h = bb.GetHeight()
+        fp.SetPosition(pcbnew.VECTOR2I(margin + bb.GetWidth()//2, cy + bb.GetHeight()//2))
+        cy += bb.GetHeight() + gap
+        
+    # Place ICs in the center
+    cx = pcbnew.FromMM({bc.max_width_mm} / 2)
+    cy = margin
+    for fp in ics:
+        bb = fp.GetBoundingBox()
+        fp.SetPosition(pcbnew.VECTOR2I(cx, cy + bb.GetHeight()//2))
+        cy += bb.GetHeight() + gap * 2
+        
+    # Place decoupling caps near ICs (find closest IC by net or just geometry)
+    for cap in caps:
+        placed = False
+        # Simplified: just place near the first IC for now
+        if ics:
+            ic = ics[0]
+            ic_pos = ic.GetPosition()
+            cap.SetPosition(pcbnew.VECTOR2I(ic_pos.x - pcbnew.FromMM(5.0), ic_pos.y))
+            placed = True
+        if not placed:
+            others.append(cap)
+            
+    # Place others in a grid on the right side
+    ox = pcbnew.FromMM({bc.max_width_mm}) - margin
+    oy = margin
+    row_h = 0
+    for fp in others:
+        bb = fp.GetBoundingBox()
+        if oy + bb.GetHeight() > board_h - margin:
+            ox -= pcbnew.FromMM(10.0)
+            oy = margin
+        fp.SetPosition(pcbnew.VECTOR2I(ox - bb.GetWidth()//2, oy + bb.GetHeight()//2))
+        oy += bb.GetHeight() + gap
+        row_h = max(row_h, bb.GetHeight())
 
-        if x + fp_w > board_w - margin_nm and row_h > 0:
-            x = margin_nm
-            y += row_h + gap_nm
-            row_h = 0
-
-        if y + fp_h > board_h - margin_nm:
-            y = margin_nm
-
-        fp.SetPosition(pcbnew.VECTOR2I(x + fp_w // 2, y + fp_h // 2))
-        x += fp_w + gap_nm
-        row_h = max(row_h, fp_h)
-
-    pcbnew.SaveBoard(pcb_path, board)
+    pcbnew.SaveBoard('{pcb_path}', board)
+except Exception as e:
+    print(f"Error: {{e}}", file=sys.stderr)
+    sys.exit(1)
+"""
+    script_path = pcb_path + ".place.py"
+    Path(script_path).write_text(script)
+    
+    kicad_python = "/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/Current/bin/python3"
+    if not os.path.exists(kicad_python):
+        kicad_python = "python3"
+        
+    res = subprocess.run([kicad_python, script_path], capture_output=True, text=True)
+    if res.returncode != 0:
+        raise RuntimeError(f"pcbnew placement script failed: {res.stderr}")
 
 
 def _place_via_text_patch(pcb_path: str, bc: BoardConstraints) -> None:

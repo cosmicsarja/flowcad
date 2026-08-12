@@ -54,7 +54,7 @@ class RequirementsOutput(BaseModel):
 # Stage 2 — Architecture
 # ─────────────────────────────────────────────────────────────────────────────
 
-BlockKind = Literal["power", "mcu", "sensor", "actuator", "io"]
+BlockKind = Literal["power", "mcu", "sensor", "actuator", "io", "passive"]
 
 
 class ArchitectureNode(BaseModel):
@@ -91,6 +91,7 @@ class ComponentSelection(BaseModel):
     ref: str
     name: str
     footprint: str
+    library: str = ""
     package: str
     datasheet_url: str
     unit_cost: float

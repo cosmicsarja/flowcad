@@ -34,7 +34,7 @@ Schema:
       "id": "<short_id, e.g. usb, reg, mcu, dht22, relay>",
       "label": "<human label, e.g. USB-C 5V IN>",
       "sub": "<ref · value, e.g. J1 · 5V/2A>",
-      "kind": "<one of: power | mcu | sensor | actuator | io>",
+      "kind": "<one of: power | mcu | sensor | actuator | io | passive>",
       "x": <integer, layout x>,
       "y": <integer, layout y>,
       "w": <integer, box width, e.g. 150>,
@@ -67,8 +67,8 @@ Electrical rules:
 
 def _layout_nodes(nodes: list[dict]) -> list[dict]:
     """Apply deterministic layout positions if the LLM didn't set them."""
-    x_map = {"power": 24, "mcu": 424, "sensor": 674, "actuator": 674, "io": 674}
-    y_base = {"power": 180, "mcu": 180, "sensor": 60, "actuator": 60, "io": 60}
+    x_map = {"power": 24, "mcu": 424, "sensor": 674, "actuator": 674, "io": 674, "passive": 674}
+    y_base = {"power": 180, "mcu": 180, "sensor": 60, "actuator": 60, "io": 60, "passive": 60}
     counters: dict[str, int] = {}
 
     for node in nodes:

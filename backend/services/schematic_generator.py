@@ -111,8 +111,8 @@ def _generate_with_skidl(
         try:
             # Try to instantiate from KiCad library
             part = skidl.Part(
-                comp.footprint.split(":")[0] if ":" in comp.footprint else "Device",
-                comp.name.split()[0],
+                comp.library or "Device",
+                comp.name,
                 footprint=comp.footprint,
                 dest=skidl.NETLIST,
             )

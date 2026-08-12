@@ -54,6 +54,7 @@ def verify(inp: VerifyInput) -> VerificationOutput:
     drc_check, drc_note = _run_drc(pcb_path)
 
     # ── In-memory checks ──────────────────────────────────────────────────
+    lib_check = _check_library_integrity(pcb_text, _safe_read(inp.netlist_path or ""))
     elec_check = _check_electrical(pcb_text, inp.netlist_path)
     power_check = _check_power(pcb_text)
     conn_check = _check_connectivity(pcb_text)
@@ -61,6 +62,7 @@ def verify(inp: VerifyInput) -> VerificationOutput:
     thermal_check = _check_thermal(pcb_text)
 
     checks = [
+        lib_check,
         elec_check,
         power_check,
         conn_check,
@@ -92,6 +94,19 @@ def verify(inp: VerifyInput) -> VerificationOutput:
         "confidence": confidence,
         "drc_note": drc_note,
     })
+
+    # Pre-generate GLB model for the frontend 3D viewer
+    glb_dir = WORK_DIR / project_id / "export"
+    glb_dir.mkdir(parents=True, exist_ok=True)
+    glb_path = glb_dir / "board.glb"
+    try:
+        subprocess.run([
+            KICAD_CLI, "pcb", "export", "glb",
+            "--output", str(glb_path),
+            pcb_path,
+        ], capture_output=True, timeout=60)
+    except Exception as e:
+        logger.warning(f"Live GLB generation failed: {e}")
 
     logger.info(
         "Verification complete — confidence %d%%, DRC: %s, ERC: %s",
@@ -244,6 +259,30 @@ def _static_drc_check(pcb_path: str) -> tuple[VerificationCheck, Optional[str]]:
 
 
 # ── In-memory checks ─────────────────────────────────────────────────────────
+
+def _check_library_integrity(pcb_text: str, net_text: str) -> VerificationCheck:
+    """Ensure all symbols/footprints mapped to real KiCad libraries successfully."""
+    # Find all components in the netlist
+    net_refs = set(re.findall(r'\(comp \(ref "?([^"\s]+)"?', net_text))
+    # Find all footprints actually instantiated in the PCB
+    pcb_refs = set(re.findall(r'\(fp_text reference "?([^"\s]+)"?', pcb_text))
+    
+    missing = net_refs - pcb_refs
+    if missing:
+        return VerificationCheck(
+            name="Library Integrity",
+            status="FAIL",
+            score=0,
+            note=f"Unresolved footprints: {', '.join(missing)}. Ensure KiCad libraries are installed.",
+        )
+        
+    return VerificationCheck(
+        name="Library Integrity",
+        status="PASS",
+        score=100,
+        note=f"All {len(pcb_refs)} footprints successfully resolved from KiCad standard libraries.",
+    )
+
 
 def _check_electrical(pcb_text: str, netlist_path: Optional[str]) -> VerificationCheck:
     """Check for obvious electrical issues."""

@@ -57,37 +57,52 @@ def generate_pcb(inp: PcbInput) -> PcbOutput:
 
 
 def _generate_via_pcbnew(netlist_path: str, pcb_path: str, bc: BoardConstraints) -> None:
-    """Use pcbnew Python bindings to import netlist → PCB."""
-    if KICAD_SCRIPTING:
-        import sys
-        sys.path.insert(0, KICAD_SCRIPTING)
+    """Use KiCad's bundled Python to invoke pcbnew API natively."""
+    # Write a temporary script to execute in the KiCad python environment
+    script = f"""
+import pcbnew
+import sys
 
-    import pcbnew  # type: ignore
-
+try:
     board = pcbnew.CreateEmptyBoard()
-
-    # Set design rules
     ds = board.GetDesignSettings()
-    ds.m_MinTrackWidth = pcbnew.FromMM(bc.min_trace_mm)
-    ds.m_MinClearance = pcbnew.FromMM(bc.min_clearance_mm)
-    ds.m_CopperLayerCount = bc.layers
+    ds.m_MinTrackWidth = pcbnew.FromMM({bc.min_trace_mm})
+    ds.m_MinClearance = pcbnew.FromMM({bc.min_clearance_mm})
+    ds.m_CopperLayerCount = {bc.layers}
 
-    # Board outline rectangle
+    # Outline
     outline = pcbnew.PCB_SHAPE(board)
     outline.SetShape(pcbnew.SHAPE_T_RECT)
     outline.SetStart(pcbnew.VECTOR2I(pcbnew.FromMM(0), pcbnew.FromMM(0)))
-    outline.SetEnd(pcbnew.VECTOR2I(pcbnew.FromMM(bc.max_width_mm), pcbnew.FromMM(bc.max_height_mm)))
+    outline.SetEnd(pcbnew.VECTOR2I(pcbnew.FromMM({bc.max_width_mm}), pcbnew.FromMM({bc.max_height_mm})))
     outline.SetLayer(pcbnew.Edge_Cuts)
     outline.SetWidth(pcbnew.FromMM(0.05))
     board.Add(outline)
 
-    # Import netlist
+    # Load Netlist
     netlist = pcbnew.NETLIST()
-    reader = pcbnew.KICAD_NETLIST_READER(netlist_path, netlist)
+    reader = pcbnew.KICAD_NETLIST_READER('{netlist_path}', netlist)
     reader.LoadNetlist()
+    
+    # Import components (this will read from the actual KiCad footprint libraries!)
     board.UpdateComponents(netlist, board)
 
-    pcbnew.SaveBoard(pcb_path, board)
+    pcbnew.SaveBoard('{pcb_path}', board)
+except Exception as e:
+    print(f"Error: {{e}}", file=sys.stderr)
+    sys.exit(1)
+"""
+    script_path = netlist_path + ".import.py"
+    Path(script_path).write_text(script)
+    
+    kicad_python = "/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/Current/bin/python3"
+    if not os.path.exists(kicad_python):
+        # Fallback to system python (might have pcbnew installed via package manager)
+        kicad_python = "python3"
+        
+    res = subprocess.run([kicad_python, script_path], capture_output=True, text=True)
+    if res.returncode != 0:
+        raise RuntimeError(f"pcbnew script failed: {res.stderr}")
 
 
 def _generate_via_cli(netlist_path: str, pcb_path: str, bc: BoardConstraints) -> None:

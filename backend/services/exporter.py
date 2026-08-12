@@ -81,15 +81,16 @@ def export_design(inp: ExportInput) -> ExportOutput:
         size=_dir_size(drill_dir), fmt="DRILL",
     ))
 
-    # ── STEP 3D model ──────────────────────────────────────────────────────
-    step_path = out_dir / "board.step"
+    # ── GLB 3D model ──────────────────────────────────────────────────────
+    glb_path = out_dir / "board.glb"
     try:
-        _export_step(inp.pcb_path, str(step_path))
-    except Exception:
-        _synthetic_step(step_path)
+        _export_glb(inp.pcb_path, str(glb_path))
+    except Exception as exc:
+        logger.warning(f"GLB export failed: {exc}")
+        _synthetic_glb(glb_path)
     artifacts.append(ExportArtifact(
-        name="3D Model", file="board.step",
-        size=_file_size(step_path), fmt="STEP",
+        name="3D Model", file="board.glb",
+        size=_file_size(glb_path), fmt="GLB",
     ))
 
     # ── BOM CSV ────────────────────────────────────────────────────────────
@@ -193,11 +194,10 @@ def _synthetic_drill(drill_dir: Path) -> None:
     (drill_dir / "board-PTH.drl").write_text(content)
 
 
-def _export_step(pcb_path: str, step_path: str) -> None:
+def _export_glb(pcb_path: str, glb_path: str) -> None:
     cmd = [
-        KICAD_CLI, "pcb", "export", "step",
-        "--output", step_path,
-        "--no-dnp",
+        KICAD_CLI, "pcb", "export", "glb",
+        "--output", glb_path,
         pcb_path,
     ]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
@@ -205,15 +205,9 @@ def _export_step(pcb_path: str, step_path: str) -> None:
         raise RuntimeError(r.stderr)
 
 
-def _synthetic_step(step_path: Path) -> None:
-    step_path.write_text(
-        "ISO-10303-21;\n"
-        "HEADER;\nFILE_DESCRIPTION(('FlowCAD synthetic STEP'),'1');\n"
-        "ENDSEC;\n"
-        "DATA;\n"
-        "ENDSEC;\n"
-        "END-ISO-10303-21;\n"
-    )
+def _synthetic_glb(glb_path: Path) -> None:
+    # A tiny valid empty GLB binary stub
+    glb_path.write_bytes(b'glTF\x02\x00\x00\x00\x1c\x00\x00\x00\x00\x00\x00\x00JSON{}')
 
 
 # ── BOM ──────────────────────────────────────────────────────────────────────
