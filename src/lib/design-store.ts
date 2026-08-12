@@ -538,6 +538,46 @@ export async function runGeneration(prompt: string, projectId?: string) {
 
         if (tick) window.clearInterval(tick);
         if (pollTick) window.clearInterval(pollTick);
+
+        // Apply final state from the backend payload (in case polling missed the last beat)
+        const finalData = await res.json();
+        if (finalData && finalData.design_state) {
+           const ds = finalData.design_state;
+           const stagesDone: string[] = ds.stages_done || [];
+           const currentStage: string = ds.stage || "export";
+           set({
+             gen: {
+               ...state.gen,
+               stages: state.gen.stages.map((s) => ({
+                 ...s,
+                 status: stagesDone.includes(s.id) ? ("done" as const)
+                       : s.id === currentStage ? ("active" as const)
+                       : ("pending" as const),
+               })),
+             },
+             parts: ds.parts || [],
+             nets: ds.nets || [],
+             board: ds.board || { w: 60, h: 45 },
+             checks: ds.checks || [],
+             confidence: ds.confidence || 0,
+             drcNote: ds.drc_note || null,
+             architecture: ds.architecture
+               ? { nodes: ds.architecture.nodes || [], edges: ds.architecture.edges || [] }
+               : state.architecture,
+             ready: {
+               requirements: stagesDone.includes("requirements"),
+               architecture: stagesDone.includes("architecture"),
+               components: stagesDone.includes("components"),
+               schematic: stagesDone.includes("schematic"),
+               placement: stagesDone.includes("placement"),
+               routing: stagesDone.includes("routing"),
+               verification: stagesDone.includes("verification"),
+               "3d": stagesDone.includes("verification"),
+               export: stagesDone.includes("export"),
+             },
+           });
+        }
+
         const total = Math.round(performance.now() - started);
         revalidate({ verifying: false, gen: { ...state.gen, active: false, elapsedMs: total, generatedInMs: total } });
         pushChat("system", `✅ Generation completed via API in ${(total / 1000).toFixed(1)} s.`);

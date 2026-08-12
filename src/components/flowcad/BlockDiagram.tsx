@@ -89,7 +89,7 @@ export function BlockDiagram() {
                 key={b.id}
                 onPointerDown={(e) => {
                   e.stopPropagation();
-                  selectPart(ref);
+                  selectPart(ref ?? null);
                 }}
                 className="cursor-pointer transition-opacity hover:opacity-90"
               >
@@ -100,7 +100,7 @@ export function BlockDiagram() {
                   height={b.h}
                   rx={8}
                   strokeWidth={active ? 2 : 1.3}
-                  className={cn(kindTone[b.kind] || kindTone.io, active && "stroke-teal fill-teal/18")}
+                  className={cn(kindTone[b.kind] || kindTone["io"], active && "stroke-teal fill-teal/18")}
                 />
                 <text
                   x={b.x + b.w / 2}

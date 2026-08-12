@@ -177,9 +177,15 @@ def generate_project(
     # ── 1. Check usage limit ─────────────────────────────────────────────────
     _check_usage_limit(resolved_user)
 
-    # ── 2. Mark project as generating ────────────────────────────────────────
-    _set_project_status(project_id, GenerationStatus.generating)
-
+    # ── 2. Ensure project exists and mark as generating ──────────────────────
+    db.upsert("projects", {
+        "id": project_id,
+        "prompt": body.prompt,
+        "title": body.title or "New Project",
+        "status": GenerationStatus.generating.value,
+        "user_id": resolved_user,
+        "updated_at": _now_iso(),
+    })
     design_state: dict = {
         "prompt": body.prompt,
         "stage": "requirements",
@@ -201,7 +207,7 @@ def generate_project(
         # ── Stage 2: Architecture ─────────────────────────────────────────────
         logger.info("[%s] Stage 2 — architecture", project_id)
         arch = generate_architecture(reqs)
-        design_state["architecture"] = arch.model_dump()
+        design_state["architecture"] = arch.model_dump(by_alias=True)
         design_state["stages_done"].append("architecture")
         design_state["stage"] = "components"
         _write_design_state(project_id, design_state)
