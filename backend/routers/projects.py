@@ -129,6 +129,39 @@ def _write_design_state(project_id: str, design_state: dict) -> None:
 # Orchestration endpoint
 # ─────────────────────────────────────────────────────────────────────────────
 
+from pydantic import BaseModel
+
+class CreateProjectInput(BaseModel):
+    prompt: str
+    user_id: Optional[str] = None
+    title: Optional[str] = "New Project"
+
+@router.post("/projects", response_model=ProjectRow)
+def create_project(body: CreateProjectInput):
+    """Creates a new project row in Supabase and returns it."""
+    project_id = str(uuid.uuid4())
+    resolved_user = _resolve_user_id(body.user_id)
+    
+    # Check usage limit before creating project
+    _check_usage_limit(resolved_user)
+    
+    data = {
+        "id": project_id,
+        "prompt": body.prompt,
+        "title": body.title,
+        "status": GenerationStatus.pending.value,
+        "design_state": {},
+    }
+    if resolved_user:
+        data["user_id"] = resolved_user
+        
+    inserted = db.insert("projects", data)
+    if not inserted:
+        # Fallback to returning a mocked row if Supabase is down
+        return ProjectRow(**data)
+    
+    return ProjectRow(**inserted[0])
+
 @router.post("/projects/{project_id}/generate", response_model=ProjectRow)
 def generate_project(
     project_id: str,

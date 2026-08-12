@@ -1,18 +1,12 @@
 import { useSyncExternalStore } from "react";
-import {
-  checks as initialChecks,
-  chatHistory,
-  type Check,
-  type ChatEntry,
-} from "./flowcad-data";
+import { type Check, type ChatEntry } from "./flowcad-data";
 import {
   SYM_GEO,
-  matchTemplate,
-  templates,
-  type BlockKind,
   type SymKind,
+  type BlockKind,
   type Template,
 } from "./templates";
+import { supabase } from "@/integrations/supabase/client";
 
 export type Part = {
   ref: string;
@@ -63,7 +57,7 @@ export type GenStage = {
   id: GenStageId;
   label: string;
   running: string;
-  status: "pending" | "active" | "done";
+  status: "pending" | "active" | "done" | "warning";
   snippet?: string;
 };
 
@@ -224,27 +218,24 @@ function freshGeneration(prompt = "", title = ""): Generation {
   };
 }
 
-const defaultTemplate = templates.find((t) => t.id === "esp32-irrigation")!;
-const base = buildDesign(defaultTemplate);
+function blankState(): DesignState {
+  return {
+    meta: { title: "", slug: "", summary: "", prompt: "", layers: 2, requirements: [] },
+    board: { w: 60, h: 45 },
+    parts: [],
+    nets: [],
+    selected: null,
+    checks: [],
+    confidence: 0,
+    chat: [],
+    verifying: false,
+    drcNote: null,
+    gen: { ...freshGeneration("", ""), active: false },
+    ready: allReady(false),
+  };
+}
 
-let state: DesignState = {
-  meta: { ...base.meta, prompt: defaultTemplate.summary },
-  board: base.board,
-  parts: base.parts,
-  nets: base.nets,
-  selected: null,
-  checks: initialChecks.map((c) => ({ ...c })),
-  confidence: 94,
-  chat: chatHistory.map((c) => ({ ...c })),
-  verifying: false,
-  drcNote: null,
-  gen: {
-    ...freshGeneration(defaultTemplate.summary, defaultTemplate.title),
-    stages: STAGE_DEFS.map((s) => ({ id: s.id, label: s.label, running: s.running, status: "done" as const })),
-    generatedInMs: 8400,
-  },
-  ready: allReady(true),
-};
+let state: DesignState = blankState();
 
 const listeners = new Set<() => void>();
 function emit() {
@@ -302,7 +293,7 @@ export function architectureBlocks(s: DesignState = state) {
     actuator: [],
     io: [],
   };
-  withBlock.forEach((p) => cols[p.block!.kind].push(p));
+  withBlock.forEach((p) => (cols[p.block!.kind] ?? []).push(p));
 
   const colX: Record<BlockKind, number> = { power: 30, mcu: 300, sensor: 600, actuator: 600, io: 600 };
   const blocks: Array<{
@@ -318,11 +309,11 @@ export function architectureBlocks(s: DesignState = state) {
 
   let rightY = 30;
   for (const kind of order) {
-    const list = cols[kind];
+    const list = cols[kind] ?? [];
     list.forEach((p, i) => {
       const w = kind === "mcu" ? 200 : 176;
       const h = kind === "mcu" ? 92 : 62;
-      const x = colX[kind];
+      const x = colX[kind] ?? 30;
       const y = kind === "power" ? 60 + i * 110 : kind === "mcu" ? 150 + i * 120 : (rightY += 0) && 0;
       blocks.push({
         ref: p.ref,
@@ -446,11 +437,14 @@ export function isGenerationPrompt(text: string) {
   return /^(design|generate|build|create|make|new board|new design)\b/i.test(text.trim());
 }
 
-export async function runGeneration(prompt: string) {
+export async function runGeneration(prompt: string, projectId?: string) {
+  if (!projectId) {
+     pushChat("system", "⚠️ No project ID provided. Cannot run generation.");
+     return;
+  }
+  
   const token = ++genToken;
   const started = performance.now();
-  const { template, confidence, matched } = matchTemplate(prompt);
-  const built = buildDesign(template);
 
   set({
     selected: null,
@@ -459,77 +453,100 @@ export async function runGeneration(prompt: string) {
     verifying: true,
     drcNote: null,
     ready: allReady(false),
-    gen: { ...freshGeneration(prompt, template.title), active: true },
+    gen: { ...freshGeneration(prompt, "New Project"), active: true },
   });
   pushChat("user", prompt);
 
-  const snippets: Partial<Record<GenStageId, string>> = {
-    requirements: `${template.requirements.length} requirements parsed · intent: ${template.title}`,
-    architecture: `${built.parts.filter((p) => p.block).length} functional blocks resolved`,
-    components: `${built.parts.length} parts selected · $${built.parts
-      .reduce((a, p) => a + p.unit * p.qty, 0)
-      .toFixed(2)} BOM`,
-    schematic: `${built.nets.length} nets drawn · ERC clean`,
-    placement: `${built.parts.length}/${built.parts.length} placed · ${built.board.w} × ${built.board.h} mm`,
-    routing: `${built.nets.length * 2} trace segments · ${template.layers} layers · 0 airwires`,
-    verification: `DRC + ERC complete · confidence ${confidence}%`,
-    "3d": "STEP assembly rendered · 1 view",
-    export: "Gerber X2, drill, BOM and report staged",
-  };
+  let tick: number | undefined;
+  let pollTick: number | undefined;
+  
+  try {
+    tick = window.setInterval(() => {
+      if (genToken !== token) return;
+      set({ gen: { ...state.gen, elapsedMs: performance.now() - started } });
+    }, 100);
 
-  const tick = window.setInterval(() => {
-    if (genToken !== token) return;
-    set({ gen: { ...state.gen, elapsedMs: performance.now() - started } });
-  }, 100);
-
-  for (let i = 0; i < STAGE_DEFS.length; i++) {
-    const def = STAGE_DEFS[i]!;
-    if (genToken !== token) {
-      window.clearInterval(tick);
-      return;
-    }
-    set({
-      gen: {
-        ...state.gen,
-        stages: state.gen.stages.map((s, si) => (si === i ? { ...s, status: "active" } : s)),
-      },
+    // Fire the API call
+    const apiCall = fetch(`http://127.0.0.1:8000/projects/${projectId}/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, user_id: "dev-user" })
     });
-    await wait(def.ms);
-    if (genToken !== token) {
-      window.clearInterval(tick);
-      return;
-    }
 
-    // populate the design panel by panel
-    if (def.id === "components") {
-      set({ board: built.board, parts: built.parts, meta: { ...built.meta, prompt } });
-    }
-    if (def.id === "schematic") set({ nets: built.nets });
+    // Poll Supabase
+    pollTick = window.setInterval(async () => {
+       if (genToken !== token) {
+           clearInterval(pollTick);
+           return;
+       }
+       
+       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       const { data } = await (supabase as any).from("projects").select("status, design_state").eq("id", projectId).single();
+       if (!data) return;
+       
+       const ds = data.design_state || {};
+       
+       // Sync stages
+       const currentStage = ds.stage || "requirements";
+       const stagesDone = ds.stages_done || [];
+       
+       let updatedStages = state.gen.stages.map(s => {
+          if (stagesDone.includes(s.id)) return { ...s, status: "done" };
+          if (s.id === currentStage) return { ...s, status: "active" };
+          return { ...s, status: "pending" };
+       });
+       
+       // Update parts, nets, board as they appear
+       const parts = ds.parts || [];
+       const nets = ds.nets || [];
+       const board = ds.board || { w: 60, h: 45 };
+       const checks = ds.checks || [];
+       
+       set({
+          gen: { ...state.gen, stages: updatedStages as any },
+          parts,
+          nets,
+          board,
+          checks,
+          confidence: ds.confidence || 0,
+          drcNote: ds.drc_note || null,
+          ready: {
+             requirements: stagesDone.includes("requirements"),
+             architecture: stagesDone.includes("architecture"),
+             components: stagesDone.includes("components"),
+             schematic: stagesDone.includes("schematic"),
+             placement: stagesDone.includes("placement"),
+             routing: stagesDone.includes("routing"),
+             verification: stagesDone.includes("verification"),
+             "3d": stagesDone.includes("verification"),
+             export: stagesDone.includes("export")
+          }
+       });
+       
+       if (data.status === "done" || data.status === "failed") {
+          clearInterval(pollTick);
+       }
+    }, 1500);
 
-    set({
-      ready: { ...state.ready, [def.id]: true },
-      gen: {
-        ...state.gen,
-        stages: state.gen.stages.map((s, si) =>
-          si === i ? { ...s, status: "done", snippet: snippets[def.id] ?? "" } : s,
-        ),
-      },
+    const res = await apiCall;
+    if (!res.ok) throw new Error(`API failed: ${res.statusText}`);
+
+    if (tick) window.clearInterval(tick);
+    if (pollTick) window.clearInterval(pollTick);
+    
+    const total = Math.round(performance.now() - started);
+    revalidate({
+      verifying: false,
+      gen: { ...state.gen, active: false, elapsedMs: total, generatedInMs: total },
     });
-    if (def.id === "verification") revalidate({});
+    pushChat("system", `✅ Generation completed via API in ${(total / 1000).toFixed(1)} s.`);
+  } catch (err) {
+    console.error("Pipeline generation failed:", err);
+    if (tick) window.clearInterval(tick);
+    if (pollTick) window.clearInterval(pollTick);
+    set({ verifying: false, gen: { ...state.gen, active: false } });
+    pushChat("system", `⚠️ Generation failed: ${err instanceof Error ? err.message : String(err)}`);
   }
-
-  window.clearInterval(tick);
-  const total = Math.round(performance.now() - started);
-  revalidate({
-    verifying: false,
-    gen: { ...state.gen, active: false, elapsedMs: total, generatedInMs: total },
-  });
-  pushChat(
-    "system",
-    `✅ ${template.title} generated in ${(total / 1000).toFixed(1)} s — ${state.parts.length} parts, ${state.nets.length} nets, ${state.board.w} × ${state.board.h} mm, confidence ${state.confidence}%.${
-      matched.length ? ` Matched on: ${matched.slice(0, 4).join(", ")}.` : " No template matched exactly — built a custom design from the parts named in your prompt."
-    }`,
-  );
 }
 
 export function dismissGeneration() {
@@ -738,12 +755,6 @@ export function runCommand(input: string) {
 }
 
 export function resetDesign() {
-  const b = buildDesign(defaultTemplate);
-  revalidate({
-    board: b.board,
-    parts: b.parts,
-    nets: b.nets,
-    meta: { ...b.meta, prompt: defaultTemplate.summary },
-    selected: null,
-  });
+  state = blankState();
+  emit();
 }

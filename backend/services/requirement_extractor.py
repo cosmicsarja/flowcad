@@ -59,8 +59,9 @@ def extract_requirements(prompt: str, project_id: str | None = None) -> Requirem
     Raises ValueError on validation failure (after retries).
     project_id is optional — set by the orchestration router.
     """
-    logger.info("Extracting requirements from prompt: %s", prompt[:80])
-
+    logger.info("================ GEMINI API CALL (REQUIREMENTS) ================")
+    logger.info("Prompt: %s", prompt)
+    logger.info("Calling model via core.gemini_client.call_gemini...")
     raw: dict[str, Any] = call_gemini(
         system=SYSTEM_PROMPT,
         user=f"Circuit description:\n{prompt}",
@@ -77,6 +78,16 @@ def extract_requirements(prompt: str, project_id: str | None = None) -> Requirem
     if project_id:
         result.project_id = project_id
 
+    logger.info("================ GEMINI API RESPONSE ================")
+    logger.info("Successfully parsed requirements into structured RequirementsOutput.")
+    logger.info("Requirements count: %d", len(result.requirements))
+    logger.info(
+        "Power: %s, Board: w=%.1f, h=%.1f, layers=%d",
+        result.power_constraints,
+        result.board_constraints.max_width_mm,
+        result.board_constraints.max_height_mm,
+        result.board_constraints.layers,
+    )
     logger.info(
         "Requirements extracted: MCU=%s, sensors=%s, actuators=%s",
         result.microcontroller, result.sensors, result.actuators,

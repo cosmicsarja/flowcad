@@ -1,4 +1,4 @@
-export type StageStatus = "done" | "active" | "pending";
+export type StageStatus = "done" | "active" | "pending" | "warning";
 
 export type Stage = {
   id: string;
@@ -48,23 +48,23 @@ export const stages: Stage[] = [
     id: "routing",
     name: "Routing",
     short: "RTE",
-    status: "active",
-    detail: "94% routed · 2 airwires left",
+    status: "done",
+    detail: "94% routed · 2 airwires left (manual review recommended)",
   },
   {
     id: "verification",
     name: "Verification",
     short: "VRF",
-    status: "pending",
-    detail: "DRC / ERC / power integrity",
+    status: "done",
+    detail: "DRC / ERC complete · 2 warnings",
   },
-  { id: "3d", name: "3D View", short: "3D", status: "pending", detail: "STEP model assembly" },
+  { id: "3d", name: "3D View", short: "3D", status: "done", detail: "STEP model assembly rendered" },
   {
     id: "export",
     name: "Export",
     short: "EXP",
-    status: "pending",
-    detail: "Gerber X2 · BOM · Pick & place",
+    status: "done",
+    detail: "Gerber X2 · BOM · Pick & place staged",
   },
 ];
 
@@ -288,7 +288,7 @@ export type Check = {
 export const checks: Check[] = [
   { name: "Electrical Rules", status: "PASS", score: 100, note: "0 violations across 41 nets" },
   { name: "Power Integrity", status: "PASS", score: 96, note: "3V3 rail ripple 38 mV @ 500 mA" },
-  { name: "Connectivity", status: "PASS", score: 98, note: "2 airwires pending final route" },
+  { name: "Connectivity", status: "WARNING", score: 88, note: "Routing incomplete: 2 nets require manual routing" },
   { name: "ERC", status: "PASS", score: 100, note: "No unconnected or conflicting pins" },
   { name: "DRC", status: "WARNING", score: 82, note: "2 clearances at 0.19 mm (min 0.20 mm)" },
   { name: "Manufacturing", status: "WARNING", score: 88, note: "Silkscreen overlaps pad on K1" },

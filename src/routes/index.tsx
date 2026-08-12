@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   ArrowRight,
@@ -7,12 +7,15 @@ import {
   Workflow,
   Factory,
   CircuitBoard,
+  Plus,
 } from "lucide-react";
 import { Logo } from "@/components/flowcad/Logo";
 import { Button } from "@/components/ui/button";
 import { samplePrompt } from "@/lib/flowcad-data";
+import { resetDesign, queuePrompt } from "@/lib/design-store";
 
-export const Route = createFileRoute("/")({
+
+export const Route = createFileRoute("/")(({
   head: () => ({
     meta: [
       { title: "FlowCAD — Prompt-to-PCB AI Design Platform" },
@@ -30,7 +33,7 @@ export const Route = createFileRoute("/")({
     ],
   }),
   component: Landing,
-});
+}));
 
 const features = [
   {
@@ -59,6 +62,18 @@ const pipeline = ["Prompt", "Architecture", "Schematic", "PCB", "Verification", 
 
 function Landing() {
   const [prompt, setPrompt] = useState("");
+  const navigate = useNavigate();
+
+  function startNewProject(promptText: string) {
+    const trimmed = promptText.trim();
+    if (!trimmed) return;
+    // Generate a local UUID — no backend or Supabase call needed to open the workspace.
+    // The pipeline itself will persist to Supabase when the backend is running.
+    const id = crypto.randomUUID();
+    resetDesign();
+    queuePrompt(trimmed);
+    void navigate({ to: "/project/$id", params: { id } });
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,16 +91,13 @@ function Landing() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
-            <Link to="/export">
-              <Button variant="ghost" size="sm" className="text-[12px]">
-                Export demo
-              </Button>
-            </Link>
-            <Link to="/workspace">
-              <Button size="sm" className="text-[12px]">
-                Open workspace
-              </Button>
-            </Link>
+            <Button
+              size="sm"
+              className="text-[12px]"
+              onClick={() => startNewProject(prompt || samplePrompt)}
+            >
+              <Plus className="size-3.5" /> New Project
+            </Button>
           </div>
         </div>
       </header>
@@ -107,22 +119,24 @@ function Landing() {
             </p>
 
             <form
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={(e) => {
+                e.preventDefault();
+                startNewProject(prompt);
+              }}
               className="mx-auto mt-9 max-w-2xl rounded-xl border border-border bg-panel p-2 glow-ring"
             >
               <div className="flex items-center gap-2">
                 <span className="pl-3 font-mono text-[13px] text-teal">›</span>
                 <input
+                  id="prompt-input"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder={samplePrompt}
                   className="h-11 flex-1 bg-transparent font-mono text-[13px] outline-none placeholder:text-muted-foreground"
                 />
-                <Link to="/workspace">
-                  <Button className="h-9 shrink-0 text-[12px]">
-                    Generate design <ArrowRight className="size-3.5" />
-                  </Button>
-                </Link>
+                <Button type="submit" className="h-9 shrink-0 text-[12px]">
+                  Generate design <ArrowRight className="size-3.5" />
+                </Button>
               </div>
             </form>
             <p className="mt-3 font-mono text-[10px] tracking-wider text-muted-foreground uppercase">
@@ -170,16 +184,18 @@ function Landing() {
         <section className="border-t border-border">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-6 py-10">
             <div>
-              <p className="text-[15px] font-medium">Open the ESP32 irrigation sample design</p>
+              <p className="text-[15px] font-medium">Start with an example prompt</p>
               <p className="mt-1 font-mono text-[11px] text-muted-foreground">
-                48 × 36 mm · 23 parts · 94% design confidence
+                ESP32 irrigation controller · LED blinker · BME280 weather station
               </p>
             </div>
-            <Link to="/workspace" className="ml-auto">
-              <Button size="sm">
-                Launch workspace <ArrowRight className="size-3.5" />
-              </Button>
-            </Link>
+            <Button
+              size="sm"
+              className="ml-auto"
+              onClick={() => startNewProject("Design an ESP32-based smart irrigation controller with soil moisture sensor, DHT22 temp/humidity sensor, 12V relay driver, USB-C 5V power, and 3.3V LDO regulator.")}
+            >
+              Launch example <ArrowRight className="size-3.5" />
+            </Button>
           </div>
         </section>
       </main>

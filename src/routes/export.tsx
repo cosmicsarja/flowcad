@@ -46,7 +46,7 @@ function ExportPage() {
         <div className="mx-auto flex h-14 max-w-5xl items-center gap-4 px-6">
           <Logo />
           <span className="label-mono hidden sm:inline">/ export</span>
-          <Link to="/workspace" className="ml-auto">
+          <Link to="/" className="ml-auto">
             <Button variant="ghost" size="sm" className="text-[12px]">
               <ArrowLeft className="size-3.5" /> Back to workspace
             </Button>

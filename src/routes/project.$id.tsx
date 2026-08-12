@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useDesign } from "@/lib/design-store";
-import { Share2, Play, Download, PanelLeftClose, PanelRightClose } from "lucide-react";
+import { useDesign, takeQueuedPrompt, resetDesign, runGeneration } from "@/lib/design-store";
+import { Share2, Download, PanelLeftClose, PanelRightClose, Plus, Zap } from "lucide-react";
 import { Logo } from "@/components/flowcad/Logo";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -18,20 +18,15 @@ import {
   AlternativesPanel,
 } from "@/components/flowcad/ContextPanels";
 import { StatusBadge } from "@/components/flowcad/StatusBadge";
+import { CanvasEmpty } from "@/components/flowcad/CanvasEmpty";
 
-export const Route = createFileRoute("/workspace")({
+export const Route = createFileRoute("/project/$id")({
   head: () => ({
     meta: [
-      { title: "Workspace — ESP32 Irrigation Controller · FlowCAD" },
+      { title: "Workspace · FlowCAD" },
       {
         name: "description",
-        content:
-          "FlowCAD workspace: pipeline stepper, block diagram, schematic, PCB layout, 3D preview, verification and BOM for an ESP32 irrigation controller.",
-      },
-      { property: "og:title", content: "FlowCAD Workspace — ESP32 Irrigation Controller" },
-      {
-        property: "og:description",
-        content: "A CAD-grade multi-panel workspace for AI-generated PCB designs.",
+        content: "FlowCAD AI-powered PCB workspace — pipeline stepper, schematic, PCB layout, 3D preview, verification and BOM.",
       },
     ],
   }),
@@ -53,25 +48,39 @@ const contextTabs = [
 ];
 
 function Workspace() {
-  const [stage, setStage] = useState("routing");
+  const { id } = Route.useParams();
+  const [stage, setStage] = useState("requirements");
   const [rightTab, setRightTab] = useState("details");
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   const design = useDesign();
+  const hasDesign = design.parts.length > 0 || design.gen.active;
 
+  // On mount: if a prompt was queued from the landing page, run it
+  useEffect(() => {
+    const queued = takeQueuedPrompt();
+    if (queued) {
+      void runGeneration(queued, id);
+    }
+  }, [id]);
+
+  // Auto-select Details when a component is clicked
   useEffect(() => {
     if (design.selected) setRightTab("details");
   }, [design.selected]);
+
+  const projectTitle = design.meta.title || (design.gen.active ? "Generating…" : "New Project");
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       <header className="flex h-12 shrink-0 items-center gap-3 border-b border-border bg-panel px-3">
         <Logo />
         <span className="hidden font-mono text-[11px] text-muted-foreground sm:inline">
-          / irrigation_ctrl <span className="text-teal">rev B</span>
+          / <span className="text-foreground/70">{projectTitle}</span>
+          {design.meta.slug && <span className="text-teal"> {design.meta.slug}</span>}
         </span>
         <StatusBadge
-          status={design.verifying ? "RUNNING" : design.checks.some((c) => c.status !== "PASS") ? "WARNING" : "PASS"}
+          status={design.gen.active ? "RUNNING" : design.verifying ? "RUNNING" : design.checks.some((c) => c.status !== "PASS") ? "WARNING" : hasDesign ? "PASS" : "RUNNING"}
           className="hidden md:inline-flex"
         />
         <div className="ml-auto flex items-center gap-1.5">
@@ -91,9 +100,11 @@ function Workspace() {
           >
             <PanelRightClose className="size-3.5" />
           </Button>
-          <Button variant="secondary" size="sm" className="text-[12px]">
-            <Play className="size-3.5" /> Re-run
-          </Button>
+          <Link to="/">
+            <Button variant="secondary" size="sm" className="text-[12px]">
+              <Plus className="size-3.5" /> New Project
+            </Button>
+          </Link>
           <Button variant="secondary" size="sm" className="hidden text-[12px] sm:inline-flex">
             <Share2 className="size-3.5" /> Share
           </Button>
@@ -128,22 +139,24 @@ function Workspace() {
                   ))}
                 </TabsList>
                 <span className="ml-auto hidden font-mono text-[10px] text-muted-foreground md:inline">
-                  {`grid 0.25 mm · units mm · ${design.board.w.toFixed(1)} × ${design.board.h.toFixed(1)} mm · ${design.parts.length} parts`}
+                  {hasDesign
+                    ? `grid 0.25 mm · units mm · ${design.board.w.toFixed(1)} × ${design.board.h.toFixed(1)} mm · ${design.parts.length} parts`
+                    : "Enter a prompt below to generate a design"}
                 </span>
               </div>
 
               <div className="min-h-0 flex-1 overflow-hidden bg-background">
                 <TabsContent value="block" className="m-0 h-full">
-                  <BlockDiagram />
+                  {hasDesign ? <BlockDiagram /> : <CanvasEmpty label="Block Diagram" description="No design yet — enter a prompt below to generate the block diagram" />}
                 </TabsContent>
                 <TabsContent value="schematic" className="m-0 h-full">
-                  <SchematicView />
+                  {hasDesign ? <SchematicView /> : <CanvasEmpty label="Schematic" description="No schematic yet — enter a prompt below to generate the circuit" />}
                 </TabsContent>
                 <TabsContent value="pcb" className="m-0 h-full">
-                  <PcbLayout />
+                  {hasDesign ? <PcbLayout /> : <CanvasEmpty label="PCB Layout" description="No PCB layout yet — enter a prompt to generate and place components" />}
                 </TabsContent>
                 <TabsContent value="3d" className="m-0 h-full">
-                  <ThreeDView />
+                  {hasDesign ? <ThreeDView /> : <CanvasEmpty label="3D View" description="No 3D model yet — generate a design first to see the board render" />}
                 </TabsContent>
               </div>
             </Tabs>
