@@ -14,7 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          generations_this_month: number
+          id: string
+          month_reset_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          generations_this_month?: number
+          id: string
+          month_reset_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          generations_this_month?: number
+          id?: string
+          month_reset_at?: string
+        }
+        Relationships: []
+      }
+      project_versions: {
+        Row: {
+          created_at: string
+          design_state: Json
+          id: string
+          project_id: string
+          version_num: number
+        }
+        Insert: {
+          created_at?: string
+          design_state: Json
+          id?: string
+          project_id: string
+          version_num?: number
+        }
+        Update: {
+          created_at?: string
+          design_state?: Json
+          id?: string
+          project_id?: string
+          version_num?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_versions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string
+          design_state: Json
+          id: string
+          prompt: string
+          share_token: string | null
+          status: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          design_state?: Json
+          id?: string
+          prompt?: string
+          share_token?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          design_state?: Json
+          id?: string
+          prompt?: string
+          share_token?: string | null
+          status?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
