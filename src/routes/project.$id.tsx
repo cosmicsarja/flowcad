@@ -153,7 +153,7 @@ function Workspace() {
                   {hasDesign ? <SchematicView /> : <CanvasEmpty label="Schematic" description="No schematic yet — enter a prompt below to generate the circuit" />}
                 </TabsContent>
                 <TabsContent value="pcb" className="m-0 h-full">
-                  {hasDesign ? <PcbLayout /> : <CanvasEmpty label="PCB Layout" description="No PCB layout yet — enter a prompt to generate and place components" />}
+                  {hasDesign ? <PcbLayout projectId={id} /> : <CanvasEmpty label="PCB Layout" description="No PCB layout yet — enter a prompt to generate and place components" />}
                 </TabsContent>
                 <TabsContent value="3d" className="m-0 h-full">
                   {hasDesign ? <ThreeDView /> : <CanvasEmpty label="3D View" description="No 3D model yet — generate a design first to see the board render" />}

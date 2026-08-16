@@ -47,15 +47,31 @@ app = FastAPI(
 )
 
 # ── CORS ─────────────────────────────────────────────────────────────────────
-allowed_origins = [o.strip() for o in settings.cors_origins.split(",")]
-allowed_origins += ["http://127.0.0.1:5173", "http://127.0.0.1:3000"]
+# Explicit origins from config (e.g. production domain)
+_explicit_origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
+
+# Regex that covers:
+#   • Any localhost or 127.0.0.1 port (Vite default 5173, CRA 3000, etc.)
+#   • *.lovable.app  (Lovable preview deployments)
+#   • *.lovable.dev  (Lovable dev URLs)
+#   • *.vercel.app   (Vercel preview deployments)
+#   • *.onrender.com (Render.com deployments)
+_ORIGIN_REGEX = (
+    r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
+    r"|^https://[a-zA-Z0-9\-]+\.lovable\.app$"
+    r"|^https://[a-zA-Z0-9\-]+\.lovable\.dev$"
+    r"|^https://[a-zA-Z0-9\-]+\.vercel\.app$"
+    r"|^https://[a-zA-Z0-9\-]+\.onrender\.com$"
+)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=_explicit_origins,
+    allow_origin_regex=_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # ── Routers ───────────────────────────────────────────────────────────────────

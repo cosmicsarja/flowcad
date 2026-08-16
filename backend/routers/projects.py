@@ -5,8 +5,15 @@ POST /projects/{project_id}/generate
   Orchestrates all 8 pipeline stages for a project stored in Supabase.
   • Checks monthly generation limit (default 5) → 429 if exceeded
   • Writes design_state back to Supabase after every stage
+  • Writes `layout` and `glb_url` into design_state after Stage 6
   • Snapshots completed state to project_versions
   • Increments profiles.generations_this_month on success
+
+GET  /projects/{project_id}/artifacts/board.glb
+  Serves the exported GLB 3D model for the project.
+
+POST /projects/{project_id}/reroute
+  Re-runs layout_extractor for the project and updates design_state.layout.
 
 DEV NOTE:
   If Supabase is not configured or there is no logged-in user,
@@ -16,11 +23,15 @@ DEV NOTE:
 from __future__ import annotations
 
 import logging
+import os
+import time
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import FileResponse
 
 from core import supabase_client as db
 from core.config import settings
@@ -29,6 +40,7 @@ from models.pipeline import (
     GenerateProjectInput,
     ProjectRow,
     BoardConstraints,
+    LayoutOutput,
 )
 
 # Services
@@ -40,6 +52,7 @@ from services.pcb_generator import generate_pcb
 from services.placer_router import place_and_route
 from services.verifier import verify
 from services.exporter import export_design
+from services.layout_extractor import extract_layout
 
 # Input models for chaining
 from models.pipeline import (
@@ -53,6 +66,8 @@ from models.pipeline import (
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["projects"])
+
+WORK_DIR = Path(os.environ.get("WORK_DIR", settings.work_dir if hasattr(settings, "work_dir") else "./tmp"))
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
@@ -125,6 +140,16 @@ def _write_design_state(project_id: str, design_state: dict) -> None:
     })
 
 
+def _glb_path(project_id: str) -> Path:
+    """Canonical path where the exporter writes board.glb."""
+    return WORK_DIR / project_id / "export" / "board.glb"
+
+
+def _glb_url(project_id: str) -> str:
+    """Public URL the frontend will use to fetch the GLB."""
+    return f"http://127.0.0.1:8000/projects/{project_id}/artifacts/board.glb"
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Orchestration endpoint
 # ─────────────────────────────────────────────────────────────────────────────
@@ -141,10 +166,10 @@ def create_project(body: CreateProjectInput):
     """Creates a new project row in Supabase and returns it."""
     project_id = str(uuid.uuid4())
     resolved_user = _resolve_user_id(body.user_id)
-    
+
     # Check usage limit before creating project
     _check_usage_limit(resolved_user)
-    
+
     data = {
         "id": project_id,
         "prompt": body.prompt,
@@ -154,12 +179,12 @@ def create_project(body: CreateProjectInput):
     }
     if resolved_user:
         data["user_id"] = resolved_user
-        
+
     inserted = db.insert("projects", data)
     if not inserted:
         # Fallback to returning a mocked row if Supabase is down
         return ProjectRow(**data)
-    
+
     return ProjectRow(**inserted[0])
 
 @router.post("/projects/{project_id}/generate", response_model=ProjectRow)
@@ -171,6 +196,7 @@ def generate_project(
     """
     Orchestrate all 8 pipeline stages for the given project.
     Writes incremental progress to Supabase after each stage.
+    After Stage 6 (place & route) also writes `layout` and `glb_url`.
     """
     resolved_user = _resolve_user_id(user_id or body.user_id)
 
@@ -257,6 +283,18 @@ def generate_project(
         design_state["routed_pcb"] = routed.model_dump()
         design_state["stages_done"].append("placement")
         design_state["stage"] = "verification"
+
+        # ── Layout extraction (immediately after routing) ─────────────────────
+        logger.info("[%s] Layout extraction", project_id)
+        layout_out = extract_layout(
+            pcb_path=routed.pcb_path,
+            netlist_data=design_state.get("netlist"),
+            components_data=design_state.get("components"),
+            board_constraints=board_c.model_dump(),
+            project_id=project_id,
+        )
+        design_state["layout"] = layout_out.model_dump()
+        design_state["glb_url"] = _glb_url(project_id)
         _write_design_state(project_id, design_state)
 
         # ── Stage 7: Verification ─────────────────────────────────────────────
@@ -354,7 +392,7 @@ def generate_project(
 
 # ── Convenience: create a new project and immediately generate ────────────────
 
-@router.post("/projects", response_model=ProjectRow, status_code=201)
+@router.post("/projects/new", response_model=ProjectRow, status_code=201)
 def create_and_generate(
     body: GenerateProjectInput,
     user_id: Optional[str] = Query(None),
@@ -379,7 +417,6 @@ def create_and_generate(
     })
 
     # Delegate to the main orchestration handler
-    # (re-use the same function, pass the new project_id via path param emulation)
     return generate_project(project_id, body, user_id=user_id)
 
 
@@ -387,7 +424,7 @@ def create_and_generate(
 
 @router.get("/projects/{project_id}", response_model=ProjectRow)
 def get_project(project_id: str):
-    """Fetch current project row (status + design_state)."""
+    """Fetch current project row (status + design_state, including layout and glb_url)."""
     rows = db.select("projects", {"id": project_id})
     if not rows:
         raise HTTPException(404, detail="Project not found")
@@ -403,4 +440,111 @@ def get_project(project_id: str):
         prompt=row.get("prompt"),
         created_at=row.get("created_at"),
         updated_at=row.get("updated_at"),
+    )
+
+
+# ── GET artifact: board.glb ───────────────────────────────────────────────────
+
+@router.get("/projects/{project_id}/artifacts/board.glb")
+def get_board_glb(project_id: str):
+    """
+    Serve the exported GLB 3D model for a project.
+    Written by services/exporter.py to WORK_DIR/{project_id}/export/board.glb.
+    """
+    glb = _glb_path(project_id)
+    if not glb.exists():
+        raise HTTPException(
+            404,
+            detail="GLB model not found. Run /generate first to produce the 3D model.",
+        )
+    return FileResponse(
+        str(glb),
+        media_type="model/gltf-binary",
+        headers={
+            "Cache-Control": "no-cache, must-revalidate",
+            "Content-Disposition": f'inline; filename="board-{project_id[:8]}.glb"',
+        },
+    )
+
+
+# ── POST reroute ──────────────────────────────────────────────────────────────
+
+class RerouteResponse(BaseModel):
+    layout: dict
+    message: str
+
+
+@router.post("/projects/{project_id}/reroute", response_model=RerouteResponse)
+def reroute_project(project_id: str):
+    """
+    Re-run layout_extractor (and, when KiCad is available, the underlying
+    place-and-route step) for the given project.  Updates design_state.layout
+    in Supabase and returns the updated LayoutOutput.
+
+    Called by the frontend's "Auto-Layout" button in the PCB view.
+    """
+    # Load the existing project to get design_state
+    rows = db.select("projects", {"id": project_id})
+    if not rows:
+        raise HTTPException(404, detail="Project not found")
+
+    row = rows[0]
+    design_state: dict = row.get("design_state") or {}
+
+    if not design_state:
+        raise HTTPException(
+            400,
+            detail="Project has no design_state. Run /generate first.",
+        )
+
+    # Locate existing PCB file
+    routed_pcb: dict = design_state.get("routed_pcb") or {}
+    pcb_path: str = routed_pcb.get("pcb_path", "")
+
+    # Optionally re-run place-and-route when pcb_path exists and KiCad present
+    if pcb_path and Path(pcb_path).exists():
+        try:
+            bc_dict: dict = (design_state.get("requirements") or {}).get(
+                "board_constraints", {}
+            )
+            bc = BoardConstraints(
+                max_width_mm=bc_dict.get("max_width_mm", 100.0),
+                max_height_mm=bc_dict.get("max_height_mm", 80.0),
+                layers=bc_dict.get("layers", 2),
+                min_trace_mm=bc_dict.get("min_trace_mm", 0.2),
+                min_clearance_mm=bc_dict.get("min_clearance_mm", 0.2),
+            )
+            routed = place_and_route(PlaceRouteInput(
+                pcb_path=pcb_path,
+                board_constraints=bc,
+                project_id=project_id,
+            ))
+            design_state["routed_pcb"] = routed.model_dump()
+            pcb_path = routed.pcb_path
+            logger.info("[%s] Reroute: place-and-route re-ran successfully", project_id)
+        except Exception as exc:
+            logger.warning("[%s] Reroute: place-and-route re-run skipped (%s)", project_id, exc)
+
+    # Re-extract layout
+    bc_dict = (design_state.get("requirements") or {}).get("board_constraints", {})
+    layout_out = extract_layout(
+        pcb_path=pcb_path,
+        netlist_data=design_state.get("netlist"),
+        components_data=design_state.get("components"),
+        board_constraints=bc_dict,
+        project_id=project_id,
+    )
+
+    design_state["layout"] = layout_out.model_dump()
+    design_state["glb_url"] = _glb_url(project_id)
+    _write_design_state(project_id, design_state)
+
+    logger.info(
+        "[%s] Reroute complete — %d components, %d segments, source: %s",
+        project_id, len(layout_out.placement), len(layout_out.routing), layout_out.data_source,
+    )
+
+    return RerouteResponse(
+        layout=layout_out.model_dump(),
+        message=f"Layout updated ({layout_out.data_source}, {len(layout_out.placement)} components, {len(layout_out.routing)} trace segments)",
     )

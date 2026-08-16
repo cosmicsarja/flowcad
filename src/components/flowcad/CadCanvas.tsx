@@ -22,12 +22,14 @@ export function CadCanvas({
   gridClass = "cad-grid-fine",
   onBackgroundClick,
   statusLeft,
+  statusRight,
   children,
 }: {
   viewBox: string;
   gridClass?: string;
   onBackgroundClick?: () => void;
   statusLeft?: ReactNode;
+  statusRight?: ReactNode;
   children: (api: CanvasApi) => ReactNode;
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -153,6 +155,9 @@ export function CadCanvas({
 
       {statusLeft && (
         <div className="pointer-events-none absolute top-2 left-2 flex items-center gap-2">{statusLeft}</div>
+      )}
+      {statusRight && (
+        <div className="pointer-events-auto absolute top-2 right-2 flex items-center gap-1.5">{statusRight}</div>
       )}
 
       <div className="absolute right-3 bottom-3 flex items-center gap-1 rounded-lg border border-border bg-panel/90 p-1 backdrop-blur">

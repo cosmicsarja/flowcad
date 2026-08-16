@@ -301,4 +301,38 @@ class ProjectRow(BaseModel):
 class GenerateProjectInput(BaseModel):
     """Body for POST /projects/{id}/generate"""
     prompt: str = Field(..., min_length=10)
+    title: Optional[str] = None
     user_id: Optional[str] = None   # override for dev/testing without auth
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Layout models — re-exported from services.layout_extractor for convenience
+# ─────────────────────────────────────────────────────────────────────────────
+
+from services.layout_extractor import (  # noqa: E402
+    LayoutOutput,
+    PlacedComponent,
+    RouteSegment,
+    Pad,
+    Via,
+    MountingHole,
+    KeepoutZone,
+)
+
+__all__ = [
+    # existing
+    "PowerConstraints", "BoardConstraints", "RequirementsInput", "RequirementsOutput",
+    "ArchitectureNode", "ArchitectureEdge", "ArchitectureOutput",
+    "ComponentSelection", "ComponentsInput", "ComponentsOutput",
+    "NetEntry", "SchematicInput", "SchematicOutput",
+    "PcbInput", "PcbOutput",
+    "PlaceRouteInput", "PlaceRouteOutput",
+    "VerificationCheck", "VerifyInput", "VerificationOutput",
+    "ExportInput", "ExportArtifact", "ExportOutput",
+    "ApplyEditInput", "ApplyEditOutput",
+    "FullPipelineInput", "FullPipelineOutput",
+    "GenerationStatus", "ProjectRow", "GenerateProjectInput",
+    # layout
+    "LayoutOutput", "PlacedComponent", "RouteSegment", "Pad", "Via",
+    "MountingHole", "KeepoutZone",
+]

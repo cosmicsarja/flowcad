@@ -1,13 +1,16 @@
 import { useSyncExternalStore } from "react";
 import { type Check, type ChatEntry } from "./flowcad-data";
-import {
-  SYM_GEO,
-  matchTemplate,
-  type SymKind,
-  type BlockKind,
-  type Template,
-} from "./templates";
+import { type SymKind, type BlockKind, SYM_GEO } from "./templates";
 import { supabase } from "@/integrations/supabase/client";
+import { type LayoutData, type NetlistData } from "./layout-types";
+import {
+  API_BASE,
+  ApiNetworkError,
+  ApiResponseError,
+  probeBackend,
+  apiPost,
+} from "./api";
+
 
 export type Part = {
   ref: string;
@@ -42,6 +45,8 @@ export type Net = { from: string; to: string; net: string };
 
 export const PX_PER_MM = 9;
 export const EDGE_MARGIN = 12; // svg units ≈ 1.3 mm keep-out
+
+export type ViewStatus = "idle" | "loading" | "ready" | "error";
 
 export type GenStageId =
   | "requirements"
@@ -97,101 +102,134 @@ export type DesignState = {
   architecture: { nodes: ArchNode[]; edges: ArchEdge[] } | null;
   /** which pipeline stages have produced visible output */
   ready: Record<GenStageId, boolean>;
+
+  // ── Real data fields (from backend) ──────────────────────────────────
+  /** Full layout object from layout_extractor.py */
+  layout: LayoutData | null;
+  /** Netlist / schematic output from schematic_generator.py */
+  netlist: NetlistData | null;
+  /** URL to board.glb served by /projects/{id}/artifacts/board.glb */
+  glbUrl: string | null;
+  /** Whether the last generation used real backend data */
+  dataSource: "real" | "unavailable";
+
+  // ── Per-view status ───────────────────────────────────────────────────
+  blockDiagramStatus: ViewStatus;
+  blockDiagramError: string | null;
+  schematicStatus: ViewStatus;
+  schematicError: string | null;
+  pcbLayoutStatus: ViewStatus;
+  pcbLayoutError: string | null;
+  threeDStatus: ViewStatus;
+  threeDError: string | null;
+
+  // ── Reroute in-progress flag ──────────────────────────────────────────
+  rerouteInProgress: boolean;
 };
 
 /* ------------------------------------------------------------------ */
-/* layout: derive schematic + pcb geometry from a template             */
+/* layout: derive schematic + pcb geometry from layout data            */
 /* ------------------------------------------------------------------ */
 
 const SCH_H = 470;
+const SCH_GRID = 9; // svg units
 
-function layoutSchematic(parts: Part[]) {
-  let x = 40;
-  let y = 40;
-  let colW = 0;
-  for (const p of parts) {
-    if (y + p.sh > SCH_H && colW > 0) {
-      x += colW + 96;
-      y = 40;
+function symForPackage(pkg: string): SymKind {
+  const p = pkg.toUpperCase();
+  if (p.includes("MODULE") || p.includes("WROOM") || p.includes("PICO")) return "module";
+  if (p.includes("QFN") || p.includes("TQFP") || p.includes("SOIC") || p.includes("LGA")) return "ic";
+  if (p.includes("SOT-223") || p.includes("TO-252")) return "reg";
+  if (p.includes("0402") || p.includes("0603") || p.includes("0805") || p.includes("1206")) {
+    // guess resistor vs cap by ref prefix (caller supplies ref separately)
+    return "res"; // will be overridden when caller knows ref
+  }
+  if (p.includes("FPC") || p.includes("JST") || p.includes("CONN")) return "conn";
+  if (p.includes("RELAY")) return "relay";
+  if (p.includes("DISP") || p.includes("OLED") || p.includes("LCD")) return "disp";
+  if (p.includes("XTAL") || p.includes("CRYSTAL")) return "xtal";
+  if (p.includes("IND") || p.includes("FERRITE")) return "ind";
+  return "ic";
+}
+
+function symForRef(ref: string, pkg: string): SymKind {
+  const r = ref.toUpperCase();
+  if (r.startsWith("R")) return "res";
+  if (r.startsWith("C")) return "cap";
+  if (r.startsWith("L")) return "ind";
+  if (r.startsWith("D")) return "diode";
+  if (r.startsWith("LED")) return "led";
+  if (r.startsWith("Q")) return "ic";
+  if (r.startsWith("J") || r.startsWith("P") || r.startsWith("CON")) return "conn";
+  if (r.startsWith("SW") || r.startsWith("BTN")) return "sw";
+  if (r.startsWith("BT") || r.startsWith("BAT")) return "batt";
+  if (r.startsWith("XTAL") || r.startsWith("Y")) return "xtal";
+  return symForPackage(pkg);
+}
+
+/**
+ * Map a LayoutData (from backend) into the frontend Part[] + Net[] shapes.
+ * Assigns schematic grid positions and PCB pixel positions.
+ */
+function layoutDataToParts(layout: LayoutData): { parts: Part[]; nets: Net[] } {
+  const parts: Part[] = [];
+
+  // Schematic layout: simple column flow
+  let sx = 40, sy = 40, colW = 0;
+
+  for (const comp of layout.placement) {
+    const pkg = comp.footprint || "0603";
+    const sym = symForRef(comp.ref, pkg);
+    const geo = SYM_GEO[sym] ?? SYM_GEO["ic"];
+
+    if (sy + geo.h > SCH_H && colW > 0) {
+      sx += colW + 96;
+      sy = 40;
       colW = 0;
     }
-    p.sx = x;
-    p.sy = y;
-    y += p.sh + 44;
-    colW = Math.max(colW, p.sw);
-  }
-}
 
-function layoutPcb(parts: Part[], board: { w: number; h: number }) {
-  const margin = 20;
-  let bw = board.w * PX_PER_MM;
-  let bh = board.h * PX_PER_MM;
-  const place = () => {
-    let x = margin;
-    let y = margin;
-    let rowH = 0;
-    let maxY = 0;
-    for (const p of parts) {
-      if (x + p.pw > bw - margin && rowH > 0) {
-        x = margin;
-        y += rowH + 16;
-        rowH = 0;
-      }
-      p.px = x;
-      p.py = y;
-      x += p.pw + 16;
-      rowH = Math.max(rowH, p.ph);
-      maxY = Math.max(maxY, y + p.ph);
-    }
-    return maxY;
-  };
-  let maxY = place();
-  let guard = 0;
-  while (maxY > bh - margin && guard++ < 12) {
-    bh += 18;
-    bw += 10;
-    maxY = place();
-  }
-  return {
-    w: Math.round((bw / PX_PER_MM) * 10) / 10,
-    h: Math.round((bh / PX_PER_MM) * 10) / 10,
-  };
-}
-
-export function buildDesign(t: Template) {
-  const parts: Part[] = t.parts.map((tp) => {
-    const g = SYM_GEO[tp.sym];
-    return {
-      ...tp,
-      datasheet: tp.datasheet ?? `${tp.ref.toLowerCase()}_datasheet.pdf`,
-      sw: g.w,
-      sh: g.h,
-      pw: g.pw,
-      ph: g.ph,
-      z: g.z,
-      pins: g.pins,
-      sx: 0,
-      sy: 0,
-      px: 0,
-      py: 0,
-      side: "top" as const,
+    const part: Part = {
+      ref: comp.ref,
+      name: comp.name,
+      value: comp.name.split(" ").slice(-1)[0] ?? comp.ref,
+      pkg,
+      unit: 0,
+      qty: 1,
+      sym,
+      desc: comp.footprint,
+      reasoning: "",
+      specs: [
+        ["Package", pkg],
+        ["Layer", comp.layer],
+        ["Rotation", `${comp.rotation}°`],
+      ],
+      datasheet: "",
+      sx,
+      sy,
+      sw: geo.w,
+      sh: geo.h,
+      // PCB coords in svg units (PX_PER_MM conversion)
+      px: Math.round(comp.x_mm * PX_PER_MM),
+      py: Math.round(comp.y_mm * PX_PER_MM),
+      pw: Math.max(geo.pw, Math.round(comp.w_mm * PX_PER_MM)),
+      ph: Math.max(geo.ph, Math.round(comp.h_mm * PX_PER_MM)),
+      z: geo.z,
+      pins: geo.pins,
+      side: comp.layer === "B.Cu" ? "bottom" : "top",
     };
-  });
-  layoutSchematic(parts);
-  const board = layoutPcb(parts, t.board);
-  return {
-    board,
-    parts,
-    nets: t.nets.map((n) => ({ ...n })),
-    meta: {
-      title: t.title,
-      slug: t.slug,
-      summary: t.summary,
-      prompt: "",
-      layers: t.layers,
-      requirements: t.requirements,
-    },
-  };
+    parts.push(part);
+    sy += geo.h + 44;
+    colW = Math.max(colW, geo.w);
+  }
+
+  // Nets from net_index: each entry connects the first ref to every subsequent ref
+  const nets: Net[] = [];
+  for (const [netName, refs] of Object.entries(layout.net_index)) {
+    for (let i = 1; i < refs.length; i++) {
+      nets.push({ from: refs[0]!, to: refs[i]!, net: netName });
+    }
+  }
+
+  return { parts, nets };
 }
 
 /* ------------------------------------------------------------------ */
@@ -239,6 +277,24 @@ function blankState(): DesignState {
     architecture: null,
     gen: { ...freshGeneration("", ""), active: false },
     ready: allReady(false),
+
+    // Real data fields
+    layout: null,
+    netlist: null,
+    glbUrl: null,
+    dataSource: "unavailable",
+
+    // Per-view status
+    blockDiagramStatus: "idle",
+    blockDiagramError: null,
+    schematicStatus: "idle",
+    schematicError: null,
+    pcbLayoutStatus: "idle",
+    pcbLayoutError: null,
+    threeDStatus: "idle",
+    threeDError: null,
+
+    rerouteInProgress: false,
   };
 }
 
@@ -444,6 +500,121 @@ export function isGenerationPrompt(text: string) {
   return /^(design|generate|build|create|make|new board|new design)\b/i.test(text.trim());
 }
 
+/**
+ * Apply design_state from the backend API response into the store.
+ * Maps layout.placement → Part[], layout.net_index → Net[],
+ * sets all per-view status fields.
+ */
+function applyDesignState(ds: Record<string, unknown>): Partial<DesignState> {
+  const stagesDone: string[] = (ds.stages_done as string[]) || [];
+  const currentStage: string = (ds.stage as string) || "requirements";
+
+  // Architecture
+  const arch = ds.architecture as { nodes?: unknown[]; edges?: unknown[] } | null;
+
+  // Layout → Parts + Nets
+  let parts: Part[] = [];
+  let nets: Net[] = [];
+  let layout: LayoutData | null = null;
+  let pcbLayoutStatus: ViewStatus = "idle";
+  let pcbLayoutError: string | null = null;
+  let schematicStatus: ViewStatus = "idle";
+  let schematicError: string | null = null;
+
+  if (ds.layout) {
+    layout = ds.layout as LayoutData;
+    try {
+      const mapped = layoutDataToParts(layout);
+      parts = mapped.parts;
+      nets = mapped.nets;
+      pcbLayoutStatus = parts.length > 0 ? "ready" : "error";
+      pcbLayoutError = parts.length === 0 ? "Layout returned no components" : null;
+      schematicStatus = parts.length > 0 ? "ready" : "error";
+      schematicError = parts.length === 0 ? "No schematic symbols to render" : null;
+    } catch (err) {
+      pcbLayoutStatus = "error";
+      pcbLayoutError = `Layout mapping failed: ${err instanceof Error ? err.message : String(err)}`;
+      schematicStatus = "error";
+      schematicError = pcbLayoutError;
+    }
+  } else if (stagesDone.includes("placement")) {
+    pcbLayoutStatus = "loading";
+    schematicStatus = "loading";
+  }
+
+  // GLB URL
+  const glbUrl = (ds.glb_url as string) || null;
+  const threeDStatus: ViewStatus = glbUrl ? "ready" : stagesDone.includes("export") ? "error" : "idle";
+  const threeDError = !glbUrl && stagesDone.includes("export") ? "GLB model URL missing from design state" : null;
+
+  // Block diagram
+  const blockDiagramStatus: ViewStatus = arch?.nodes?.length
+    ? "ready"
+    : stagesDone.includes("architecture")
+      ? "error"
+      : "idle";
+  const blockDiagramError = blockDiagramStatus === "error" ? "Architecture data missing after stage completion" : null;
+
+  // Netlist
+  const netlist = (ds.netlist as NetlistData) || null;
+
+  // Board dimensions from layout or fallback
+  const board = layout
+    ? { w: layout.board_w_mm, h: layout.board_h_mm }
+    : (ds.board as { w: number; h: number }) || { w: 60, h: 45 };
+
+  // Checks from backend verification
+  const checks = (ds.checks as Check[]) || [];
+  const confidence = (ds.confidence as number) || 0;
+  const drcNote = (ds.drc_note as string) || null;
+
+  return {
+    gen: {
+      ...state.gen,
+      stages: state.gen.stages.map((s) => ({
+        ...s,
+        status: stagesDone.includes(s.id)
+          ? ("done" as const)
+          : s.id === currentStage
+            ? ("active" as const)
+            : ("pending" as const),
+      })),
+    },
+    parts,
+    nets,
+    board,
+    checks,
+    confidence,
+    drcNote,
+    architecture: arch
+      ? { nodes: (arch.nodes ?? []) as ArchNode[], edges: (arch.edges ?? []) as ArchEdge[] }
+      : state.architecture,
+    ready: {
+      requirements: stagesDone.includes("requirements"),
+      architecture: stagesDone.includes("architecture"),
+      components: stagesDone.includes("components"),
+      schematic: stagesDone.includes("schematic"),
+      placement: stagesDone.includes("placement"),
+      routing: stagesDone.includes("routing"),
+      verification: stagesDone.includes("verification"),
+      "3d": stagesDone.includes("verification"),
+      export: stagesDone.includes("export"),
+    },
+    layout,
+    netlist,
+    glbUrl,
+    dataSource: "real" as const,
+    blockDiagramStatus,
+    blockDiagramError,
+    schematicStatus,
+    schematicError,
+    pcbLayoutStatus,
+    pcbLayoutError,
+    threeDStatus,
+    threeDError,
+  };
+}
+
 export async function runGeneration(prompt: string, projectId?: string) {
   const token = ++genToken;
   const started = performance.now();
@@ -452,9 +623,21 @@ export async function runGeneration(prompt: string, projectId?: string) {
     selected: null,
     parts: [],
     nets: [],
+    layout: null,
+    netlist: null,
+    glbUrl: null,
+    dataSource: "unavailable",
     verifying: true,
     drcNote: null,
     ready: allReady(false),
+    blockDiagramStatus: "loading",
+    blockDiagramError: null,
+    schematicStatus: "loading",
+    schematicError: null,
+    pcbLayoutStatus: "loading",
+    pcbLayoutError: null,
+    threeDStatus: "loading",
+    threeDError: null,
     gen: { ...freshGeneration(prompt, "Generating…"), active: true },
   });
   pushChat("user", prompt);
@@ -467,184 +650,150 @@ export async function runGeneration(prompt: string, projectId?: string) {
     set({ gen: { ...state.gen, elapsedMs: performance.now() - started } });
   }, 100);
 
-  // ── Try real backend ──────────────────────────────────────────────────────
-  if (projectId) {
-    try {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 5000);
-
-      const probe = await fetch(`http://127.0.0.1:8000/health`, { signal: controller.signal });
-      window.clearTimeout(timeout);
-
-      if (probe.ok) {
-        // Backend is alive — fire the full pipeline
-        const apiCall = fetch(`http://127.0.0.1:8000/projects/${projectId}/generate`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt, user_id: "dev-user" }),
-        });
-
-        // Poll Supabase for incremental progress
-        pollTick = window.setInterval(async () => {
-          if (genToken !== token) { clearInterval(pollTick); return; }
-          try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { data } = await (supabase as any)
-              .from("projects")
-              .select("status, design_state")
-              .eq("id", projectId)
-              .single();
-            if (!data) return;
-            const ds = data.design_state || {};
-            const stagesDone: string[] = ds.stages_done || [];
-            const currentStage: string = ds.stage || "requirements";
-            set({
-              gen: {
-                ...state.gen,
-                stages: state.gen.stages.map((s) => ({
-                  ...s,
-                  status: stagesDone.includes(s.id) ? ("done" as const)
-                        : s.id === currentStage ? ("active" as const)
-                        : ("pending" as const),
-                })),
-              },
-              parts: ds.parts || [],
-              nets: ds.nets || [],
-              board: ds.board || { w: 60, h: 45 },
-              checks: ds.checks || [],
-              confidence: ds.confidence || 0,
-              drcNote: ds.drc_note || null,
-              architecture: ds.architecture
-                ? { nodes: ds.architecture.nodes || [], edges: ds.architecture.edges || [] }
-                : state.architecture,
-              ready: {
-                requirements: stagesDone.includes("requirements"),
-                architecture: stagesDone.includes("architecture"),
-                components: stagesDone.includes("components"),
-                schematic: stagesDone.includes("schematic"),
-                placement: stagesDone.includes("placement"),
-                routing: stagesDone.includes("routing"),
-                verification: stagesDone.includes("verification"),
-                "3d": stagesDone.includes("verification"),
-                export: stagesDone.includes("export"),
-              },
-            });
-            if (data.status === "done" || data.status === "failed") clearInterval(pollTick);
-          } catch { /* Supabase may not have table yet — ignore poll errors */ }
-        }, 1500);
-
-        const res = await apiCall;
-        if (!res.ok) throw new Error(`Backend returned ${res.status} ${res.statusText}`);
-
-        if (tick) window.clearInterval(tick);
-        if (pollTick) window.clearInterval(pollTick);
-
-        // Apply final state from the backend payload (in case polling missed the last beat)
-        const finalData = await res.json();
-        if (finalData && finalData.design_state) {
-           const ds = finalData.design_state;
-           const stagesDone: string[] = ds.stages_done || [];
-           const currentStage: string = ds.stage || "export";
-           set({
-             gen: {
-               ...state.gen,
-               stages: state.gen.stages.map((s) => ({
-                 ...s,
-                 status: stagesDone.includes(s.id) ? ("done" as const)
-                       : s.id === currentStage ? ("active" as const)
-                       : ("pending" as const),
-               })),
-             },
-             parts: ds.parts || [],
-             nets: ds.nets || [],
-             board: ds.board || { w: 60, h: 45 },
-             checks: ds.checks || [],
-             confidence: ds.confidence || 0,
-             drcNote: ds.drc_note || null,
-             architecture: ds.architecture
-               ? { nodes: ds.architecture.nodes || [], edges: ds.architecture.edges || [] }
-               : state.architecture,
-             ready: {
-               requirements: stagesDone.includes("requirements"),
-               architecture: stagesDone.includes("architecture"),
-               components: stagesDone.includes("components"),
-               schematic: stagesDone.includes("schematic"),
-               placement: stagesDone.includes("placement"),
-               routing: stagesDone.includes("routing"),
-               verification: stagesDone.includes("verification"),
-               "3d": stagesDone.includes("verification"),
-               export: stagesDone.includes("export"),
-             },
-           });
-        }
-
-        const total = Math.round(performance.now() - started);
-        revalidate({ verifying: false, gen: { ...state.gen, active: false, elapsedMs: total, generatedInMs: total } });
-        pushChat("system", `✅ Generation completed via API in ${(total / 1000).toFixed(1)} s.`);
-        return; // Done — don't fall through to simulation
-      }
-    } catch {
-      // Backend unreachable — fall through to local simulation below
-    }
+  if (!projectId) {
+    // No project ID — cannot call backend
+    if (tick) window.clearInterval(tick);
+    set({
+      verifying: false,
+      gen: { ...state.gen, active: false },
+      dataSource: "unavailable",
+      blockDiagramStatus: "error",
+      blockDiagramError: "No project ID — cannot generate without a backend project",
+      schematicStatus: "error",
+      schematicError: "No project ID",
+      pcbLayoutStatus: "error",
+      pcbLayoutError: "No project ID",
+      threeDStatus: "error",
+      threeDError: "No project ID",
+    });
+    pushChat("system", "⚠️ No project ID available. Please create a project first.");
+    return;
   }
 
-  if (pollTick) window.clearInterval(pollTick);
-
-  // ── Local simulation fallback (no backend needed) ─────────────────────────
+  // ── Real backend pipeline ─────────────────────────────────────────────────
   try {
-    const { template, confidence, matched } = matchTemplate(prompt);
-    const built = buildDesign(template);
-
-    // Update title now that we have the template
-    set({ gen: { ...state.gen, templateTitle: template.title } });
-
-    const snippets: Partial<Record<GenStageId, string>> = {
-      requirements: `${template.requirements.length} requirements parsed · intent: ${template.title}`,
-      architecture: `${built.parts.filter((p) => p.block).length} functional blocks resolved`,
-      components: `${built.parts.length} parts selected · $${built.parts.reduce((a, p) => a + p.unit * p.qty, 0).toFixed(2)} BOM`,
-      schematic: `${built.nets.length} nets drawn · ERC clean`,
-      placement: `${built.parts.length}/${built.parts.length} placed · ${built.board.w} × ${built.board.h} mm`,
-      routing: `${built.nets.length * 2} trace segments · ${template.layers} layers · 0 airwires`,
-      verification: `DRC + ERC complete · confidence ${confidence}%`,
-      "3d": "STEP assembly rendered · 1 view",
-      export: "Gerber X2, drill, BOM and report staged",
-    };
-
-    for (let i = 0; i < STAGE_DEFS.length; i++) {
-      const def = STAGE_DEFS[i]!;
-      if (genToken !== token) { if (tick) window.clearInterval(tick); return; }
-
-      set({ gen: { ...state.gen, stages: state.gen.stages.map((s, si) => (si === i ? { ...s, status: "active" } : s)) } });
-      await wait(def.ms);
-      if (genToken !== token) { if (tick) window.clearInterval(tick); return; }
-
-      if (def.id === "components") set({ board: built.board, parts: built.parts, meta: { ...built.meta, prompt } });
-      if (def.id === "schematic") set({ nets: built.nets });
-
-      set({
-        ready: { ...state.ready, [def.id]: true },
-        gen: { ...state.gen, stages: state.gen.stages.map((s, si) => si === i ? { ...s, status: "done", snippet: snippets[def.id] ?? "" } : s) },
-      });
-      if (def.id === "verification") revalidate({});
+    // 1. Probe health — gives a clear "can't reach server" error immediately
+    const alive = await probeBackend();
+    if (!alive) {
+      throw new ApiNetworkError(`${API_BASE}/health`);
     }
 
-    if (tick) window.clearInterval(tick);
-    const total = Math.round(performance.now() - started);
-    revalidate({ verifying: false, gen: { ...state.gen, active: false, elapsedMs: total, generatedInMs: total } });
-    pushChat(
-      "system",
-      `✅ ${template.title} generated in ${(total / 1000).toFixed(1)} s — ${state.parts.length} parts, ${state.nets.length} nets, ${state.board.w} × ${state.board.h} mm, confidence ${state.confidence}%.${
-        matched.length ? ` Matched: ${matched.slice(0, 4).join(", ")}.` : " Built from scratch."
-      }`,
+    // 2. Fire the full pipeline generate call
+    //    (this can take several minutes — we poll Supabase in parallel)
+    const generatePromise = apiPost<{ design_state?: Record<string, unknown> }>(
+      `/projects/${projectId}/generate`,
+      { prompt, user_id: "dev-user" },
     );
-  } catch (err) {
-    console.error("Pipeline generation failed:", err);
+
+    // 3. Poll Supabase for incremental stage progress
+    pollTick = window.setInterval(async () => {
+      if (genToken !== token) { clearInterval(pollTick); return; }
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data } = await (supabase as any)
+          .from("projects")
+          .select("status, design_state")
+          .eq("id", projectId)
+          .single();
+        if (!data) return;
+        const ds = data.design_state || {};
+        const patch = applyDesignState(ds);
+        set(patch);
+        if (data.status === "done" || data.status === "failed") clearInterval(pollTick);
+      } catch { /* Supabase may not have table yet — ignore poll errors */ }
+    }, 1500);
+
+    const finalData = await generatePromise;
     if (tick) window.clearInterval(tick);
-    set({ verifying: false, gen: { ...state.gen, active: false } });
-    pushChat("system", `⚠️ Generation failed: ${err instanceof Error ? err.message : String(err)}`);
+    if (pollTick) window.clearInterval(pollTick);
+
+    // Apply final design state from the backend response
+    if (finalData?.design_state) {
+      const patch = applyDesignState(finalData.design_state);
+      set(patch);
+    }
+
+    const total = Math.round(performance.now() - started);
+    revalidate({
+      verifying: false,
+      gen: { ...state.gen, active: false, elapsedMs: total, generatedInMs: total },
+    });
+    pushChat("system", `✅ Generation completed in ${(total / 1000).toFixed(1)} s — ${state.parts.length} parts, ${state.nets.length} nets.`);
+
+  } catch (err) {
+    if (tick) window.clearInterval(tick);
+    if (pollTick) window.clearInterval(pollTick);
+
+    // Distinguish network failure from server-side generation failure
+    let userMsg: string;
+    if (err instanceof ApiNetworkError) {
+      userMsg =
+        `🔌 Cannot reach the FlowCAD backend server.\n` +
+        `Make sure it is running:\n` +
+        `  cd backend && uvicorn main:app --reload --port 8000\n\n` +
+        `Configured API URL: ${API_BASE}`;
+    } else if (err instanceof ApiResponseError) {
+      userMsg = `⚠️ Backend returned an error (${err.status}): ${err.message}`;
+    } else {
+      userMsg = `⚠️ Generation failed: ${err instanceof Error ? err.message : String(err)}`;
+    }
+
+    logger.error("Pipeline generation failed:", err);
+
+    set({
+      verifying: false,
+      gen: { ...state.gen, active: false },
+      dataSource: "unavailable",
+      blockDiagramStatus: "error",
+      blockDiagramError: userMsg,
+      schematicStatus: "error",
+      schematicError: userMsg,
+      pcbLayoutStatus: "error",
+      pcbLayoutError: userMsg,
+      threeDStatus: "error",
+      threeDError: userMsg,
+    });
+    pushChat("system", userMsg);
   }
 }
 
+/** Re-run layout extraction for an existing project (Auto-Layout button). */
+export async function triggerReroute(projectId: string) {
+  set({ rerouteInProgress: true, pcbLayoutStatus: "loading", pcbLayoutError: null });
+
+  try {
+    const data = await apiPost<{ layout: LayoutData; message: string }>(
+      `/projects/${projectId}/reroute`,
+      {},
+    );
+    const { parts, nets } = layoutDataToParts(data.layout);
+    revalidate({
+      layout: data.layout,
+      parts,
+      nets,
+      board: { w: data.layout.board_w_mm, h: data.layout.board_h_mm },
+      pcbLayoutStatus: "ready",
+      pcbLayoutError: null,
+    });
+    pushChat("system", `✅ Auto-Layout complete — ${data.message}`);
+  } catch (err) {
+    const msg =
+      err instanceof ApiNetworkError
+        ? `🔌 Cannot reach backend: ${API_BASE} — is the server running?`
+        : err instanceof Error
+          ? err.message
+          : String(err);
+    set({ pcbLayoutStatus: "error", pcbLayoutError: msg });
+    pushChat("system", `⚠️ Auto-Layout failed: ${msg}`);
+  } finally {
+    set({ rerouteInProgress: false });
+  }
+}
+
+// Simple console logger (avoids import of external logger)
+const logger = {
+  error: (...args: unknown[]) => console.error("[design-store]", ...args),
+};
 
 export function dismissGeneration() {
   set({ gen: { ...state.gen, active: false } });
@@ -758,7 +907,7 @@ export function runCommand(input: string, projectId?: string) {
     const part = findPart(move[1]!.trim());
     const loc = move[2]!;
     if (!part) {
-      reply = `⚠️ No component matching “${move[1]!.trim()}” in the current design.`;
+      reply = `⚠️ No component matching "${move[1]!.trim()}" in the current design.`;
     } else {
       const b = boardPx();
       const pos = LOCATIONS[loc]!(b, part);
@@ -774,7 +923,7 @@ export function runCommand(input: string, projectId?: string) {
     const part = findPart(swap[1]!.trim());
     const newName = swap[2]!.trim().replace(/[.\s]+$/, "");
     if (!part) {
-      reply = `⚠️ No component matching “${swap[1]!.trim()}” to replace.`;
+      reply = `⚠️ No component matching "${swap[1]!.trim()}" to replace.`;
     } else {
       const pretty = newName.toUpperCase();
       revalidate({
@@ -826,7 +975,6 @@ export function runCommand(input: string, projectId?: string) {
       ...slot,
     };
     const parts = [...state.parts, part];
-    layoutSchematic(parts);
     const mcu = state.parts.find((p) => p.sym === "module" || p.sym === "ic")?.ref ?? state.parts[0]?.ref ?? ref;
     revalidate({ parts, nets: [...state.nets, { from: mcu, to: ref, net }] });
     selectPart(ref);

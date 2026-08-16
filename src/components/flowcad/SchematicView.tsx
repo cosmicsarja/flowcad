@@ -1,6 +1,5 @@
 import { CadCanvas, useDragItem } from "./CadCanvas";
 import { moveSchematic, selectPart, useDesign, type Part } from "@/lib/design-store";
-import { CanvasEmpty } from "./CanvasEmpty";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
@@ -219,6 +218,8 @@ function Symbol({ p, active }: { p: Part; active: boolean }) {
 }
 
 /* ------------------------------------------------------------------ */
+/* wire routing                                                        */
+/* ------------------------------------------------------------------ */
 
 function anchors(a: Part, b: Part) {
   const rightOfA = { x: a.sx + a.sw + 20, y: a.sy + a.sh / 2 };
@@ -232,24 +233,46 @@ function anchors(a: Part, b: Part) {
   return { from: rightOfA, to: leftOfB };
 }
 
+/* ------------------------------------------------------------------ */
+/* status overlays                                                     */
+/* ------------------------------------------------------------------ */
+
+function SkeletonSymbol({ x, y }: { x: number; y: number }) {
+  return (
+    <g>
+      <rect x={x} y={y} width={108} height={62} rx={3} className="fill-muted/25 stroke-border/40 animate-pulse" strokeWidth="1" />
+      <rect x={x + 8} y={y + 8} width={60} height={8} rx={2} className="fill-muted/40 animate-pulse" />
+      <rect x={x + 8} y={y + 22} width={40} height={6} rx={2} className="fill-muted/30 animate-pulse" />
+    </g>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* main component                                                      */
+/* ------------------------------------------------------------------ */
+
 export function SchematicView() {
   const d = useDesign();
   const drag = useDragItem();
 
-  if (!d.ready.schematic) {
-    return <CanvasEmpty label="Schematic" hint="Waiting for the schematic generation stage…" />;
-  }
+  const statusLeft = (
+    <span className="label-mono rounded border border-border bg-panel/80 px-2 py-1">
+      {d.schematicStatus === "ready"
+        ? `SHEET 1/1 · ${d.meta.slug.toUpperCase()} · ${d.parts.length} symbols · ${d.nets.length} nets`
+        : d.schematicStatus === "loading"
+          ? "SHEET 1/1 · generating schematic…"
+          : d.schematicStatus === "error"
+            ? `SCHEMATIC ERROR · ${d.schematicError ?? "unknown"}`
+            : "SCHEMATIC · awaiting generation"}
+    </span>
+  );
 
   return (
     <CadCanvas
       viewBox="0 0 1120 560"
       gridClass="cad-grid"
       onBackgroundClick={() => selectPart(null)}
-      statusLeft={
-        <span className="label-mono rounded border border-border bg-panel/80 px-2 py-1">
-          SHEET 1/1 · {d.meta.slug.toUpperCase()} · {d.parts.length} symbols · {d.nets.length} nets
-        </span>
-      }
+      statusLeft={statusLeft}
     >
       {({ toLocal, snap }) => (
         <>
@@ -257,7 +280,7 @@ export function SchematicView() {
           <rect x={8} y={8} width={1104} height={544} fill="none" className="stroke-border" strokeWidth="1.5" />
           <rect x={860} y={480} width={244} height={64} fill="none" className="stroke-border" strokeWidth="1.2" />
           <text x={872} y={500} className="fill-muted-foreground font-mono text-[9px]">
-            FLOWCAD · {d.meta.title}
+            FLOWCAD · {d.meta.title || "—"}
           </text>
           <text x={872} y={514} className="fill-muted-foreground font-mono text-[9px]">
             SHEET 1/1 · REV B · A4
@@ -266,93 +289,137 @@ export function SchematicView() {
             {d.parts.length} SYMBOLS · {d.nets.length} NETS
           </text>
 
-          {d.nets.map((n, i) => {
-            const a = d.parts.find((p) => p.ref === n.from);
-            const b = d.parts.find((p) => p.ref === n.to);
-            if (!a || !b) return null;
-            const { from, to } = anchors(a, b);
-            const mx = from.x + (to.x - from.x) / 2;
-            const hot = d.selected === a.ref || d.selected === b.ref;
-            return (
-              <g key={`${n.from}-${n.to}-${i}`}>
-                <path
-                  d={`M${from.x} ${from.y} H${mx} V${to.y} H${to.x}`}
-                  fill="none"
-                  strokeWidth={hot ? 2.2 : 1.4}
-                  className={hot ? "stroke-teal" : "stroke-teal/55"}
-                />
-                <circle cx={from.x} cy={from.y} r="2.4" className="fill-teal/80" />
-                <circle cx={to.x} cy={to.y} r="2.4" className="fill-teal/80" />
-                <rect
-                  x={mx - n.net.length * 3.3 - 5}
-                  y={(from.y + to.y) / 2 - 8}
-                  width={n.net.length * 6.6 + 10}
-                  height={14}
-                  rx={2}
-                  className="fill-background stroke-border"
-                  strokeWidth="0.8"
-                />
-                <text
-                  x={mx}
-                  y={(from.y + to.y) / 2 + 2}
-                  textAnchor="middle"
-                  className="fill-muted-foreground font-mono text-[8px]"
-                >
-                  {n.net}
-                </text>
-              </g>
-            );
-          })}
+          {/* ── Loading skeleton ───────────────────────────── */}
+          {d.schematicStatus === "loading" && (
+            <>
+              {[40, 160, 280, 400].map((y, i) => (
+                <SkeletonSymbol key={i} x={40} y={y} />
+              ))}
+              {[40, 180, 320].map((y, i) => (
+                <SkeletonSymbol key={`b-${i}`} x={220} y={y} />
+              ))}
+              {[80, 220].map((y, i) => (
+                <SkeletonSymbol key={`c-${i}`} x={450} y={y} />
+              ))}
+            </>
+          )}
 
-          {d.parts.map((p) => {
-            const active = d.selected === p.ref;
-            return (
-              <g
-                key={p.ref}
-                className="cursor-move"
-                onPointerDown={(e) =>
-                  drag(e, {
-                    toLocal,
-                    snap,
-                    start: { x: p.sx, y: p.sy },
-                    onMove: (x, y) => moveSchematic(p.ref, x, y),
-                    onSelect: () => selectPart(p.ref),
-                  })
-                }
-              >
-                {active && (
-                  <rect
-                    x={p.sx - 24}
-                    y={p.sy - 10}
-                    width={p.sw + 48}
-                    height={p.sh + 20}
-                    rx="3"
-                    fill="none"
-                    strokeDasharray="4 3"
-                    className="stroke-teal/60"
-                    strokeWidth="1"
-                  />
-                )}
-                <Symbol p={p} active={active} />
-                <text
-                  x={p.sx + p.sw / 2}
-                  y={p.sy - 14}
-                  textAnchor="middle"
-                  className={cn("font-mono text-[10px]", active ? "fill-teal" : "fill-foreground")}
-                >
-                  {p.ref}
-                </text>
-                <text
-                  x={p.sx + p.sw / 2}
-                  y={p.sy + p.sh + 16}
-                  textAnchor="middle"
-                  className="fill-muted-foreground font-mono text-[9px]"
-                >
-                  {p.value}
-                </text>
-              </g>
-            );
-          })}
+          {/* ── Error state ────────────────────────────────── */}
+          {d.schematicStatus === "error" && (
+            <foreignObject x="160" y="180" width="500" height="120">
+              <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-center">
+                <span className="font-mono text-[11px] font-semibold tracking-wide text-destructive">⚠ SCHEMATIC ERROR</span>
+                <span className="font-mono text-[10px] text-destructive/70">{d.schematicError}</span>
+              </div>
+            </foreignObject>
+          )}
+
+          {/* ── Idle ───────────────────────────────────────── */}
+          {d.schematicStatus === "idle" && (
+            <foreignObject x="200" y="200" width="400" height="80">
+              <div className="flex items-center justify-center rounded-xl border border-border bg-panel/60 p-5 text-center">
+                <span className="font-mono text-[10px] text-muted-foreground">Enter a prompt below to generate the schematic</span>
+              </div>
+            </foreignObject>
+          )}
+
+          {/* ── Real data ──────────────────────────────────── */}
+          {d.schematicStatus === "ready" && (
+            <>
+              {/* Net wires with actual net name labels */}
+              {d.nets.map((n, i) => {
+                const a = d.parts.find((p) => p.ref === n.from);
+                const b = d.parts.find((p) => p.ref === n.to);
+                if (!a || !b) return null;
+                const { from, to } = anchors(a, b);
+                const mx = from.x + (to.x - from.x) / 2;
+                const hot = d.selected === a.ref || d.selected === b.ref;
+                return (
+                  <g key={`${n.from}-${n.to}-${i}`}>
+                    <path
+                      d={`M${from.x} ${from.y} H${mx} V${to.y} H${to.x}`}
+                      fill="none"
+                      strokeWidth={hot ? 2.2 : 1.4}
+                      className={hot ? "stroke-teal" : "stroke-teal/55"}
+                    />
+                    <circle cx={from.x} cy={from.y} r="2.4" className="fill-teal/80" />
+                    <circle cx={to.x} cy={to.y} r="2.4" className="fill-teal/80" />
+                    {/* Net name label at midpoint */}
+                    <rect
+                      x={mx - n.net.length * 3.3 - 5}
+                      y={(from.y + to.y) / 2 - 8}
+                      width={n.net.length * 6.6 + 10}
+                      height={14}
+                      rx={2}
+                      className="fill-background stroke-border"
+                      strokeWidth="0.8"
+                    />
+                    <text
+                      x={mx}
+                      y={(from.y + to.y) / 2 + 2}
+                      textAnchor="middle"
+                      className="fill-muted-foreground font-mono text-[8px]"
+                    >
+                      {n.net}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Component symbols */}
+              {d.parts.map((p) => {
+                const active = d.selected === p.ref;
+                return (
+                  <g
+                    key={p.ref}
+                    className="cursor-move"
+                    onPointerDown={(e) =>
+                      drag(e, {
+                        toLocal,
+                        snap,
+                        start: { x: p.sx, y: p.sy },
+                        onMove: (x, y) => moveSchematic(p.ref, x, y),
+                        onSelect: () => selectPart(p.ref),
+                      })
+                    }
+                  >
+                    {active && (
+                      <rect
+                        x={p.sx - 24}
+                        y={p.sy - 10}
+                        width={p.sw + 48}
+                        height={p.sh + 20}
+                        rx="3"
+                        fill="none"
+                        strokeDasharray="4 3"
+                        className="stroke-teal/60"
+                        strokeWidth="1"
+                      />
+                    )}
+                    <Symbol p={p} active={active} />
+                    {/* Reference designator */}
+                    <text
+                      x={p.sx + p.sw / 2}
+                      y={p.sy - 14}
+                      textAnchor="middle"
+                      className={cn("font-mono text-[10px]", active ? "fill-teal" : "fill-foreground")}
+                    >
+                      {p.ref}
+                    </text>
+                    {/* Value label */}
+                    <text
+                      x={p.sx + p.sw / 2}
+                      y={p.sy + p.sh + 16}
+                      textAnchor="middle"
+                      className="fill-muted-foreground font-mono text-[9px]"
+                    >
+                      {p.value}
+                    </text>
+                  </g>
+                );
+              })}
+            </>
+          )}
         </>
       )}
     </CadCanvas>

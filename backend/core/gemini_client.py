@@ -90,7 +90,6 @@ def _raw_call(model: str, system: str, user: str, token_limit: int) -> str:
         system_instruction=system,
         max_output_tokens=token_limit,
         temperature=0.1,
-        thinking_config=types.ThinkingConfig(thinking_budget=0),
     )
     response = _client().models.generate_content(
         model=model,
