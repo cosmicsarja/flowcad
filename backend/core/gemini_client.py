@@ -26,12 +26,36 @@ _active_model: str | None = None   # set on first successful call
 
 # Ordered fallback list (first match wins)
 _FALLBACK_MODELS = [
-    "models/gemini-2.5-flash",     # preferred — may become available
-    "models/gemini-3.5-flash",     # confirmed working for current key
+    # 2.5 Series
+    "models/gemini-2.5-pro",
+    "models/gemini-2.5-flash",
+    "models/gemini-2.5-flash-lite",
+    
+    # 2.0 Series
+    "models/gemini-2.0-pro-exp-02-05",
+    "models/gemini-2.0-flash",
+    "models/gemini-2.0-flash-lite-preview-02-05",
+    "models/gemini-2.0-flash-thinking-exp-01-21",
+    
+    # 3.x Series (Existing future versions from current codebase)
+    "models/gemini-3.5-flash",
     "models/gemini-3.1-flash-lite",
     "models/gemini-3-flash-preview",
+    
+    # 1.5 Series
+    "models/gemini-1.5-pro",
+    "models/gemini-1.5-pro-latest",
+    "models/gemini-1.5-flash",
+    "models/gemini-1.5-flash-latest",
+    "models/gemini-1.5-flash-8b",
+    
+    # Legacy / 1.0 Series
+    "models/gemini-1.0-pro",
+    "models/gemini-pro",
+    
+    # Generic aliases
     "models/gemini-flash-latest",
-    "models/gemini-2.5-flash-lite",
+    "models/gemini-pro-latest",
 ]
 
 
