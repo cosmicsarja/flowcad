@@ -53,7 +53,9 @@ function LoadingOverlay() {
       </div>
       <div className="flex flex-col items-center gap-1 text-center">
         <span className="font-mono text-[12px] font-semibold text-teal">GENERATING 3D MODEL</span>
-        <span className="font-mono text-[10px] text-muted-foreground">Building geometry from layout…</span>
+        <span className="font-mono text-[10px] text-muted-foreground">
+          Building geometry from layout…
+        </span>
       </div>
     </div>
   );
@@ -67,8 +69,12 @@ function UnavailableOverlay({ message }: { message: string }) {
           <AlertTriangle className="size-6 text-warn" />
         </div>
         <div className="flex flex-col gap-1">
-          <span className="font-mono text-[13px] font-semibold text-foreground">3D Model Unavailable</span>
-          <span className="max-w-[280px] font-mono text-[10px] text-muted-foreground leading-relaxed">{message}</span>
+          <span className="font-mono text-[13px] font-semibold text-foreground">
+            3D Model Unavailable
+          </span>
+          <span className="max-w-[280px] font-mono text-[10px] text-muted-foreground leading-relaxed">
+            {message}
+          </span>
         </div>
         <div className="rounded-lg border border-border/50 bg-background/50 px-4 py-2">
           <span className="font-mono text-[10px] text-muted-foreground">
@@ -85,7 +91,9 @@ function ErrorOverlay({ message }: { message: string }) {
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#0c0c0c]">
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-destructive/40 bg-destructive/5 p-8 text-center">
         <AlertTriangle className="size-8 text-destructive" />
-        <span className="font-mono text-[12px] font-semibold text-destructive">3D Model Generation Error</span>
+        <span className="font-mono text-[12px] font-semibold text-destructive">
+          3D Model Generation Error
+        </span>
         <span className="max-w-[300px] font-mono text-[10px] text-destructive/70">{message}</span>
       </div>
     </div>
@@ -199,12 +207,12 @@ export function ThreeDView() {
       const boardW = layout.board_w_mm;
       const boardH = layout.board_h_mm;
       const boardThickness = 1.6;
-      
+
       const boardGeo = new THREE.BoxGeometry(boardW, boardThickness, boardH);
-      const boardMat = new THREE.MeshStandardMaterial({ 
+      const boardMat = new THREE.MeshStandardMaterial({
         color: 0x013220, // Dark Green
-        roughness: 0.6, 
-        metalness: 0.1 
+        roughness: 0.6,
+        metalness: 0.1,
       });
       const boardMesh = new THREE.Mesh(boardGeo, boardMat);
       // Offset so origin is top-left in 2D coordinates (X right, Z down)
@@ -213,10 +221,10 @@ export function ThreeDView() {
       group.add(boardMesh);
 
       // 2. Copper Traces (Routing)
-      layout.routing?.forEach(route => {
+      layout.routing?.forEach((route) => {
         const isTop = route.layer === "F.Cu";
-        const yOffset = isTop ? (boardThickness / 2 + 0.01) : -(boardThickness / 2 + 0.01);
-        
+        const yOffset = isTop ? boardThickness / 2 + 0.01 : -(boardThickness / 2 + 0.01);
+
         const dx = route.x2_mm - route.x1_mm;
         const dz = route.y2_mm - route.y1_mm; // y in 2D is z in 3D
         const length = Math.sqrt(dx * dx + dz * dz);
@@ -224,61 +232,63 @@ export function ThreeDView() {
 
         if (length > 0) {
           const traceGeo = new THREE.BoxGeometry(length, 0.05, route.width_mm);
-          const traceMat = new THREE.MeshStandardMaterial({ 
+          const traceMat = new THREE.MeshStandardMaterial({
             color: 0xb87333, // Copper
             roughness: 0.2,
-            metalness: 0.8
+            metalness: 0.8,
           });
           const traceMesh = new THREE.Mesh(traceGeo, traceMat);
-          
-          traceMesh.position.set(
-            route.x1_mm + dx / 2, 
-            yOffset, 
-            route.y1_mm + dz / 2
-          );
+
+          traceMesh.position.set(route.x1_mm + dx / 2, yOffset, route.y1_mm + dz / 2);
           traceMesh.rotation.y = angle;
           group.add(traceMesh);
         }
       });
 
       // 3. Components (Placement)
-      layout.placement?.forEach(comp => {
+      layout.placement?.forEach((comp) => {
         const isTop = comp.layer === "F.Cu";
-        
+
         // Component height pseudo-random based on footprint name to look realistic
-        const compHeight = comp.footprint.includes('CAP') ? 3 : 
-                           comp.footprint.includes('RES') ? 1.5 : 
-                           comp.footprint.includes('IC') || comp.footprint.includes('SOIC') ? 2 : 4;
-        
+        const compHeight = comp.footprint.includes("CAP")
+          ? 3
+          : comp.footprint.includes("RES")
+            ? 1.5
+            : comp.footprint.includes("IC") || comp.footprint.includes("SOIC")
+              ? 2
+              : 4;
+
         const compGeo = new THREE.BoxGeometry(comp.w_mm, compHeight, comp.h_mm);
-        const compMat = new THREE.MeshStandardMaterial({ 
+        const compMat = new THREE.MeshStandardMaterial({
           color: 0x2a2a2a, // Dark grey/black plastic
           roughness: 0.8,
-          metalness: 0.1
+          metalness: 0.1,
         });
         const compMesh = new THREE.Mesh(compGeo, compMat);
-        
-        const yOffset = isTop ? (boardThickness / 2 + compHeight / 2) : -(boardThickness / 2 + compHeight / 2);
-        
+
+        const yOffset = isTop
+          ? boardThickness / 2 + compHeight / 2
+          : -(boardThickness / 2 + compHeight / 2);
+
         // comp.x_mm / y_mm represents top-left. Center is + w/2, + h/2
-        compMesh.position.set(
-          comp.x_mm + comp.w_mm / 2,
-          yOffset,
-          comp.y_mm + comp.h_mm / 2
-        );
+        compMesh.position.set(comp.x_mm + comp.w_mm / 2, yOffset, comp.y_mm + comp.h_mm / 2);
         // comp.rotation is in degrees
         compMesh.rotation.y = THREE.MathUtils.degToRad(-comp.rotation);
         compMesh.castShadow = true;
         compMesh.receiveShadow = true;
         group.add(compMesh);
-        
+
         // Optional: Silver pads on the component
         const padGeo = new THREE.BoxGeometry(comp.w_mm * 0.1, compHeight + 0.1, comp.h_mm * 0.8);
-        const padMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9, roughness: 0.1 });
+        const padMat = new THREE.MeshStandardMaterial({
+          color: 0xcccccc,
+          metalness: 0.9,
+          roughness: 0.1,
+        });
         const pad1 = new THREE.Mesh(padGeo, padMat);
-        pad1.position.set(-comp.w_mm / 2 * 0.9, 0, 0);
+        pad1.position.set((-comp.w_mm / 2) * 0.9, 0, 0);
         const pad2 = new THREE.Mesh(padGeo, padMat);
-        pad2.position.set(comp.w_mm / 2 * 0.9, 0, 0);
+        pad2.position.set((comp.w_mm / 2) * 0.9, 0, 0);
         compMesh.add(pad1, pad2);
       });
 
@@ -384,15 +394,19 @@ export function ThreeDView() {
           <CanvasBtn label="Reset view" onClick={resetCamera}>
             <RotateCcw className="size-3.5" />
           </CanvasBtn>
-          <CanvasBtn label="Toggle wireframe" onClick={() => {
-            if (!modelRef.current) return;
-            modelRef.current.traverse((child) => {
-              if (child instanceof THREE.Mesh) {
-                (child.material as THREE.MeshStandardMaterial).wireframe =
-                  !(child.material as THREE.MeshStandardMaterial).wireframe;
-              }
-            });
-          }}>
+          <CanvasBtn
+            label="Toggle wireframe"
+            onClick={() => {
+              if (!modelRef.current) return;
+              modelRef.current.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                  (child.material as THREE.MeshStandardMaterial).wireframe = !(
+                    child.material as THREE.MeshStandardMaterial
+                  ).wireframe;
+                }
+              });
+            }}
+          >
             <Box className="size-3.5" />
           </CanvasBtn>
         </div>
