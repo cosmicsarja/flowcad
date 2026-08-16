@@ -146,8 +146,8 @@ def _glb_path(project_id: str) -> Path:
 
 
 def _glb_url(project_id: str) -> str:
-    """Public URL the frontend will use to fetch the GLB."""
-    return f"http://127.0.0.1:8000/projects/{project_id}/artifacts/board.glb"
+    """Relative URL the frontend will use to fetch the GLB."""
+    return f"/projects/{project_id}/artifacts/board.glb"
 
 
 # ─────────────────────────────────────────────────────────────────────────────

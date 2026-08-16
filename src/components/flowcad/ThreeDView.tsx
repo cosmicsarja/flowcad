@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RotateCcw, ZoomIn, ZoomOut, Box, AlertTriangle, Loader2, Move3d } from "lucide-react";
 import { CanvasBtn } from "./CadCanvas";
@@ -53,8 +52,8 @@ function LoadingOverlay() {
         <div className="absolute inset-0 rounded-full bg-teal/20 blur-xl animate-pulse" />
       </div>
       <div className="flex flex-col items-center gap-1 text-center">
-        <span className="font-mono text-[12px] font-semibold text-teal">LOADING 3D MODEL</span>
-        <span className="font-mono text-[10px] text-muted-foreground">Fetching GLB from backend…</span>
+        <span className="font-mono text-[12px] font-semibold text-teal">GENERATING 3D MODEL</span>
+        <span className="font-mono text-[10px] text-muted-foreground">Building geometry from layout…</span>
       </div>
     </div>
   );
@@ -73,7 +72,7 @@ function UnavailableOverlay({ message }: { message: string }) {
         </div>
         <div className="rounded-lg border border-border/50 bg-background/50 px-4 py-2">
           <span className="font-mono text-[10px] text-muted-foreground">
-            Generate a project with a running backend to produce the GLB export.
+            Generate a project to produce the 3D layout representation.
           </span>
         </div>
       </div>
@@ -86,7 +85,7 @@ function ErrorOverlay({ message }: { message: string }) {
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#0c0c0c]">
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-destructive/40 bg-destructive/5 p-8 text-center">
         <AlertTriangle className="size-8 text-destructive" />
-        <span className="font-mono text-[12px] font-semibold text-destructive">3D Model Load Error</span>
+        <span className="font-mono text-[12px] font-semibold text-destructive">3D Model Generation Error</span>
         <span className="max-w-[300px] font-mono text-[10px] text-destructive/70">{message}</span>
       </div>
     </div>
@@ -114,7 +113,6 @@ export function ThreeDView() {
 
   const [loadState, setLoadState] = useState<LoadState>("idle");
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
 
   // ── Initialise renderer + scene once ──────────────────────────────
   useEffect(() => {
@@ -175,16 +173,15 @@ export function ThreeDView() {
     };
   }, []);
 
-  // ── Load GLB when glbUrl changes ───────────────────────────────────
+  // ── Load / Build 3D Model when layout changes ───────────────────────────────────
   useEffect(() => {
-    const glbUrl = d.glbUrl;
-    if (!glbUrl || !sceneRef.current) {
-      if (!glbUrl && d.threeDStatus === "idle") {
+    const layout = d.layout;
+    if (!layout || !sceneRef.current) {
+      if (!layout && d.threeDStatus === "idle") {
         setLoadState("idle");
       }
       return;
     }
-    if (glbUrl === loadedUrl) return; // already loaded this URL
 
     setLoadState("loading");
     setLoadError(null);
@@ -195,58 +192,134 @@ export function ThreeDView() {
       modelRef.current = null;
     }
 
-    const loader = new GLTFLoader();
-    loader.load(
-      glbUrl,
-      (gltf) => {
-        const model = gltf.scene;
+    try {
+      const group = new THREE.Group();
 
-        // Center the model on the origin
-        const box = new THREE.Box3().setFromObject(model);
-        const center = new THREE.Vector3();
-        box.getCenter(center);
-        model.position.sub(center);
+      // 1. PCB Board
+      const boardW = layout.board_w_mm;
+      const boardH = layout.board_h_mm;
+      const boardThickness = 1.6;
+      
+      const boardGeo = new THREE.BoxGeometry(boardW, boardThickness, boardH);
+      const boardMat = new THREE.MeshStandardMaterial({ 
+        color: 0x013220, // Dark Green
+        roughness: 0.6, 
+        metalness: 0.1 
+      });
+      const boardMesh = new THREE.Mesh(boardGeo, boardMat);
+      // Offset so origin is top-left in 2D coordinates (X right, Z down)
+      boardMesh.position.set(boardW / 2, 0, boardH / 2);
+      boardMesh.receiveShadow = true;
+      group.add(boardMesh);
 
-        // Scale so longest axis is ~60 units
-        const size = new THREE.Vector3();
-        box.getSize(size);
-        const maxDim = Math.max(size.x, size.y, size.z);
-        if (maxDim > 0) model.scale.setScalar(60 / maxDim);
+      // 2. Copper Traces (Routing)
+      layout.routing?.forEach(route => {
+        const isTop = route.layer === "F.Cu";
+        const yOffset = isTop ? (boardThickness / 2 + 0.01) : -(boardThickness / 2 + 0.01);
+        
+        const dx = route.x2_mm - route.x1_mm;
+        const dz = route.y2_mm - route.y1_mm; // y in 2D is z in 3D
+        const length = Math.sqrt(dx * dx + dz * dz);
+        const angle = Math.atan2(-dz, dx); // Note: Z goes down in our 2D layout
 
-        sceneRef.current!.add(model);
-        modelRef.current = model;
+        if (length > 0) {
+          const traceGeo = new THREE.BoxGeometry(length, 0.05, route.width_mm);
+          const traceMat = new THREE.MeshStandardMaterial({ 
+            color: 0xb87333, // Copper
+            roughness: 0.2,
+            metalness: 0.8
+          });
+          const traceMesh = new THREE.Mesh(traceGeo, traceMat);
+          
+          traceMesh.position.set(
+            route.x1_mm + dx / 2, 
+            yOffset, 
+            route.y1_mm + dz / 2
+          );
+          traceMesh.rotation.y = angle;
+          group.add(traceMesh);
+        }
+      });
 
-        // Reset camera to a nice isometric angle
-        const cam = cameraRef.current!;
-        cam.position.set(60, 50, 80);
-        controlsRef.current?.target.set(0, 0, 0);
-        controlsRef.current?.update();
-
-        setLoadedUrl(glbUrl);
-        setLoadState("ready");
-      },
-      undefined,
-      (err) => {
-        console.error("[ThreeDView] GLTFLoader error:", err);
-        setLoadState("error");
-        setLoadError(
-          err instanceof Error
-            ? err.message
-            : "Failed to load GLB — the model may be corrupt or the server returned an error.",
+      // 3. Components (Placement)
+      layout.placement?.forEach(comp => {
+        const isTop = comp.layer === "F.Cu";
+        
+        // Component height pseudo-random based on footprint name to look realistic
+        const compHeight = comp.footprint.includes('CAP') ? 3 : 
+                           comp.footprint.includes('RES') ? 1.5 : 
+                           comp.footprint.includes('IC') || comp.footprint.includes('SOIC') ? 2 : 4;
+        
+        const compGeo = new THREE.BoxGeometry(comp.w_mm, compHeight, comp.h_mm);
+        const compMat = new THREE.MeshStandardMaterial({ 
+          color: 0x2a2a2a, // Dark grey/black plastic
+          roughness: 0.8,
+          metalness: 0.1
+        });
+        const compMesh = new THREE.Mesh(compGeo, compMat);
+        
+        const yOffset = isTop ? (boardThickness / 2 + compHeight / 2) : -(boardThickness / 2 + compHeight / 2);
+        
+        // comp.x_mm / y_mm represents top-left. Center is + w/2, + h/2
+        compMesh.position.set(
+          comp.x_mm + comp.w_mm / 2,
+          yOffset,
+          comp.y_mm + comp.h_mm / 2
         );
-      },
-    );
-  }, [d.glbUrl, d.threeDStatus, loadedUrl]);
+        // comp.rotation is in degrees
+        compMesh.rotation.y = THREE.MathUtils.degToRad(-comp.rotation);
+        compMesh.castShadow = true;
+        compMesh.receiveShadow = true;
+        group.add(compMesh);
+        
+        // Optional: Silver pads on the component
+        const padGeo = new THREE.BoxGeometry(comp.w_mm * 0.1, compHeight + 0.1, comp.h_mm * 0.8);
+        const padMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9, roughness: 0.1 });
+        const pad1 = new THREE.Mesh(padGeo, padMat);
+        pad1.position.set(-comp.w_mm / 2 * 0.9, 0, 0);
+        const pad2 = new THREE.Mesh(padGeo, padMat);
+        pad2.position.set(comp.w_mm / 2 * 0.9, 0, 0);
+        compMesh.add(pad1, pad2);
+      });
+
+      // Center the entire board group on the origin
+      const box = new THREE.Box3().setFromObject(group);
+      const center = new THREE.Vector3();
+      box.getCenter(center);
+      group.position.sub(center);
+
+      // Scale so longest axis is ~60 units
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z);
+      if (maxDim > 0) group.scale.setScalar(60 / maxDim);
+
+      sceneRef.current!.add(group);
+      modelRef.current = group;
+
+      // Reset camera to a nice isometric angle
+      const cam = cameraRef.current!;
+      cam.position.set(60, 50, 80);
+      controlsRef.current?.target.set(0, 0, 0);
+      controlsRef.current?.update();
+
+      setLoadState("ready");
+    } catch (err) {
+      console.error("[ThreeDView] Native Generation error:", err);
+      setLoadState("error");
+      setLoadError(err instanceof Error ? err.message : "Failed to generate 3D PCB view.");
+    }
+  }, [d.layout]);
 
   // ── Sync threeDStatus to loadState ────────────────────────────────
   useEffect(() => {
-    if (d.threeDStatus === "loading" && loadState === "idle") setLoadState("loading");
-    if (d.threeDStatus === "error" && loadState !== "error") {
+    if (d.layout && loadState === "idle") setLoadState("ready");
+    // Ignore backend's export error if we have layout data to render
+    if (!d.layout && d.threeDStatus === "error" && loadState !== "error") {
       setLoadState("error");
       setLoadError(d.threeDError ?? "3D model unavailable");
     }
-    if (d.threeDStatus === "idle") setLoadState("idle");
-  }, [d.threeDStatus, d.threeDError, loadState]);
+  }, [d.layout, d.threeDStatus, d.threeDError, loadState]);
 
   const resetCamera = () => {
     const cam = cameraRef.current;
@@ -290,7 +363,7 @@ export function ThreeDView() {
         <>
           <div className="pointer-events-none absolute top-2 left-2 flex items-center gap-2">
             <span className="label-mono rounded border border-border bg-panel/80 px-2 py-1 backdrop-blur text-teal shadow-lg">
-              GLB · {d.board.w.toFixed(1)} × {d.board.h.toFixed(1)} mm
+              3D VIEW · {d.board.w.toFixed(1)} × {d.board.h.toFixed(1)} mm
             </span>
           </div>
           <div className="pointer-events-none absolute bottom-3 left-3 hidden items-center gap-1.5 font-mono text-[10px] text-muted-foreground sm:flex">

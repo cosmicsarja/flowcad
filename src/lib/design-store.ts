@@ -543,7 +543,16 @@ function applyDesignState(ds: Record<string, unknown>): Partial<DesignState> {
   }
 
   // GLB URL
-  const glbUrl = (ds.glb_url as string) || null;
+  let glbUrl = (ds.glb_url as string) || null;
+  // Rewrite old hardcoded URLs and prepend API_BASE to relative URLs
+  if (glbUrl) {
+    if (glbUrl.startsWith("http://127.0.0.1:8000")) {
+      glbUrl = glbUrl.replace("http://127.0.0.1:8000", API_BASE);
+    } else if (glbUrl.startsWith("/")) {
+      glbUrl = API_BASE + glbUrl;
+    }
+  }
+
   const threeDStatus: ViewStatus = glbUrl ? "ready" : stagesDone.includes("export") ? "error" : "idle";
   const threeDError = !glbUrl && stagesDone.includes("export") ? "GLB model URL missing from design state" : null;
 
