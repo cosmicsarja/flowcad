@@ -58,10 +58,10 @@ _explicit_origins = [o.strip() for o in settings.cors_origins.split(",") if o.st
 #   • *.onrender.com (Render.com deployments)
 _ORIGIN_REGEX = (
     r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
-    r"|^https://[a-zA-Z0-9\-]+\.lovable\.app$"
-    r"|^https://[a-zA-Z0-9\-]+\.lovable\.dev$"
-    r"|^https://[a-zA-Z0-9\-]+\.vercel\.app$"
-    r"|^https://[a-zA-Z0-9\-]+\.onrender\.com$"
+    r"|^https://([a-zA-Z0-9\-]+\.)?lovable\.app$"
+    r"|^https://([a-zA-Z0-9\-]+\.)?lovable\.dev$"
+    r"|^https://([a-zA-Z0-9\-]+\.)?vercel\.app$"
+    r"|^https://([a-zA-Z0-9\-]+\.)?onrender\.com$"
 )
 
 app.add_middleware(
