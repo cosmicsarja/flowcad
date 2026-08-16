@@ -30,7 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
 from fastapi.responses import FileResponse
 
 from core import supabase_client as db
@@ -187,38 +187,15 @@ def create_project(body: CreateProjectInput):
 
     return ProjectRow(**inserted[0])
 
-@router.post("/projects/{project_id}/generate", response_model=ProjectRow)
-def generate_project(
+def _run_pipeline(
     project_id: str,
     body: GenerateProjectInput,
-    user_id: Optional[str] = Query(None, description="Override user_id for dev/testing"),
+    resolved_user: Optional[str],
+    design_state: dict,
 ):
     """
-    Orchestrate all 8 pipeline stages for the given project.
-    Writes incremental progress to Supabase after each stage.
-    After Stage 6 (place & route) also writes `layout` and `glb_url`.
+    Executes the actual pipeline stages in the background.
     """
-    resolved_user = _resolve_user_id(user_id or body.user_id)
-
-    # ── 1. Check usage limit ─────────────────────────────────────────────────
-    _check_usage_limit(resolved_user)
-
-    # ── 2. Ensure project exists and mark as generating ──────────────────────
-    db.upsert("projects", {
-        "id": project_id,
-        "prompt": body.prompt,
-        "name": body.name or "New Project",
-        "status": GenerationStatus.generating.value,
-        "user_id": resolved_user,
-        "updated_at": _now_iso(),
-    })
-    design_state: dict = {
-        "prompt": body.prompt,
-        "stage": "requirements",
-        "stages_done": [],
-        "last_error": None,
-    }
-
     try:
         # ── Stage 1: Requirements ────────────────────────────────────────────
         logger.info("[%s] Stage 1 — requirements", project_id)
@@ -326,18 +303,21 @@ def generate_project(
         design_state["stage"] = "done"
         _write_design_state(project_id, design_state)
 
-    except HTTPException:
-        raise
+    except HTTPException as e:
+        # Don't re-raise in background tasks, just record the failure
+        logger.exception("[%s] Pipeline failed with HTTP Exception", project_id)
+        design_state["last_error"] = str(e.detail)
+        _set_project_status(project_id, GenerationStatus.failed, {
+            "design_state": design_state,
+        })
+        return
     except Exception as exc:
         logger.exception("[%s] Pipeline failed", project_id)
         design_state["last_error"] = str(exc)
         _set_project_status(project_id, GenerationStatus.failed, {
             "design_state": design_state,
         })
-        raise HTTPException(
-            status_code=500,
-            detail={"error": "pipeline_failed", "stage": design_state.get("stage"), "message": str(exc)},
-        )
+        return
 
     # ── Success: finalise project row ─────────────────────────────────────────
     _set_project_status(project_id, GenerationStatus.done, {
@@ -379,11 +359,47 @@ def generate_project(
         project_id, design_state.get("confidence", 0), len(design_state["stages_done"]),
     )
 
+@router.post("/projects/{project_id}/generate", response_model=ProjectRow)
+def generate_project(
+    project_id: str,
+    body: GenerateProjectInput,
+    background_tasks: BackgroundTasks,
+    user_id: Optional[str] = Query(None, description="Override user_id for dev/testing"),
+):
+    """
+    Orchestrate all 8 pipeline stages for the given project in the background.
+    Returns immediately so cloud load balancers do not timeout the connection.
+    Writes incremental progress to Supabase after each stage.
+    """
+    resolved_user = _resolve_user_id(user_id or body.user_id)
+
+    # ── 1. Check usage limit ─────────────────────────────────────────────────
+    _check_usage_limit(resolved_user)
+
+    # ── 2. Ensure project exists and mark as generating ──────────────────────
+    db.upsert("projects", {
+        "id": project_id,
+        "prompt": body.prompt,
+        "name": body.name or "New Project",
+        "status": GenerationStatus.generating.value,
+        "user_id": resolved_user,
+        "updated_at": _now_iso(),
+    })
+    design_state: dict = {
+        "prompt": body.prompt,
+        "stage": "requirements",
+        "stages_done": [],
+        "last_error": None,
+    }
+
+    # Queue the heavy lifting
+    background_tasks.add_task(_run_pipeline, project_id, body, resolved_user, design_state)
+
     return ProjectRow(
         id=project_id,
         user_id=resolved_user,
-        name=f"{reqs.microcontroller} Design",
-        status=GenerationStatus.done,
+        name=body.name or "New Project",
+        status=GenerationStatus.generating,
         design_state=design_state,
         prompt=body.prompt,
         updated_at=datetime.now(timezone.utc),
@@ -395,6 +411,7 @@ def generate_project(
 @router.post("/projects/new", response_model=ProjectRow, status_code=201)
 def create_and_generate(
     body: GenerateProjectInput,
+    background_tasks: BackgroundTasks,
     user_id: Optional[str] = Query(None),
 ):
     """
@@ -417,7 +434,8 @@ def create_and_generate(
     })
 
     # Delegate to the main orchestration handler
-    return generate_project(project_id, body, user_id=user_id)
+    return generate_project(project_id, body, background_tasks, user_id=user_id)
+
 
 
 # ── GET project status ────────────────────────────────────────────────────────

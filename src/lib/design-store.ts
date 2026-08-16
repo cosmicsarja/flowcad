@@ -3,14 +3,7 @@ import { type Check, type ChatEntry } from "./flowcad-data";
 import { type SymKind, type BlockKind, SYM_GEO } from "./templates";
 import { supabase } from "@/integrations/supabase/client";
 import { type LayoutData, type NetlistData } from "./layout-types";
-import {
-  API_BASE,
-  ApiNetworkError,
-  ApiResponseError,
-  probeBackend,
-  apiPost,
-} from "./api";
-
+import { API_BASE, ApiNetworkError, ApiResponseError, probeBackend, apiPost } from "./api";
 
 export type Part = {
   ref: string;
@@ -76,7 +69,16 @@ export type Generation = {
   templateTitle: string;
 };
 
-export type ArchNode = { id: string; label: string; sub: string; kind: string; x: number; y: number; w: number; h: number };
+export type ArchNode = {
+  id: string;
+  label: string;
+  sub: string;
+  kind: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
 export type ArchEdge = { from: string; to: string; net: string };
 
 export type DesignState = {
@@ -137,7 +139,8 @@ const SCH_GRID = 9; // svg units
 function symForPackage(pkg: string): SymKind {
   const p = pkg.toUpperCase();
   if (p.includes("MODULE") || p.includes("WROOM") || p.includes("PICO")) return "module";
-  if (p.includes("QFN") || p.includes("TQFP") || p.includes("SOIC") || p.includes("LGA")) return "ic";
+  if (p.includes("QFN") || p.includes("TQFP") || p.includes("SOIC") || p.includes("LGA"))
+    return "ic";
   if (p.includes("SOT-223") || p.includes("TO-252")) return "reg";
   if (p.includes("0402") || p.includes("0603") || p.includes("0805") || p.includes("1206")) {
     // guess resistor vs cap by ref prefix (caller supplies ref separately)
@@ -174,7 +177,9 @@ function layoutDataToParts(layout: LayoutData): { parts: Part[]; nets: Net[] } {
   const parts: Part[] = [];
 
   // Schematic layout: simple column flow
-  let sx = 40, sy = 40, colW = 0;
+  let sx = 40,
+    sy = 40,
+    colW = 0;
 
   for (const comp of layout.placement) {
     const pkg = comp.footprint || "0603";
@@ -237,7 +242,12 @@ function layoutDataToParts(layout: LayoutData): { parts: Part[]; nets: Net[] } {
 /* ------------------------------------------------------------------ */
 
 const STAGE_DEFS: Array<{ id: GenStageId; label: string; running: string; ms: number }> = [
-  { id: "requirements", label: "Requirement Extraction", running: "Parsing requirements…", ms: 700 },
+  {
+    id: "requirements",
+    label: "Requirement Extraction",
+    running: "Parsing requirements…",
+    ms: 700,
+  },
   { id: "architecture", label: "Architecture", running: "Extracting architecture…", ms: 850 },
   { id: "components", label: "Components", running: "Selecting components…", ms: 1000 },
   { id: "schematic", label: "Schematic", running: "Generating schematic…", ms: 1100 },
@@ -255,7 +265,12 @@ function freshGeneration(prompt = "", title = ""): Generation {
   return {
     active: false,
     prompt,
-    stages: STAGE_DEFS.map((s) => ({ id: s.id, label: s.label, running: s.running, status: "pending" as const })),
+    stages: STAGE_DEFS.map((s) => ({
+      id: s.id,
+      label: s.label,
+      running: s.running,
+      status: "pending" as const,
+    })),
     elapsedMs: 0,
     generatedInMs: null,
     templateTitle: title,
@@ -358,7 +373,13 @@ export function architectureBlocks(s: DesignState = state) {
   };
   withBlock.forEach((p) => (cols[p.block!.kind] ?? []).push(p));
 
-  const colX: Record<BlockKind, number> = { power: 30, mcu: 300, sensor: 600, actuator: 600, io: 600 };
+  const colX: Record<BlockKind, number> = {
+    power: 30,
+    mcu: 300,
+    sensor: 600,
+    actuator: 600,
+    io: 600,
+  };
   const blocks: Array<{
     ref: string;
     label: string;
@@ -377,7 +398,8 @@ export function architectureBlocks(s: DesignState = state) {
       const w = kind === "mcu" ? 200 : 176;
       const h = kind === "mcu" ? 92 : 62;
       const x = colX[kind] ?? 30;
-      const y = kind === "power" ? 60 + i * 110 : kind === "mcu" ? 150 + i * 120 : (rightY += 0) && 0;
+      const y =
+        kind === "power" ? 60 + i * 110 : kind === "mcu" ? 150 + i * 120 : (rightY += 0) && 0;
       blocks.push({
         ref: p.ref,
         label: p.block!.label,
@@ -400,7 +422,11 @@ function clamp(v: number, a: number, b: number) {
   return Math.min(b, Math.max(a, v));
 }
 
-function computeChecks(s: DesignState): { checks: Check[]; confidence: number; drcNote: string | null } {
+function computeChecks(s: DesignState): {
+  checks: Check[];
+  confidence: number;
+  drcNote: string | null;
+} {
   const b = boardPx(s);
   const offenders = s.parts.filter(
     (p) =>
@@ -449,12 +475,20 @@ function computeChecks(s: DesignState): { checks: Check[]; confidence: number; d
           score: clamp(Math.round(100 - density * 90), 45, 90),
           note: `Placement density ${(density * 100).toFixed(0)}% — assembly headroom tight`,
         }
-      : { name: "Manufacturing", status: "PASS" as const, score: 94, note: "Silkscreen and pads clear" },
+      : {
+          name: "Manufacturing",
+          status: "PASS" as const,
+          score: 94,
+          note: "Silkscreen and pads clear",
+        },
     {
       name: "Thermal",
       status: density > 0.5 ? ("WARNING" as const) : ("PASS" as const),
       score: density > 0.5 ? 78 : 93,
-      note: density > 0.5 ? "Regulator rise 41 °C — add copper pour" : "Regulator rise 24 °C over ambient",
+      note:
+        density > 0.5
+          ? "Regulator rise 41 °C — add copper pour"
+          : "Regulator rise 24 °C over ambient",
     },
   ];
 
@@ -553,8 +587,13 @@ function applyDesignState(ds: Record<string, unknown>): Partial<DesignState> {
     }
   }
 
-  const threeDStatus: ViewStatus = glbUrl ? "ready" : stagesDone.includes("export") ? "error" : "idle";
-  const threeDError = !glbUrl && stagesDone.includes("export") ? "GLB model URL missing from design state" : null;
+  const threeDStatus: ViewStatus = glbUrl
+    ? "ready"
+    : stagesDone.includes("export")
+      ? "error"
+      : "idle";
+  const threeDError =
+    !glbUrl && stagesDone.includes("export") ? "GLB model URL missing from design state" : null;
 
   // Block diagram
   const blockDiagramStatus: ViewStatus = arch?.nodes?.length
@@ -562,7 +601,8 @@ function applyDesignState(ds: Record<string, unknown>): Partial<DesignState> {
     : stagesDone.includes("architecture")
       ? "error"
       : "idle";
-  const blockDiagramError = blockDiagramStatus === "error" ? "Architecture data missing after stage completion" : null;
+  const blockDiagramError =
+    blockDiagramStatus === "error" ? "Architecture data missing after stage completion" : null;
 
   // Netlist
   const netlist = (ds.netlist as NetlistData) || null;
@@ -651,10 +691,9 @@ export async function runGeneration(prompt: string, projectId?: string) {
   });
   pushChat("user", prompt);
 
-  let tick: number | undefined;
   let pollTick: number | undefined;
 
-  tick = window.setInterval(() => {
+  const tick = window.setInterval(() => {
     if (genToken !== token) return;
     set({ gen: { ...state.gen, elapsedMs: performance.now() - started } });
   }, 100);
@@ -687,48 +726,60 @@ export async function runGeneration(prompt: string, projectId?: string) {
       throw new ApiNetworkError(`${API_BASE}/health`);
     }
 
-    // 2. Fire the full pipeline generate call
-    //    (this can take several minutes — we poll Supabase in parallel)
+    // 2. Fire the full pipeline generate call without awaiting its completion
+    //    We do this because Cloud Load Balancers (e.g. Render) kill requests > 100s,
+    //    but the backend processes it in the background now.
     const generatePromise = apiPost<{ design_state?: Record<string, unknown> }>(
       `/projects/${projectId}/generate`,
       { prompt, user_id: "dev-user" },
-    );
+    ).catch((err) => {
+      console.warn(
+        "Backend generate POST returned an error (likely a timeout), but polling continues:",
+        err,
+      );
+    });
 
-    // 3. Poll Supabase for incremental stage progress
-    pollTick = window.setInterval(async () => {
-      if (genToken !== token) { clearInterval(pollTick); return; }
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data } = await (supabase as any)
-          .from("projects")
-          .select("status, design_state")
-          .eq("id", projectId)
-          .single();
-        if (!data) return;
-        const ds = data.design_state || {};
-        const patch = applyDesignState(ds);
-        set(patch);
-        if (data.status === "done" || data.status === "failed") clearInterval(pollTick);
-      } catch { /* Supabase may not have table yet — ignore poll errors */ }
-    }, 1500);
+    // 3. Poll Supabase for incremental stage progress and await completion
+    await new Promise<void>((resolve) => {
+      pollTick = window.setInterval(async () => {
+        if (genToken !== token) {
+          clearInterval(pollTick);
+          resolve();
+          return;
+        }
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data } = await (supabase as any)
+            .from("projects")
+            .select("status, design_state")
+            .eq("id", projectId)
+            .single();
+          if (!data) return;
+          const ds = data.design_state || {};
+          const patch = applyDesignState(ds);
+          set(patch);
+          if (data.status === "done" || data.status === "failed") {
+            clearInterval(pollTick);
+            resolve();
+          }
+        } catch {
+          /* Supabase may not have table yet — ignore poll errors */
+        }
+      }, 1500);
+    });
 
-    const finalData = await generatePromise;
     if (tick) window.clearInterval(tick);
     if (pollTick) window.clearInterval(pollTick);
-
-    // Apply final design state from the backend response
-    if (finalData?.design_state) {
-      const patch = applyDesignState(finalData.design_state);
-      set(patch);
-    }
 
     const total = Math.round(performance.now() - started);
     revalidate({
       verifying: false,
       gen: { ...state.gen, active: false, elapsedMs: total, generatedInMs: total },
     });
-    pushChat("system", `✅ Generation completed in ${(total / 1000).toFixed(1)} s — ${state.parts.length} parts, ${state.nets.length} nets.`);
-
+    pushChat(
+      "system",
+      `✅ Generation completed in ${(total / 1000).toFixed(1)} s — ${state.parts.length} parts, ${state.nets.length} nets.`,
+    );
   } catch (err) {
     if (tick) window.clearInterval(tick);
     if (pollTick) window.clearInterval(pollTick);
@@ -821,19 +872,106 @@ export function takeQueuedPrompt() {
 
 /* ---------------- chat commands ---------------- */
 
-const catalogAdd: Record<string, { name: string; value: string; pkg: string; unit: number; sym: SymKind; desc: string }> = {
-  led: { name: "Kingbright APT2012 LED", value: "LED", pkg: "0805", unit: 0.05, sym: "led", desc: "Indicator LED" },
-  buzzer: { name: "Piezo Buzzer 5 V", value: "BUZZ", pkg: "THT-2", unit: 0.35, sym: "sensor", desc: "Active buzzer" },
-  oled: { name: "SSD1306 OLED 128×64", value: "I²C 0x3C", pkg: "FPC-4", unit: 2.1, sym: "disp", desc: "OLED display" },
-  display: { name: "SSD1306 OLED 128×64", value: "I²C 0x3C", pkg: "FPC-4", unit: 2.1, sym: "disp", desc: "OLED display" },
-  battery: { name: "Li-Po JST-PH 2P", value: "BATT", pkg: "JST-PH 2P", unit: 0.15, sym: "batt", desc: "Battery connector" },
-  rtc: { name: "DS3231 RTC", value: "RTC", pkg: "SOIC-16", unit: 1.6, sym: "ic", desc: "Real-time clock" },
-  capacitor: { name: "Murata GRM188 100 nF", value: "100nF", pkg: "0603", unit: 0.02, sym: "cap", desc: "Decoupling capacitor" },
-  resistor: { name: "Yageo RC0603 4.7 kΩ", value: "4k7", pkg: "0603", unit: 0.01, sym: "res", desc: "Resistor" },
-  relay: { name: "SRD-05VDC-SL-C", value: "Relay", pkg: "THT Relay", unit: 0.85, sym: "relay", desc: "SPDT relay" },
-  antenna: { name: "u.FL Antenna Conn.", value: "u.FL", pkg: "SMD", unit: 0.4, sym: "conn", desc: "Antenna connector" },
-  sensor: { name: "BME280", value: "T/RH/P", pkg: "LGA-8", unit: 3.2, sym: "sensor", desc: "Environmental sensor" },
-  button: { name: "TS-1088 Tactile", value: "BTN", pkg: "SMD 4P", unit: 0.06, sym: "sw", desc: "Tactile switch" },
+const catalogAdd: Record<
+  string,
+  { name: string; value: string; pkg: string; unit: number; sym: SymKind; desc: string }
+> = {
+  led: {
+    name: "Kingbright APT2012 LED",
+    value: "LED",
+    pkg: "0805",
+    unit: 0.05,
+    sym: "led",
+    desc: "Indicator LED",
+  },
+  buzzer: {
+    name: "Piezo Buzzer 5 V",
+    value: "BUZZ",
+    pkg: "THT-2",
+    unit: 0.35,
+    sym: "sensor",
+    desc: "Active buzzer",
+  },
+  oled: {
+    name: "SSD1306 OLED 128×64",
+    value: "I²C 0x3C",
+    pkg: "FPC-4",
+    unit: 2.1,
+    sym: "disp",
+    desc: "OLED display",
+  },
+  display: {
+    name: "SSD1306 OLED 128×64",
+    value: "I²C 0x3C",
+    pkg: "FPC-4",
+    unit: 2.1,
+    sym: "disp",
+    desc: "OLED display",
+  },
+  battery: {
+    name: "Li-Po JST-PH 2P",
+    value: "BATT",
+    pkg: "JST-PH 2P",
+    unit: 0.15,
+    sym: "batt",
+    desc: "Battery connector",
+  },
+  rtc: {
+    name: "DS3231 RTC",
+    value: "RTC",
+    pkg: "SOIC-16",
+    unit: 1.6,
+    sym: "ic",
+    desc: "Real-time clock",
+  },
+  capacitor: {
+    name: "Murata GRM188 100 nF",
+    value: "100nF",
+    pkg: "0603",
+    unit: 0.02,
+    sym: "cap",
+    desc: "Decoupling capacitor",
+  },
+  resistor: {
+    name: "Yageo RC0603 4.7 kΩ",
+    value: "4k7",
+    pkg: "0603",
+    unit: 0.01,
+    sym: "res",
+    desc: "Resistor",
+  },
+  relay: {
+    name: "SRD-05VDC-SL-C",
+    value: "Relay",
+    pkg: "THT Relay",
+    unit: 0.85,
+    sym: "relay",
+    desc: "SPDT relay",
+  },
+  antenna: {
+    name: "u.FL Antenna Conn.",
+    value: "u.FL",
+    pkg: "SMD",
+    unit: 0.4,
+    sym: "conn",
+    desc: "Antenna connector",
+  },
+  sensor: {
+    name: "BME280",
+    value: "T/RH/P",
+    pkg: "LGA-8",
+    unit: 3.2,
+    sym: "sensor",
+    desc: "Environmental sensor",
+  },
+  button: {
+    name: "TS-1088 Tactile",
+    value: "BTN",
+    pkg: "SMD 4P",
+    unit: 0.06,
+    sym: "sw",
+    desc: "Tactile switch",
+  },
 };
 
 function refFor(prefix: string) {
@@ -870,7 +1008,10 @@ export function resizeBoard(factor: number) {
   return board;
 }
 
-const LOCATIONS: Record<string, (b: { w: number; h: number }, p: Part) => { px: number; py: number }> = {
+const LOCATIONS: Record<
+  string,
+  (b: { w: number; h: number }, p: Part) => { px: number; py: number }
+> = {
   left: (b, p) => ({ px: 16, py: (b.h - p.ph) / 2 }),
   right: (b, p) => ({ px: b.w - p.pw - 16, py: (b.h - p.ph) / 2 }),
   top: (b, p) => ({ px: (b.w - p.pw) / 2, py: 16 }),
@@ -883,8 +1024,12 @@ function findPart(q: string) {
   const t = q.toLowerCase().trim();
   return (
     state.parts.find((p) => p.ref.toLowerCase() === t) ??
-    state.parts.find((p) => p.name.toLowerCase().includes(t) || p.value.toLowerCase().includes(t)) ??
-    state.parts.find((p) => t.includes(p.ref.toLowerCase()) || t.includes(p.name.toLowerCase().split(" ")[0]!))
+    state.parts.find(
+      (p) => p.name.toLowerCase().includes(t) || p.value.toLowerCase().includes(t),
+    ) ??
+    state.parts.find(
+      (p) => t.includes(p.ref.toLowerCase()) || t.includes(p.name.toLowerCase().split(" ")[0]!),
+    )
   );
 }
 
@@ -893,9 +1038,12 @@ export function runCommand(input: string, projectId?: string) {
   if (!text) return;
   const t = text.toLowerCase();
 
-  const move = t.match(/move\s+(?:the\s+)?([a-z0-9\-.\s]+?)\s+to\s+(?:the\s+)?(left|right|top|bottom|center|middle)/);
+  const move = t.match(
+    /move\s+(?:the\s+)?([a-z0-9\-.\s]+?)\s+to\s+(?:the\s+)?(left|right|top|bottom|center|middle)/,
+  );
   const add = t.match(/add\s+(?:an?\s+)?([a-z0-9\-.\s]+)/);
-  const resize = /(smaller|bigger|larger|shrink|grow|resize)/.test(t) && /board|pcb|outline|design|it\b/.test(t);
+  const resize =
+    /(smaller|bigger|larger|shrink|grow|resize)/.test(t) && /board|pcb|outline|design|it\b/.test(t);
 
   if (isGenerationPrompt(text) && !move && !add && !resize) {
     void runGeneration(text, projectId);
@@ -905,7 +1053,9 @@ export function runCommand(input: string, projectId?: string) {
   pushChat("user", text);
   let reply = "";
   const pct = t.match(/(\d{1,2})\s*%/);
-  const swap = t.match(/(?:replace|swap)\s+(?:the\s+)?([a-z0-9\-.\s]+?)\s+(?:with|for)\s+(?:an?\s+)?([a-z0-9\-.\s/]+)/);
+  const swap = t.match(
+    /(?:replace|swap)\s+(?:the\s+)?([a-z0-9\-.\s]+?)\s+(?:with|for)\s+(?:an?\s+)?([a-z0-9\-.\s/]+)/,
+  );
 
   if (resize) {
     const p = pct ? Number(pct[1]) / 100 : 0.15;
@@ -956,7 +1106,17 @@ export function runCommand(input: string, projectId?: string) {
     const spec = catalogAdd[key]!;
     const g = SYM_GEO[spec.sym];
     const prefix =
-      spec.sym === "led" ? "D" : spec.sym === "res" ? "R" : spec.sym === "cap" ? "C" : spec.sym === "conn" ? "J" : spec.sym === "sw" ? "SW" : "U";
+      spec.sym === "led"
+        ? "D"
+        : spec.sym === "res"
+          ? "R"
+          : spec.sym === "cap"
+            ? "C"
+            : spec.sym === "conn"
+              ? "J"
+              : spec.sym === "sw"
+                ? "SW"
+                : "U";
     const ref = refFor(prefix);
     const slot = freeSlot(g.pw, g.ph);
     const net = `GPIO${13 + state.parts.length}`;
@@ -970,7 +1130,10 @@ export function runCommand(input: string, projectId?: string) {
       sym: spec.sym,
       desc: spec.desc,
       reasoning: `Added on request from the conversational editor and wired to the controller on ${net}.`,
-      specs: [["Package", spec.pkg], ["Value", spec.value]],
+      specs: [
+        ["Package", spec.pkg],
+        ["Value", spec.value],
+      ],
       datasheet: `${ref.toLowerCase()}_datasheet.pdf`,
       sw: g.w,
       sh: g.h,
@@ -984,7 +1147,10 @@ export function runCommand(input: string, projectId?: string) {
       ...slot,
     };
     const parts = [...state.parts, part];
-    const mcu = state.parts.find((p) => p.sym === "module" || p.sym === "ic")?.ref ?? state.parts[0]?.ref ?? ref;
+    const mcu =
+      state.parts.find((p) => p.sym === "module" || p.sym === "ic")?.ref ??
+      state.parts[0]?.ref ??
+      ref;
     revalidate({ parts, nets: [...state.nets, { from: mcu, to: ref, net }] });
     selectPart(ref);
     reply = `✅ Added ${ref} · ${spec.name} to the schematic, PCB and BOM. Net ${net} assigned.`;
