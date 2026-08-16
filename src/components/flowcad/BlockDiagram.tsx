@@ -4,12 +4,12 @@ import { cn } from "@/lib/utils";
 
 // ── Category tones (border + fill) ───────────────────────────────────────────
 const kindTone: Record<string, string> = {
-  power:    "stroke-copper/70 fill-copper/8",
-  mcu:      "stroke-teal/80 fill-teal/10",
-  sensor:   "stroke-primary/70 fill-primary/8",
+  power: "stroke-copper/70 fill-copper/8",
+  mcu: "stroke-teal/80 fill-teal/10",
+  sensor: "stroke-primary/70 fill-primary/8",
   actuator: "stroke-pass/70 fill-pass/8",
-  io:       "stroke-muted-foreground/60 fill-muted/40",
-  passive:  "stroke-muted-foreground/40 fill-muted/20",
+  io: "stroke-muted-foreground/60 fill-muted/40",
+  passive: "stroke-muted-foreground/40 fill-muted/20",
 };
 
 // ── Category icons (inline SVG paths, 16×16 viewBox) ─────────────────────────
@@ -28,10 +28,10 @@ function KindIcon({ kind, x, y }: { kind: string; x: number; y: number }) {
         <g transform={`translate(${x - 7},${y - 7})`} className="stroke-teal/80">
           {/* chip */}
           <rect x="3" y="3" width="10" height="10" rx="1" className={common} strokeWidth="1.2" />
-          <line x1="3" y1="6" x2="1" y2="6" strokeWidth="1" className="stroke-current"/>
-          <line x1="3" y1="9" x2="1" y2="9" strokeWidth="1" className="stroke-current"/>
-          <line x1="13" y1="6" x2="15" y2="6" strokeWidth="1" className="stroke-current"/>
-          <line x1="13" y1="9" x2="15" y2="9" strokeWidth="1" className="stroke-current"/>
+          <line x1="3" y1="6" x2="1" y2="6" strokeWidth="1" className="stroke-current" />
+          <line x1="3" y1="9" x2="1" y2="9" strokeWidth="1" className="stroke-current" />
+          <line x1="13" y1="6" x2="15" y2="6" strokeWidth="1" className="stroke-current" />
+          <line x1="13" y1="9" x2="15" y2="9" strokeWidth="1" className="stroke-current" />
         </g>
       );
     case "sensor":
@@ -47,7 +47,14 @@ function KindIcon({ kind, x, y }: { kind: string; x: number; y: number }) {
         <g transform={`translate(${x - 7},${y - 7})`} className="stroke-pass/70">
           {/* cog */}
           <circle cx="8" cy="8" r="3" className={common} strokeWidth="1.2" />
-          <circle cx="8" cy="8" r="5.5" className={common} strokeWidth="1.2" strokeDasharray="2.5 1.5" />
+          <circle
+            cx="8"
+            cy="8"
+            r="5.5"
+            className={common}
+            strokeWidth="1.2"
+            strokeDasharray="2.5 1.5"
+          />
         </g>
       );
     default:
@@ -55,7 +62,7 @@ function KindIcon({ kind, x, y }: { kind: string; x: number; y: number }) {
         <g transform={`translate(${x - 7},${y - 7})`} className="stroke-muted-foreground/60">
           {/* plug */}
           <rect x="5" y="3" width="6" height="8" rx="1" className={common} strokeWidth="1.2" />
-          <line x1="8" y1="11" x2="8" y2="14" strokeWidth="1.4" className="stroke-current"/>
+          <line x1="8" y1="11" x2="8" y2="14" strokeWidth="1.4" className="stroke-current" />
         </g>
       );
   }
@@ -80,7 +87,11 @@ function edge(fromId: string, toId: string, nodes: ArchNodeGeom[]) {
 function SkeletonBlock({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
   return (
     <rect
-      x={x} y={y} width={w} height={h} rx={8}
+      x={x}
+      y={y}
+      width={w}
+      height={h}
+      rx={8}
       className="fill-muted/30 stroke-border/50 animate-pulse"
       strokeWidth="1"
     />
@@ -91,12 +102,14 @@ function SkeletonBlock({ x, y, w, h }: { x: number; y: number; w: number; h: num
 function StatusOverlay({ message, isError }: { message: string; isError?: boolean }) {
   return (
     <foreignObject x="200" y="160" width="500" height="120">
-      <div className={cn(
-        "flex flex-col items-center justify-center gap-2 rounded-xl border p-6 text-center",
-        isError
-          ? "border-destructive/40 bg-destructive/5 text-destructive"
-          : "border-border bg-panel/60 text-muted-foreground"
-      )}>
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center gap-2 rounded-xl border p-6 text-center",
+          isError
+            ? "border-destructive/40 bg-destructive/5 text-destructive"
+            : "border-border bg-panel/60 text-muted-foreground",
+        )}
+      >
         <span className="font-mono text-[11px] font-semibold tracking-wide">
           {isError ? "⚠ ARCHITECTURE ERROR" : "⌛ WAITING FOR ARCHITECTURE"}
         </span>
@@ -135,10 +148,10 @@ export function BlockDiagram() {
           {/* ── Skeleton loading ─────────────────────────────── */}
           {d.blockDiagramStatus === "loading" && (
             <>
-              <SkeletonBlock x={30}  y={60}  w={170} h={62} />
-              <SkeletonBlock x={30}  y={160} w={170} h={62} />
+              <SkeletonBlock x={30} y={60} w={170} h={62} />
+              <SkeletonBlock x={30} y={160} w={170} h={62} />
               <SkeletonBlock x={260} y={100} w={200} h={92} />
-              <SkeletonBlock x={520} y={50}  w={176} h={62} />
+              <SkeletonBlock x={520} y={50} w={176} h={62} />
               <SkeletonBlock x={520} y={160} w={176} h={62} />
               <SkeletonBlock x={520} y={270} w={176} h={62} />
             </>
@@ -162,7 +175,12 @@ export function BlockDiagram() {
                 if (!e.d) return null;
                 return (
                   <g key={`${c.from}-${c.to}`}>
-                    <path d={e.d} fill="none" className="trace-flow stroke-primary/70" strokeWidth="1.6" />
+                    <path
+                      d={e.d}
+                      fill="none"
+                      className="trace-flow stroke-primary/70"
+                      strokeWidth="1.6"
+                    />
                     <rect
                       x={e.lx - c.net.length * 3.6 - 5}
                       y={e.ly - 9}
@@ -185,7 +203,7 @@ export function BlockDiagram() {
               })}
 
               {nodes.map((b) => {
-                const ref = b.sub ? b.sub.split(" ")[0] ?? null : null;
+                const ref = b.sub ? (b.sub.split(" ")[0] ?? null) : null;
                 const active = d.selected === ref;
                 const cx = b.x + b.w / 2;
                 const cy = b.y + b.h / 2;
@@ -205,7 +223,10 @@ export function BlockDiagram() {
                       height={b.h}
                       rx={8}
                       strokeWidth={active ? 2 : 1.3}
-                      className={cn(kindTone[b.kind] || kindTone["io"], active && "stroke-teal fill-teal/18")}
+                      className={cn(
+                        kindTone[b.kind] || kindTone["io"],
+                        active && "stroke-teal fill-teal/18",
+                      )}
                     />
                     {/* Category icon */}
                     <KindIcon kind={b.kind} x={b.x + 16} y={cy} />

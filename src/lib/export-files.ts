@@ -30,14 +30,22 @@ function gerberLayer(s: DesignState, layer: string) {
     const y = ((p.py / 9) * 1e6).toFixed(0);
     const x2 = (((p.px + p.pw) / 9) * 1e6).toFixed(0);
     const y2 = (((p.py + p.ph) / 9) * 1e6).toFixed(0);
-    return [`G04 ${p.ref} ${p.name}*`, `X${x}Y${y}D02*`, `X${x2}Y${y}D01*`, `X${x2}Y${y2}D01*`, `X${x}Y${y2}D01*`, `X${x}Y${y}D01*`];
+    return [
+      `G04 ${p.ref} ${p.name}*`,
+      `X${x}Y${y}D02*`,
+      `X${x2}Y${y}D01*`,
+      `X${x2}Y${y2}D01*`,
+      `X${x}Y${y2}D01*`,
+      `X${x}Y${y}D01*`,
+    ];
   });
   return [...head, ...body, "M02*"].join("\n");
 }
 
 function drillFile(s: DesignState) {
   const holes = s.parts.map(
-    (p, i) => `X${((p.px / 9) * 1000).toFixed(0)}Y${((p.py / 9) * 1000).toFixed(0)} ; ${p.ref} pad ${i + 1}`,
+    (p, i) =>
+      `X${((p.px / 9) * 1000).toFixed(0)}Y${((p.py / 9) * 1000).toFixed(0)} ; ${p.ref} pad ${i + 1}`,
   );
   return [
     "M48",
@@ -66,11 +74,15 @@ function netlistFile(s: DesignState) {
     `  ; project IRRIGATION_CTRL rev B — generated ${stamp()}`,
     `  ; board ${s.board.w} x ${s.board.h} mm`,
     "  (components",
-    ...s.parts.map((p) => `    (comp (ref ${p.ref}) (value "${p.name}") (footprint ${p.pkg.replace(/\s/g, "_")}))`),
+    ...s.parts.map(
+      (p) =>
+        `    (comp (ref ${p.ref}) (value "${p.name}") (footprint ${p.pkg.replace(/\s/g, "_")}))`,
+    ),
     "  )",
     "  (nets",
     ...[...byNet.entries()].map(
-      ([net, refs], i) => `    (net (code ${i + 1}) (name "${net}") ${refs.map((r) => `(node (ref ${r}))`).join(" ")})`,
+      ([net, refs], i) =>
+        `    (net (code ${i + 1}) (name "${net}") ${refs.map((r) => `(node (ref ${r}))`).join(" ")})`,
     ),
     "  )",
     ")",
@@ -80,7 +92,14 @@ function netlistFile(s: DesignState) {
 function bomCsv(s: DesignState) {
   const rows = [
     ["Ref", "Name", "Qty", "Package", "Unit Cost (USD)", "Total (USD)"],
-    ...bomLines(s).map((l) => [l.ref, l.name, String(l.qty), l.pkg, l.unit.toFixed(2), l.total.toFixed(2)]),
+    ...bomLines(s).map((l) => [
+      l.ref,
+      l.name,
+      String(l.qty),
+      l.pkg,
+      l.unit.toFixed(2),
+      l.total.toFixed(2),
+    ]),
     ["", "BOARD TOTAL", "", "", "", bomTotalNow(s).toFixed(2)],
   ];
   return rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
@@ -142,14 +161,20 @@ export async function generateArtifact(name: string) {
         ["flowcad-F_Silkscreen.gbr", "Legend,Top"],
         ["flowcad-Edge_Cuts.gbr", "Profile,NP"],
       ].forEach(([f, fn]) => zip.file(f!, gerberLayer(s, fn!)));
-      zip.file("README.txt", `FlowCAD Gerber X2 bundle\nBoard ${s.board.w} x ${s.board.h} mm\nGenerated ${stamp()}\n`);
+      zip.file(
+        "README.txt",
+        `FlowCAD Gerber X2 bundle\nBoard ${s.board.w} x ${s.board.h} mm\nGenerated ${stamp()}\n`,
+      );
       download(await zip.generateAsync({ type: "blob" }), "gerber_x2_bundle.zip");
       return;
     }
     case "Drill Files": {
       const zip = new JSZip();
       zip.file("flowcad-PTH.drl", drillFile(s));
-      zip.file("flowcad-NPTH.drl", `M48\n; non-plated mounting holes\nMETRIC,TZ\nT1C3.200\n%\nG90\nT1\nX2000Y2000\nX${(s.board.w * 1000 - 2000).toFixed(0)}Y2000\nT0\nM30\n`);
+      zip.file(
+        "flowcad-NPTH.drl",
+        `M48\n; non-plated mounting holes\nMETRIC,TZ\nT1C3.200\n%\nG90\nT1\nX2000Y2000\nX${(s.board.w * 1000 - 2000).toFixed(0)}Y2000\nT0\nM30\n`,
+      );
       download(await zip.generateAsync({ type: "blob" }), "drill_pth_npth.zip");
       return;
     }
@@ -172,7 +197,9 @@ export async function generateArtifact(name: string) {
         "ENDSEC;",
         "DATA;",
         `#1 = PRODUCT('IRRIGATION_CTRL','${s.board.w}x${s.board.h}mm board','',());`,
-        ...s.parts.map((p, i) => `#${i + 2} = PRODUCT('${p.ref}','${p.name}','',()); /* z=${p.z} */`),
+        ...s.parts.map(
+          (p, i) => `#${i + 2} = PRODUCT('${p.ref}','${p.name}','',()); /* z=${p.z} */`,
+        ),
         "ENDSEC;",
         "END-ISO-10303-21;",
       ].join("\n");

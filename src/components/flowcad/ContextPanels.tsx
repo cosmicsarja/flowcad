@@ -18,8 +18,8 @@ export function DetailsPanel() {
           <span className="label-mono">Design summary</span>
         </div>
         <p className="text-[12px] leading-relaxed text-muted-foreground">
-          No component selected. Click a symbol in the Schematic, a footprint in the PCB Layout, or a
-          block in the architecture view to inspect its specifications and AI selection reasoning.
+          No component selected. Click a symbol in the Schematic, a footprint in the PCB Layout, or
+          a block in the architecture view to inspect its specifications and AI selection reasoning.
         </p>
         <dl className="divide-y divide-border rounded-md border border-border">
           {[
@@ -107,7 +107,7 @@ export function DetailsPanel() {
         </div>
         <Button variant="secondary" size="sm" className="w-full font-mono text-[11px]" asChild>
           <a
-            href={`https://datasheets.flowcad.dev/${(cat?.datasheet ?? `${part.ref.toLowerCase()}_datasheet.pdf`)}`}
+            href={`https://datasheets.flowcad.dev/${cat?.datasheet ?? `${part.ref.toLowerCase()}_datasheet.pdf`}`}
             target="_blank"
             rel="noreferrer"
           >
@@ -133,7 +133,9 @@ export function VerificationPanel() {
         <div className="mt-1 flex items-end gap-2">
           <span className="font-mono text-3xl font-semibold text-teal">{d.confidence}%</span>
           <span className="pb-1.5 text-[11px] text-muted-foreground">
-            {d.verifying ? "Verifying…" : `${warnings} warning${warnings === 1 ? "" : "s"} to review`}
+            {d.verifying
+              ? "Verifying…"
+              : `${warnings} warning${warnings === 1 ? "" : "s"} to review`}
           </span>
         </div>
         <MeterBar value={d.confidence} tone="teal" className="mt-3" />
@@ -219,7 +221,9 @@ export function AlternativesPanel() {
           key={a.id}
           className={cn(
             "rounded-lg border p-3 transition-colors",
-            picked === a.id ? "border-teal/60 bg-teal/8" : "border-border bg-panel hover:bg-secondary/40",
+            picked === a.id
+              ? "border-teal/60 bg-teal/8"
+              : "border-border bg-panel hover:bg-secondary/40",
           )}
         >
           <div className="flex items-center gap-2">

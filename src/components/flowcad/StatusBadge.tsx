@@ -25,10 +25,7 @@ export function StatusBadge({
       )}
     >
       <span
-        className={cn(
-          "size-1.5 rounded-full bg-current",
-          status === "RUNNING" && "pulse-dot",
-        )}
+        className={cn("size-1.5 rounded-full bg-current", status === "RUNNING" && "pulse-dot")}
       />
       {status}
     </span>

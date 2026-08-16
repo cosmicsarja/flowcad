@@ -57,13 +57,12 @@ export class ApiResponseError extends Error {
     let detail = "";
     if (typeof body === "object" && body !== null) {
       const d = (body as Record<string, unknown>).detail;
-      detail = d !== undefined 
-        ? (typeof d === "string" ? d : JSON.stringify(d))
-        : JSON.stringify(body);
+      detail =
+        d !== undefined ? (typeof d === "string" ? d : JSON.stringify(d)) : JSON.stringify(body);
     } else {
       detail = String(body);
     }
-    
+
     super(`Backend returned ${status} ${statusText}: ${detail}`);
     this.name = "ApiResponseError";
   }
@@ -76,10 +75,7 @@ export class ApiResponseError extends Error {
 export async function probeBackend(): Promise<boolean> {
   try {
     const controller = new AbortController();
-    const timeout = window.setTimeout(
-      () => controller.abort(),
-      HEALTH_TIMEOUT_MS,
-    );
+    const timeout = window.setTimeout(() => controller.abort(), HEALTH_TIMEOUT_MS);
     const res = await fetch(`${API_BASE}/health`, { signal: controller.signal });
     window.clearTimeout(timeout);
     return res.ok;
@@ -92,11 +88,7 @@ export async function probeBackend(): Promise<boolean> {
  * POST to a backend endpoint with JSON body.
  * Throws ApiNetworkError or ApiResponseError — never a raw TypeError.
  */
-export async function apiPost<T>(
-  path: string,
-  body: unknown,
-  signal?: AbortSignal,
-): Promise<T> {
+export async function apiPost<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
   const url = `${API_BASE}${path}`;
   let res: Response;
   try {
@@ -120,10 +112,7 @@ export async function apiPost<T>(
  * GET a backend endpoint.
  * Throws ApiNetworkError or ApiResponseError — never a raw TypeError.
  */
-export async function apiGet<T>(
-  path: string,
-  signal?: AbortSignal,
-): Promise<T> {
+export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
   const url = `${API_BASE}${path}`;
   let res: Response;
   try {

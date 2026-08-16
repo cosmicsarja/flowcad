@@ -26,7 +26,8 @@ export const Route = createFileRoute("/project/$id")({
       { title: "Workspace · FlowCAD" },
       {
         name: "description",
-        content: "FlowCAD AI-powered PCB workspace — pipeline stepper, schematic, PCB layout, 3D preview, verification and BOM.",
+        content:
+          "FlowCAD AI-powered PCB workspace — pipeline stepper, schematic, PCB layout, 3D preview, verification and BOM.",
       },
     ],
   }),
@@ -80,7 +81,17 @@ function Workspace() {
           {design.meta.slug && <span className="text-teal"> {design.meta.slug}</span>}
         </span>
         <StatusBadge
-          status={design.gen.active ? "RUNNING" : design.verifying ? "RUNNING" : design.checks.some((c) => c.status !== "PASS") ? "WARNING" : hasDesign ? "PASS" : "RUNNING"}
+          status={
+            design.gen.active
+              ? "RUNNING"
+              : design.verifying
+                ? "RUNNING"
+                : design.checks.some((c) => c.status !== "PASS")
+                  ? "WARNING"
+                  : hasDesign
+                    ? "PASS"
+                    : "RUNNING"
+          }
           className="hidden md:inline-flex"
         />
         <div className="ml-auto flex items-center gap-1.5">
@@ -147,16 +158,44 @@ function Workspace() {
 
               <div className="min-h-0 flex-1 overflow-hidden bg-background">
                 <TabsContent value="block" className="m-0 h-full">
-                  {hasDesign ? <BlockDiagram /> : <CanvasEmpty label="Block Diagram" description="No design yet — enter a prompt below to generate the block diagram" />}
+                  {hasDesign ? (
+                    <BlockDiagram />
+                  ) : (
+                    <CanvasEmpty
+                      label="Block Diagram"
+                      description="No design yet — enter a prompt below to generate the block diagram"
+                    />
+                  )}
                 </TabsContent>
                 <TabsContent value="schematic" className="m-0 h-full">
-                  {hasDesign ? <SchematicView /> : <CanvasEmpty label="Schematic" description="No schematic yet — enter a prompt below to generate the circuit" />}
+                  {hasDesign ? (
+                    <SchematicView />
+                  ) : (
+                    <CanvasEmpty
+                      label="Schematic"
+                      description="No schematic yet — enter a prompt below to generate the circuit"
+                    />
+                  )}
                 </TabsContent>
                 <TabsContent value="pcb" className="m-0 h-full">
-                  {hasDesign ? <PcbLayout projectId={id} /> : <CanvasEmpty label="PCB Layout" description="No PCB layout yet — enter a prompt to generate and place components" />}
+                  {hasDesign ? (
+                    <PcbLayout projectId={id} />
+                  ) : (
+                    <CanvasEmpty
+                      label="PCB Layout"
+                      description="No PCB layout yet — enter a prompt to generate and place components"
+                    />
+                  )}
                 </TabsContent>
                 <TabsContent value="3d" className="m-0 h-full">
-                  {hasDesign ? <ThreeDView /> : <CanvasEmpty label="3D View" description="No 3D model yet — generate a design first to see the board render" />}
+                  {hasDesign ? (
+                    <ThreeDView />
+                  ) : (
+                    <CanvasEmpty
+                      label="3D View"
+                      description="No 3D model yet — generate a design first to see the board render"
+                    />
+                  )}
                 </TabsContent>
               </div>
             </Tabs>

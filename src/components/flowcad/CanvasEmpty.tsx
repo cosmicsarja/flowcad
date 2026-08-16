@@ -31,7 +31,7 @@ export function CanvasEmpty({
     <div
       className={cn(
         "relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-background p-6 select-none",
-        className
+        className,
       )}
     >
       {/* Background CAD grid */}
@@ -60,9 +60,7 @@ export function CanvasEmpty({
         </h3>
 
         {/* Description / Hint */}
-        <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-          {displayHint}
-        </p>
+        <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{displayHint}</p>
 
         {/* Optional Action Button / CTA */}
         {action && <div className="mt-5">{action}</div>}

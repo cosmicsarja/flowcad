@@ -58,7 +58,13 @@ export const stages: Stage[] = [
     status: "done",
     detail: "DRC / ERC complete · 2 warnings",
   },
-  { id: "3d", name: "3D View", short: "3D", status: "done", detail: "STEP model assembly rendered" },
+  {
+    id: "3d",
+    name: "3D View",
+    short: "3D",
+    status: "done",
+    detail: "STEP model assembly rendered",
+  },
   {
     id: "export",
     name: "Export",
@@ -80,14 +86,86 @@ export type Block = {
 };
 
 export const blocks: Block[] = [
-  { id: "usb", label: "USB-C 5V IN", sub: "J1 · 5V/2A", x: 24, y: 200, w: 150, h: 62, kind: "power" },
-  { id: "reg", label: "AMS1117-3.3", sub: "U2 · LDO 3V3", x: 214, y: 200, w: 150, h: 62, kind: "power" },
-  { id: "mcu", label: "ESP32-WROOM-32E", sub: "U1 · Wi-Fi MCU", x: 424, y: 186, w: 190, h: 90, kind: "mcu" },
-  { id: "soil", label: "SOIL MOISTURE", sub: "J3 · capacitive ADC", x: 674, y: 60, w: 170, h: 62, kind: "sensor" },
-  { id: "temp", label: "DHT22", sub: "U4 · temp / RH", x: 674, y: 150, w: 170, h: 62, kind: "sensor" },
-  { id: "relay", label: "RELAY DRIVER", sub: "Q1 · ULN2003A", x: 674, y: 250, w: 170, h: 62, kind: "actuator" },
-  { id: "pump", label: "PUMP 12V", sub: "J4 · screw term.", x: 674, y: 340, w: 170, h: 62, kind: "actuator" },
-  { id: "oled", label: "OLED 128×64", sub: "J2 · I²C 0x3C", x: 424, y: 330, w: 190, h: 62, kind: "io" },
+  {
+    id: "usb",
+    label: "USB-C 5V IN",
+    sub: "J1 · 5V/2A",
+    x: 24,
+    y: 200,
+    w: 150,
+    h: 62,
+    kind: "power",
+  },
+  {
+    id: "reg",
+    label: "AMS1117-3.3",
+    sub: "U2 · LDO 3V3",
+    x: 214,
+    y: 200,
+    w: 150,
+    h: 62,
+    kind: "power",
+  },
+  {
+    id: "mcu",
+    label: "ESP32-WROOM-32E",
+    sub: "U1 · Wi-Fi MCU",
+    x: 424,
+    y: 186,
+    w: 190,
+    h: 90,
+    kind: "mcu",
+  },
+  {
+    id: "soil",
+    label: "SOIL MOISTURE",
+    sub: "J3 · capacitive ADC",
+    x: 674,
+    y: 60,
+    w: 170,
+    h: 62,
+    kind: "sensor",
+  },
+  {
+    id: "temp",
+    label: "DHT22",
+    sub: "U4 · temp / RH",
+    x: 674,
+    y: 150,
+    w: 170,
+    h: 62,
+    kind: "sensor",
+  },
+  {
+    id: "relay",
+    label: "RELAY DRIVER",
+    sub: "Q1 · ULN2003A",
+    x: 674,
+    y: 250,
+    w: 170,
+    h: 62,
+    kind: "actuator",
+  },
+  {
+    id: "pump",
+    label: "PUMP 12V",
+    sub: "J4 · screw term.",
+    x: 674,
+    y: 340,
+    w: 170,
+    h: 62,
+    kind: "actuator",
+  },
+  {
+    id: "oled",
+    label: "OLED 128×64",
+    sub: "J2 · I²C 0x3C",
+    x: 424,
+    y: 330,
+    w: 190,
+    h: 62,
+    kind: "io",
+  },
 ];
 
 export const connections: Array<{ from: string; to: string; net: string }> = [
@@ -246,7 +324,8 @@ export const components: Component[] = [
     unit: 0.01,
     desc: "Pull-ups & dividers",
     datasheet: "rc0603.pdf",
-    reasoning: "I²C pull-ups (4.7 kΩ), 1-wire pull-up (10 kΩ), boot strapping and status LED limits.",
+    reasoning:
+      "I²C pull-ups (4.7 kΩ), 1-wire pull-up (10 kΩ), boot strapping and status LED limits.",
     specs: [["Tolerance", "±1%"]],
   },
   {
@@ -268,7 +347,8 @@ export const components: Component[] = [
     unit: 1.9,
     desc: "1.6 mm, HASL, green mask",
     datasheet: "fr4_stackup.pdf",
-    reasoning: "Two layers are sufficient — no impedance-controlled nets and a solid GND pour on L2.",
+    reasoning:
+      "Two layers are sufficient — no impedance-controlled nets and a solid GND pour on L2.",
     specs: [
       ["Layers", "2"],
       ["Thickness", "1.6 mm"],
@@ -288,7 +368,12 @@ export type Check = {
 export const checks: Check[] = [
   { name: "Electrical Rules", status: "PASS", score: 100, note: "0 violations across 41 nets" },
   { name: "Power Integrity", status: "PASS", score: 96, note: "3V3 rail ripple 38 mV @ 500 mA" },
-  { name: "Connectivity", status: "WARNING", score: 88, note: "Routing incomplete: 2 nets require manual routing" },
+  {
+    name: "Connectivity",
+    status: "WARNING",
+    score: 88,
+    note: "Routing incomplete: 2 nets require manual routing",
+  },
   { name: "ERC", status: "PASS", score: 100, note: "No unconnected or conflicting pins" },
   { name: "DRC", status: "WARNING", score: 82, note: "2 clearances at 0.19 mm (min 0.20 mm)" },
   { name: "Manufacturing", status: "WARNING", score: 88, note: "Silkscreen overlaps pad on K1" },
@@ -328,7 +413,8 @@ export const alternatives: Alternative[] = [
     power: "94 mW avg",
     size: "52 × 38 mm",
     parts: 27,
-    notes: "TPS62203 buck + deep-sleep RTC gating. 3.3× battery life, adds inductor + feedback network.",
+    notes:
+      "TPS62203 buck + deep-sleep RTC gating. 3.3× battery life, adds inductor + feedback network.",
     recommended: true,
   },
   {

@@ -139,7 +139,11 @@ function ExportPage() {
             disabled={busy === "all"}
             onClick={() => run("all", generateAll)}
           >
-            {busy === "all" ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+            {busy === "all" ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Download className="size-3.5" />
+            )}
             {busy === "all" ? "Generating…" : "Download all"}
           </Button>
         </div>

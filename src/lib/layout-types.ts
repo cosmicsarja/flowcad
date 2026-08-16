@@ -6,15 +6,15 @@
  */
 
 export interface PlacedComponent {
-  ref: string;           // e.g. "U1"
-  name: string;          // human name
-  footprint: string;     // KiCad footprint id
-  x_mm: number;          // left edge from board origin
-  y_mm: number;          // top edge from board origin
-  w_mm: number;          // bounding-box width
-  h_mm: number;          // bounding-box height
+  ref: string; // e.g. "U1"
+  name: string; // human name
+  footprint: string; // KiCad footprint id
+  x_mm: number; // left edge from board origin
+  y_mm: number; // top edge from board origin
+  w_mm: number; // bounding-box width
+  h_mm: number; // bounding-box height
   layer: "F.Cu" | "B.Cu";
-  rotation: number;      // degrees
+  rotation: number; // degrees
 }
 
 export interface RouteSegment {

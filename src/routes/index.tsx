@@ -14,8 +14,7 @@ import { Button } from "@/components/ui/button";
 import { samplePrompt } from "@/lib/flowcad-data";
 import { resetDesign, queuePrompt } from "@/lib/design-store";
 
-
-export const Route = createFileRoute("/")(({
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "FlowCAD — Prompt-to-PCB AI Design Platform" },
@@ -33,7 +32,7 @@ export const Route = createFileRoute("/")(({
     ],
   }),
   component: Landing,
-}));
+});
 
 const features = [
   {
@@ -96,11 +95,7 @@ function Landing() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
-            <Button
-              size="sm"
-              className="text-[12px]"
-              onClick={openBlankProject}
-            >
+            <Button size="sm" className="text-[12px]" onClick={openBlankProject}>
               <Plus className="size-3.5" /> New Project
             </Button>
           </div>
@@ -197,7 +192,11 @@ function Landing() {
             <Button
               size="sm"
               className="ml-auto"
-              onClick={() => startNewProject("Design an ESP32-based smart irrigation controller with soil moisture sensor, DHT22 temp/humidity sensor, 12V relay driver, USB-C 5V power, and 3.3V LDO regulator.")}
+              onClick={() =>
+                startNewProject(
+                  "Design an ESP32-based smart irrigation controller with soil moisture sensor, DHT22 temp/humidity sensor, 12V relay driver, USB-C 5V power, and 3.3V LDO regulator.",
+                )
+              }
             >
               Launch example <ArrowRight className="size-3.5" />
             </Button>

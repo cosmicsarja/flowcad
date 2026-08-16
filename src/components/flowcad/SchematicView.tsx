@@ -12,12 +12,26 @@ function Leads({ p, vertical = false }: { p: Part; vertical?: boolean }) {
   return vertical ? (
     <>
       <line x1={cx} x2={cx} y1={p.sy} y2={p.sy + 8} className="stroke-silk/70" strokeWidth="1.4" />
-      <line x1={cx} x2={cx} y1={p.sy + p.sh - 8} y2={p.sy + p.sh} className="stroke-silk/70" strokeWidth="1.4" />
+      <line
+        x1={cx}
+        x2={cx}
+        y1={p.sy + p.sh - 8}
+        y2={p.sy + p.sh}
+        className="stroke-silk/70"
+        strokeWidth="1.4"
+      />
     </>
   ) : (
     <>
       <line x1={p.sx} x2={p.sx + 16} y1={cy} y2={cy} className="stroke-silk/70" strokeWidth="1.4" />
-      <line x1={p.sx + p.sw - 16} x2={p.sx + p.sw} y1={cy} y2={cy} className="stroke-silk/70" strokeWidth="1.4" />
+      <line
+        x1={p.sx + p.sw - 16}
+        x2={p.sx + p.sw}
+        y1={cy}
+        y2={cy}
+        className="stroke-silk/70"
+        strokeWidth="1.4"
+      />
     </>
   );
 }
@@ -42,7 +56,14 @@ function BoxSymbol({ p, active, detail }: { p: Part; active: boolean; detail?: R
         const y = p.sy + 14 + step * (i + 1);
         return (
           <g key={i}>
-            <line x1={p.sx - 20} x2={p.sx} y1={y} y2={y} className="stroke-silk/65" strokeWidth="1.3" />
+            <line
+              x1={p.sx - 20}
+              x2={p.sx}
+              y1={y}
+              y2={y}
+              className="stroke-silk/65"
+              strokeWidth="1.3"
+            />
             <text x={p.sx + 5} y={y + 3} className="fill-muted-foreground font-mono text-[7px]">
               {i + 1}
             </text>
@@ -93,9 +114,30 @@ function Symbol({ p, active }: { p: Part; active: boolean }) {
     case "cap":
       return (
         <>
-          <line x1={p.sx} x2={cx - 5} y1={cy} y2={cy} className="stroke-silk/70" strokeWidth="1.4" />
-          <line x1={cx + 5} x2={p.sx + p.sw} y1={cy} y2={cy} className="stroke-silk/70" strokeWidth="1.4" />
-          <line x1={cx - 5} x2={cx - 5} y1={cy - 12} y2={cy + 12} className={stroke} strokeWidth={active ? 2.4 : 1.8} />
+          <line
+            x1={p.sx}
+            x2={cx - 5}
+            y1={cy}
+            y2={cy}
+            className="stroke-silk/70"
+            strokeWidth="1.4"
+          />
+          <line
+            x1={cx + 5}
+            x2={p.sx + p.sw}
+            y1={cy}
+            y2={cy}
+            className="stroke-silk/70"
+            strokeWidth="1.4"
+          />
+          <line
+            x1={cx - 5}
+            x2={cx - 5}
+            y1={cy - 12}
+            y2={cy + 12}
+            className={stroke}
+            strokeWidth={active ? 2.4 : 1.8}
+          />
           <path
             d={`M${cx + 5} ${cy - 12} Q${cx + 11} ${cy} ${cx + 5} ${cy + 12}`}
             fill="none"
@@ -109,12 +151,33 @@ function Symbol({ p, active }: { p: Part; active: boolean }) {
       return (
         <>
           <Leads p={p} />
-          <path d={`M${cx - 9} ${cy - 10} L${cx + 7} ${cy} L${cx - 9} ${cy + 10} Z`} className={cn("fill-panel", stroke)} strokeWidth="1.4" />
-          <line x1={cx + 7} x2={cx + 7} y1={cy - 11} y2={cy + 11} className={stroke} strokeWidth="1.8" />
+          <path
+            d={`M${cx - 9} ${cy - 10} L${cx + 7} ${cy} L${cx - 9} ${cy + 10} Z`}
+            className={cn("fill-panel", stroke)}
+            strokeWidth="1.4"
+          />
+          <line
+            x1={cx + 7}
+            x2={cx + 7}
+            y1={cy - 11}
+            y2={cy + 11}
+            className={stroke}
+            strokeWidth="1.8"
+          />
           {p.sym === "led" && (
             <>
-              <path d={`M${cx - 2} ${cy - 14} l7 -7 m0 0 l-4 0.6 m4 -0.6 l-0.6 4`} fill="none" className="stroke-teal" strokeWidth="1.1" />
-              <path d={`M${cx + 4} ${cy - 14} l7 -7 m0 0 l-4 0.6 m4 -0.6 l-0.6 4`} fill="none" className="stroke-teal" strokeWidth="1.1" />
+              <path
+                d={`M${cx - 2} ${cy - 14} l7 -7 m0 0 l-4 0.6 m4 -0.6 l-0.6 4`}
+                fill="none"
+                className="stroke-teal"
+                strokeWidth="1.1"
+              />
+              <path
+                d={`M${cx + 4} ${cy - 14} l7 -7 m0 0 l-4 0.6 m4 -0.6 l-0.6 4`}
+                fill="none"
+                className="stroke-teal"
+                strokeWidth="1.1"
+              />
             </>
           )}
         </>
@@ -135,29 +198,99 @@ function Symbol({ p, active }: { p: Part; active: boolean }) {
       return (
         <>
           <Leads p={p} />
-          <line x1={cx - 8} x2={cx - 8} y1={cy - 11} y2={cy + 11} className={stroke} strokeWidth="1.6" />
-          <rect x={cx - 4} y={cy - 9} width={8} height={18} className={cn("fill-panel", stroke)} strokeWidth="1.4" />
-          <line x1={cx + 8} x2={cx + 8} y1={cy - 11} y2={cy + 11} className={stroke} strokeWidth="1.6" />
+          <line
+            x1={cx - 8}
+            x2={cx - 8}
+            y1={cy - 11}
+            y2={cy + 11}
+            className={stroke}
+            strokeWidth="1.6"
+          />
+          <rect
+            x={cx - 4}
+            y={cy - 9}
+            width={8}
+            height={18}
+            className={cn("fill-panel", stroke)}
+            strokeWidth="1.4"
+          />
+          <line
+            x1={cx + 8}
+            x2={cx + 8}
+            y1={cy - 11}
+            y2={cy + 11}
+            className={stroke}
+            strokeWidth="1.6"
+          />
         </>
       );
     case "batt":
       return (
         <>
           <Leads p={p} />
-          <line x1={cx - 7} x2={cx - 7} y1={cy - 13} y2={cy + 13} className={stroke} strokeWidth="2" />
-          <line x1={cx - 1} x2={cx - 1} y1={cy - 7} y2={cy + 7} className={stroke} strokeWidth="2" />
-          <line x1={cx + 5} x2={cx + 5} y1={cy - 13} y2={cy + 13} className={stroke} strokeWidth="2" />
-          <line x1={cx + 11} x2={cx + 11} y1={cy - 7} y2={cy + 7} className={stroke} strokeWidth="2" />
-          <text x={cx - 14} y={cy - 16} className="fill-muted-foreground font-mono text-[8px]">+</text>
+          <line
+            x1={cx - 7}
+            x2={cx - 7}
+            y1={cy - 13}
+            y2={cy + 13}
+            className={stroke}
+            strokeWidth="2"
+          />
+          <line
+            x1={cx - 1}
+            x2={cx - 1}
+            y1={cy - 7}
+            y2={cy + 7}
+            className={stroke}
+            strokeWidth="2"
+          />
+          <line
+            x1={cx + 5}
+            x2={cx + 5}
+            y1={cy - 13}
+            y2={cy + 13}
+            className={stroke}
+            strokeWidth="2"
+          />
+          <line
+            x1={cx + 11}
+            x2={cx + 11}
+            y1={cy - 7}
+            y2={cy + 7}
+            className={stroke}
+            strokeWidth="2"
+          />
+          <text x={cx - 14} y={cy - 16} className="fill-muted-foreground font-mono text-[8px]">
+            +
+          </text>
         </>
       );
     case "sw":
       return (
         <>
           <Leads p={p} />
-          <circle cx={p.sx + 18} cy={cy} r="2.6" className={cn("fill-background", stroke)} strokeWidth="1.3" />
-          <circle cx={p.sx + p.sw - 18} cy={cy} r="2.6" className={cn("fill-background", stroke)} strokeWidth="1.3" />
-          <line x1={p.sx + 18} x2={p.sx + p.sw - 20} y1={cy - 2} y2={cy - 13} className={stroke} strokeWidth="1.6" />
+          <circle
+            cx={p.sx + 18}
+            cy={cy}
+            r="2.6"
+            className={cn("fill-background", stroke)}
+            strokeWidth="1.3"
+          />
+          <circle
+            cx={p.sx + p.sw - 18}
+            cy={cy}
+            r="2.6"
+            className={cn("fill-background", stroke)}
+            strokeWidth="1.3"
+          />
+          <line
+            x1={p.sx + 18}
+            x2={p.sx + p.sw - 20}
+            y1={cy - 2}
+            y2={cy - 13}
+            className={stroke}
+            strokeWidth="1.6"
+          />
         </>
       );
     case "conn":
@@ -188,9 +321,31 @@ function Symbol({ p, active }: { p: Part; active: boolean }) {
           active={active}
           detail={
             <>
-              <rect x={p.sx + 16} y={cy - 6} width={20} height={14} className="fill-copper/25 stroke-copper/70" strokeWidth="1.2" />
-              <line x1={p.sx + 44} x2={p.sx + p.sw - 18} y1={cy + 6} y2={cy - 6} className="stroke-silk/80" strokeWidth="1.5" />
-              <line x1={p.sx + 36} x2={p.sx + 44} y1={cy} y2={cy} strokeDasharray="2 2" className="stroke-muted-foreground" strokeWidth="1" />
+              <rect
+                x={p.sx + 16}
+                y={cy - 6}
+                width={20}
+                height={14}
+                className="fill-copper/25 stroke-copper/70"
+                strokeWidth="1.2"
+              />
+              <line
+                x1={p.sx + 44}
+                x2={p.sx + p.sw - 18}
+                y1={cy + 6}
+                y2={cy - 6}
+                className="stroke-silk/80"
+                strokeWidth="1.5"
+              />
+              <line
+                x1={p.sx + 36}
+                x2={p.sx + 44}
+                y1={cy}
+                y2={cy}
+                strokeDasharray="2 2"
+                className="stroke-muted-foreground"
+                strokeWidth="1"
+              />
             </>
           }
         />
@@ -240,9 +395,31 @@ function anchors(a: Part, b: Part) {
 function SkeletonSymbol({ x, y }: { x: number; y: number }) {
   return (
     <g>
-      <rect x={x} y={y} width={108} height={62} rx={3} className="fill-muted/25 stroke-border/40 animate-pulse" strokeWidth="1" />
-      <rect x={x + 8} y={y + 8} width={60} height={8} rx={2} className="fill-muted/40 animate-pulse" />
-      <rect x={x + 8} y={y + 22} width={40} height={6} rx={2} className="fill-muted/30 animate-pulse" />
+      <rect
+        x={x}
+        y={y}
+        width={108}
+        height={62}
+        rx={3}
+        className="fill-muted/25 stroke-border/40 animate-pulse"
+        strokeWidth="1"
+      />
+      <rect
+        x={x + 8}
+        y={y + 8}
+        width={60}
+        height={8}
+        rx={2}
+        className="fill-muted/40 animate-pulse"
+      />
+      <rect
+        x={x + 8}
+        y={y + 22}
+        width={40}
+        height={6}
+        rx={2}
+        className="fill-muted/30 animate-pulse"
+      />
     </g>
   );
 }
@@ -277,8 +454,24 @@ export function SchematicView() {
       {({ toLocal, snap }) => (
         <>
           {/* sheet frame */}
-          <rect x={8} y={8} width={1104} height={544} fill="none" className="stroke-border" strokeWidth="1.5" />
-          <rect x={860} y={480} width={244} height={64} fill="none" className="stroke-border" strokeWidth="1.2" />
+          <rect
+            x={8}
+            y={8}
+            width={1104}
+            height={544}
+            fill="none"
+            className="stroke-border"
+            strokeWidth="1.5"
+          />
+          <rect
+            x={860}
+            y={480}
+            width={244}
+            height={64}
+            fill="none"
+            className="stroke-border"
+            strokeWidth="1.2"
+          />
           <text x={872} y={500} className="fill-muted-foreground font-mono text-[9px]">
             FLOWCAD · {d.meta.title || "—"}
           </text>
@@ -308,8 +501,12 @@ export function SchematicView() {
           {d.schematicStatus === "error" && (
             <foreignObject x="160" y="180" width="500" height="120">
               <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-center">
-                <span className="font-mono text-[11px] font-semibold tracking-wide text-destructive">⚠ SCHEMATIC ERROR</span>
-                <span className="font-mono text-[10px] text-destructive/70">{d.schematicError}</span>
+                <span className="font-mono text-[11px] font-semibold tracking-wide text-destructive">
+                  ⚠ SCHEMATIC ERROR
+                </span>
+                <span className="font-mono text-[10px] text-destructive/70">
+                  {d.schematicError}
+                </span>
               </div>
             </foreignObject>
           )}
@@ -318,7 +515,9 @@ export function SchematicView() {
           {d.schematicStatus === "idle" && (
             <foreignObject x="200" y="200" width="400" height="80">
               <div className="flex items-center justify-center rounded-xl border border-border bg-panel/60 p-5 text-center">
-                <span className="font-mono text-[10px] text-muted-foreground">Enter a prompt below to generate the schematic</span>
+                <span className="font-mono text-[10px] text-muted-foreground">
+                  Enter a prompt below to generate the schematic
+                </span>
               </div>
             </foreignObject>
           )}
@@ -402,7 +601,10 @@ export function SchematicView() {
                       x={p.sx + p.sw / 2}
                       y={p.sy - 14}
                       textAnchor="middle"
-                      className={cn("font-mono text-[10px]", active ? "fill-teal" : "fill-foreground")}
+                      className={cn(
+                        "font-mono text-[10px]",
+                        active ? "fill-teal" : "fill-foreground",
+                      )}
                     >
                       {p.ref}
                     </text>

@@ -23,7 +23,9 @@ export function PipelineStepper({
       }))
     : fallbackStages;
 
-  const completedCount = activeStages.filter((s) => s.status === "done" || s.status === "warning").length;
+  const completedCount = activeStages.filter(
+    (s) => s.status === "done" || s.status === "warning",
+  ).length;
 
   return (
     <div className="flex h-full flex-col">

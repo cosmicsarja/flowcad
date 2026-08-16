@@ -124,7 +124,12 @@ export function CadCanvas({
       )}
       style={{ touchAction: "none" }}
     >
-      <svg ref={svgRef} viewBox={viewBox} className="h-full w-full" preserveAspectRatio="xMidYMid meet">
+      <svg
+        ref={svgRef}
+        viewBox={viewBox}
+        className="h-full w-full"
+        preserveAspectRatio="xMidYMid meet"
+      >
         <defs>
           <pattern id="snapdots" width={GRID} height={GRID} patternUnits="userSpaceOnUse">
             <circle cx="0.5" cy="0.5" r="0.6" className="fill-muted-foreground/45" />
@@ -154,10 +159,14 @@ export function CadCanvas({
       </svg>
 
       {statusLeft && (
-        <div className="pointer-events-none absolute top-2 left-2 flex items-center gap-2">{statusLeft}</div>
+        <div className="pointer-events-none absolute top-2 left-2 flex items-center gap-2">
+          {statusLeft}
+        </div>
       )}
       {statusRight && (
-        <div className="pointer-events-auto absolute top-2 right-2 flex items-center gap-1.5">{statusRight}</div>
+        <div className="pointer-events-auto absolute top-2 right-2 flex items-center gap-1.5">
+          {statusRight}
+        </div>
       )}
 
       <div className="absolute right-3 bottom-3 flex items-center gap-1 rounded-lg border border-border bg-panel/90 p-1 backdrop-blur">
@@ -179,7 +188,8 @@ export function CadCanvas({
       </div>
 
       <div className="pointer-events-none absolute bottom-3 left-3 hidden items-center gap-1.5 font-mono text-[10px] text-muted-foreground sm:flex">
-        <Move className="size-3" /> drag empty space to pan · scroll to zoom · snap {snap ? "on" : "off"}
+        <Move className="size-3" /> drag empty space to pan · scroll to zoom · snap{" "}
+        {snap ? "on" : "off"}
       </div>
     </div>
   );
