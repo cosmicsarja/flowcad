@@ -159,7 +159,7 @@ from pydantic import BaseModel
 class CreateProjectInput(BaseModel):
     prompt: str
     user_id: Optional[str] = None
-    title: Optional[str] = "New Project"
+    name: Optional[str] = "New Project"
 
 @router.post("/projects", response_model=ProjectRow)
 def create_project(body: CreateProjectInput):
@@ -173,7 +173,7 @@ def create_project(body: CreateProjectInput):
     data = {
         "id": project_id,
         "prompt": body.prompt,
-        "title": body.title,
+        "name": body.name,
         "status": GenerationStatus.pending.value,
         "design_state": {},
     }
@@ -207,7 +207,7 @@ def generate_project(
     db.upsert("projects", {
         "id": project_id,
         "prompt": body.prompt,
-        "title": body.title or "New Project",
+        "name": body.name or "New Project",
         "status": GenerationStatus.generating.value,
         "user_id": resolved_user,
         "updated_at": _now_iso(),

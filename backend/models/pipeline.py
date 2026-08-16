@@ -301,7 +301,7 @@ class ProjectRow(BaseModel):
 class GenerateProjectInput(BaseModel):
     """Body for POST /projects/{id}/generate"""
     prompt: str = Field(..., min_length=10)
-    title: Optional[str] = None
+    name: Optional[str] = None
     user_id: Optional[str] = None   # override for dev/testing without auth
 
 
