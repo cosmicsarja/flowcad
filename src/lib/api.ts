@@ -21,8 +21,8 @@ export const API_BASE: string = (() => {
   return "http://127.0.0.1:8000";
 })();
 
-/** Maximum time in ms to wait for the /health probe before giving up */
-export const HEALTH_TIMEOUT_MS = 4_000;
+/** Maximum time in ms to wait for the health check (must be long enough for Render free tier cold starts) */
+export const HEALTH_TIMEOUT_MS = 60_000;
 
 /** Maximum time in ms to wait for the full pipeline (8 stages × ~30s each) */
 export const GENERATE_TIMEOUT_MS = 5 * 60 * 1_000;
