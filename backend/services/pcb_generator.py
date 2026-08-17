@@ -79,13 +79,42 @@ try:
     outline.SetWidth(pcbnew.FromMM(0.05))
     board.Add(outline)
 
-    # Load Netlist
-    netlist = pcbnew.NETLIST()
-    reader = pcbnew.KICAD_NETLIST_READER('{netlist_path}', netlist)
-    reader.LoadNetlist()
+    # Read Netlist manually (KiCad 8 removed KICAD_NETLIST_READER)
+    import re
+    import os
+    with open('{netlist_path}', 'r') as f:
+        netlist_data = f.read()
+
+    fp_dir = os.environ.get("KICAD8_FOOTPRINT_DIR", "/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints")
+    if not os.path.exists(fp_dir):
+        fp_dir = "/usr/share/kicad/footprints"
+
+    comp_pattern = re.compile(r'\\(comp \\(ref "([^"]+)"\\).*?\\(footprint "([^":]+):([^"]+)"\\)')
+    for match in comp_pattern.finditer(netlist_data):
+        ref, lib_name, fp_name = match.group(1), match.group(2), match.group(3)
+        try:
+            fp = pcbnew.FootprintLoad(os.path.join(fp_dir, lib_name + ".pretty"), fp_name)
+            if fp:
+                fp.SetReference(ref)
+                board.Add(fp)
+        except:
+            pass
+
+    net_pattern = re.compile(r'\\(net \\(code "([^"]+)"\\) \\(name "([^"]+)"\\)(.*?)\\)', re.DOTALL)
+    node_pattern = re.compile(r'\\(node \\(ref "([^"]+)"\\) \\(pin "([^"]+)"\\)\\)')
     
-    # Import components (this will read from the actual KiCad footprint libraries!)
-    board.UpdateComponents(netlist, board)
+    for match in net_pattern.finditer(netlist_data):
+        code, name, nodes_str = int(match.group(1)), match.group(2), match.group(3)
+        net = pcbnew.NETINFO_ITEM(board, name, code)
+        board.Add(net)
+        
+        for node_match in node_pattern.finditer(nodes_str):
+            ref, pin = node_match.group(1), node_match.group(2)
+            fp = board.FindFootprintByReference(ref)
+            if fp:
+                pad = fp.FindPadByNumber(pin)
+                if pad:
+                    pad.SetNet(net)
 
     pcbnew.SaveBoard('{pcb_path}', board)
 except Exception as e:

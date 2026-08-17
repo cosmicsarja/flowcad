@@ -1,0 +1,1233 @@
+** Drc report for board2.kicad_pcb **
+** Created on 2026-08-17T15:08:12 **
+** Report includes: Errors, Warnings **
+
+** Found 307 DRC violations **
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.2000 mm, -3.6800 mm): Pad A1 [<no net>] of J1 on F.Cu
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(-0.6800 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(-0.6800 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.2000 mm, -3.6800 mm): Pad A1 [<no net>] of J1 on F.Cu
+    @(-3.2000 mm, -3.6800 mm): Pad B12 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0550 mm)
+    Local override; error
+    @(-3.2000 mm, -3.6800 mm): Pad A1 [<no net>] of J1 on F.Cu
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.0825 mm, -0.9100 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.8450 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.8450 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.2000 mm, -3.6800 mm): Pad A1 [<no net>] of J1 on F.Cu
+    @(-2.4750 mm, -4.4450 mm): Pad 1 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.0825 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.8450 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0425 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(-1.4425 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -4.4450 mm): Pad 1 [<no net>] of Q1 on F.Cu
+    @(-1.7500 mm, -3.6800 mm): Pad B8 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(-0.6800 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -4.4450 mm): Pad 1 [<no net>] of Q1 on F.Cu
+    @(-2.4000 mm, -3.6800 mm): Pad B9 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(-0.6800 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0950 mm)
+    Local override; error
+    @(-2.4000 mm, -3.6800 mm): Pad A4 [<no net>] of J1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0455 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(-1.4425 mm, -0.9100 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -4.4450 mm): Pad 1 [<no net>] of Q1 on F.Cu
+    @(-3.2000 mm, -3.6800 mm): Pad B12 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+    @(2.4750 mm, 0.6350 mm): Pad 12 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4000 mm, -3.6800 mm): Pad A4 [<no net>] of J1 on F.Cu
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0550 mm)
+    Local override; error
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+    @(-2.4000 mm, -3.6800 mm): Pad B9 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4000 mm, -3.6800 mm): Pad A4 [<no net>] of J1 on F.Cu
+    @(-2.4000 mm, -3.6800 mm): Pad B9 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+    @(2.4750 mm, -0.6350 mm): Pad 13 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.0825 mm, -0.9100 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0550 mm)
+    Local override; error
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+    @(-3.2000 mm, -3.6800 mm): Pad B12 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1450 mm)
+    Local override; error
+    @(-2.4000 mm, -3.6800 mm): Pad A4 [<no net>] of J1 on F.Cu
+    @(-2.2050 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.8450 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.8450 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+    @(-2.4750 mm, -1.9050 mm): Pad 3 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0550 mm)
+    Local override; error
+    @(-2.4000 mm, -3.6800 mm): Pad A4 [<no net>] of J1 on F.Cu
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.0825 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+    @(-2.2050 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.8450 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+    @(-2.2050 mm, -1.6725 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1150 mm)
+    Local override; error
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+    @(-2.2050 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -4.4450 mm): Pad 1 [<no net>] of Q1 on F.Cu
+    @(-2.4000 mm, -3.6800 mm): Pad A4 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+    @(-5.1100 mm, -3.1050 mm): Pad SH [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(5.0000 mm, 0.0000 mm): PTH pad 3 [<no net>] of J3
+    @(5.1100 mm, 0.8250 mm): Pad SH [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(5.0000 mm, 0.0000 mm): PTH pad 3 [<no net>] of J3
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1197 mm)
+    Local override; error
+    @(-2.4750 mm, -4.4450 mm): Pad 1 [<no net>] of Q1 on F.Cu
+    @(-1.2500 mm, -3.6800 mm): Pad A5 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+    @(-1.7500 mm, -3.6800 mm): Pad B8 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0950 mm)
+    Local override; error
+    @(-1.2500 mm, -3.6800 mm): Pad A5 [<no net>] of J1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+    @(-2.4000 mm, -3.6800 mm): Pad B9 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+    @(-3.2000 mm, -3.6800 mm): Pad B12 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+    @(-2.2050 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1000 mm)
+    Local override; error
+    @(-1.2500 mm, -3.6800 mm): Pad A5 [<no net>] of J1 on F.Cu
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(-2.4750 mm, 0.6350 mm): Pad 5 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(-2.2050 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1754 mm)
+    Local override; error
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+    @(-1.4425 mm, -2.4350 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(2.4750 mm, 0.6350 mm): Pad 12 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(-5.1100 mm, 0.8250 mm): Pad SH [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1450 mm)
+    Local override; error
+    @(-1.2500 mm, -3.6800 mm): Pad A5 [<no net>] of J1 on F.Cu
+    @(-0.6800 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(-2.2050 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -1.9050 mm): Pad 3 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(-2.4750 mm, -0.6350 mm): Pad 4 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1450 mm)
+    Local override; error
+    @(-2.2050 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-1.7500 mm, -3.6800 mm): Pad B8 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(2.4750 mm, -0.6350 mm): Pad 13 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0950 mm)
+    Local override; error
+    @(-0.2500 mm, -3.6800 mm): Pad A6 [<no net>] of J1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(-2.2050 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -1.9050 mm): Pad 3 [<no net>] of Q1 on F.Cu
+    @(-2.2050 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1450 mm)
+    Local override; error
+    @(-2.2050 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-2.4000 mm, -3.6800 mm): Pad B9 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -1.9050 mm): Pad 3 [<no net>] of Q1 on F.Cu
+    @(-2.2050 mm, -1.6725 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1700 mm)
+    Local override; error
+    @(-2.4750 mm, -1.9050 mm): Pad 3 [<no net>] of Q1 on F.Cu
+    @(-2.2050 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0200 mm)
+    Local override; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(2.4750 mm, 1.9050 mm): Pad 11 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -1.9050 mm): Pad 3 [<no net>] of Q1 on F.Cu
+    @(-1.4425 mm, -2.4350 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1450 mm)
+    Local override; error
+    @(-0.2500 mm, -3.6800 mm): Pad A6 [<no net>] of J1 on F.Cu
+    @(-0.6800 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(2.4750 mm, 0.6350 mm): Pad 12 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1317 mm)
+    Local override; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(0.8450 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -0.6350 mm): Pad 4 [<no net>] of Q1 on F.Cu
+    @(-1.4425 mm, -0.9100 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(2.4750 mm, -0.6350 mm): Pad 13 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -0.6350 mm): Pad 4 [<no net>] of Q1 on F.Cu
+    @(-2.2050 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0735 mm)
+    Local override; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(0.8450 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0950 mm)
+    Local override; error
+    @(0.2500 mm, -3.6800 mm): Pad A7 [<no net>] of J1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(5.1100 mm, 0.8250 mm): Pad SH [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -0.6350 mm): Pad 4 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1450 mm)
+    Local override; error
+    @(0.2500 mm, -3.6800 mm): Pad A7 [<no net>] of J1 on F.Cu
+    @(0.8450 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, -0.6350 mm): Pad 4 [<no net>] of Q1 on F.Cu
+    @(-2.2050 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+    @(2.4750 mm, -1.9050 mm): Pad 14 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, 0.6350 mm): Pad 5 [<no net>] of Q1 on F.Cu
+    @(-2.2050 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, 0.6350 mm): Pad 5 [<no net>] of Q1 on F.Cu
+    @(-1.4425 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, 2.3000 mm): Pad 3 [<no net>] of U2 on F.Cu
+    @(-2.4750 mm, 1.9050 mm): Pad 6 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0950 mm)
+    Local override; error
+    @(1.2500 mm, -3.6800 mm): Pad A8 [<no net>] of J1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1825 mm)
+    Local override; error
+    @(-2.4750 mm, 0.6350 mm): Pad 5 [<no net>] of Q1 on F.Cu
+    @(-2.2050 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, 2.3000 mm): Pad 3 [<no net>] of U2 on F.Cu
+    @(-2.4750 mm, 3.1750 mm): Pad 7 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1450 mm)
+    Local override; error
+    @(1.2500 mm, -3.6800 mm): Pad A8 [<no net>] of J1 on F.Cu
+    @(0.8450 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-2.4750 mm, 0.6350 mm): Pad 5 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(-3.1500 mm, 2.3000 mm): Pad 3 [<no net>] of U2 on F.Cu
+    @(-5.1100 mm, 0.8250 mm): Pad SH [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1000 mm)
+    Local override; error
+    @(1.2500 mm, -3.6800 mm): Pad A8 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1197 mm)
+    Local override; error
+    @(1.2500 mm, -3.6800 mm): Pad A8 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -4.4450 mm): Pad 16 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.4000 mm, -3.6800 mm): Pad A9 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.4000 mm, -3.6800 mm): Pad A9 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -4.4450 mm): Pad 16 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.4000 mm, -3.6800 mm): Pad A9 [<no net>] of J1 on F.Cu
+    @(2.4000 mm, -3.6800 mm): Pad B4 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(3.2000 mm, -3.6800 mm): Pad A12 [<no net>] of J1 on F.Cu
+    @(3.2000 mm, -3.6800 mm): Pad B1 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0800 mm)
+    Local override; error
+    @(2.4750 mm, 0.6350 mm): Pad 12 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(3.2000 mm, -3.6800 mm): Pad A12 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1300 mm)
+    Local override; error
+    @(2.4750 mm, 0.6350 mm): Pad 12 [<no net>] of Q1 on F.Cu
+    @(0.8450 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(3.2000 mm, -3.6800 mm): Pad A12 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -4.4450 mm): Pad 16 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0800 mm)
+    Local override; error
+    @(2.4750 mm, -0.6350 mm): Pad 13 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1300 mm)
+    Local override; error
+    @(2.4750 mm, -0.6350 mm): Pad 13 [<no net>] of Q1 on F.Cu
+    @(0.8450 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(3.2000 mm, -3.6800 mm): Pad B1 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(3.2000 mm, -3.6800 mm): Pad B1 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -4.4450 mm): Pad 16 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0800 mm)
+    Local override; error
+    @(2.4750 mm, -1.9050 mm): Pad 14 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1300 mm)
+    Local override; error
+    @(2.4750 mm, -1.9050 mm): Pad 14 [<no net>] of Q1 on F.Cu
+    @(0.8450 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.4000 mm, -3.6800 mm): Pad B4 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(2.4000 mm, -3.6800 mm): Pad B4 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -4.4450 mm): Pad 16 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0805 mm)
+    Local override; error
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1374 mm)
+    Local override; error
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+    @(0.8450 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(1.7500 mm, -3.6800 mm): Pad B5 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0000 mm)
+    Local override; error
+    @(1.7500 mm, -3.6800 mm): Pad B5 [<no net>] of J1 on F.Cu
+    @(2.4750 mm, -4.4450 mm): Pad 16 [<no net>] of Q1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0950 mm)
+    Local override; error
+    @(0.7500 mm, -3.6800 mm): Pad B6 [<no net>] of J1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1450 mm)
+    Local override; error
+    @(-0.6800 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-0.7500 mm, -3.6800 mm): Pad B7 [<no net>] of J1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.1450 mm)
+    Local override; error
+    @(0.7500 mm, -3.6800 mm): Pad B6 [<no net>] of J1 on F.Cu
+    @(0.8450 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0950 mm)
+    Local override; error
+    @(-0.7500 mm, -3.6800 mm): Pad B7 [<no net>] of J1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0950 mm)
+    Local override; error
+    @(-1.7500 mm, -3.6800 mm): Pad B8 [<no net>] of J1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[clearance]: Clearance violation ( clearance 0.2000 mm; actual 0.0950 mm)
+    Local override; error
+    @(-2.4000 mm, -3.6800 mm): Pad B9 [<no net>] of J1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+    @(0.0000 mm, 0.0000 mm): Footprint J3
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(-2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+    @(0.0000 mm, 0.0000 mm): Footprint J4
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 2.5400 mm): NPTH pad of J4
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(2.5400 mm, 2.5400 mm): NPTH pad of J4
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): Footprint Q1
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+    @(0.0000 mm, 0.0000 mm): Footprint J3
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(5.0000 mm, 0.0000 mm): PTH pad 3 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(-2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+    @(0.0000 mm, 0.0000 mm): Footprint J4
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 2.5400 mm): NPTH pad of J4
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(2.5400 mm, 2.5400 mm): NPTH pad of J4
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): Footprint U1
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint J3
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint J3
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(-2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(0.0000 mm, 0.0000 mm): Footprint J3
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(0.0000 mm, 0.0000 mm): Footprint J3
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(5.0000 mm, 0.0000 mm): PTH pad 3 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint J3
+    @(0.0000 mm, 0.0000 mm): Footprint J4
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 2.5400 mm): NPTH pad of J4
+    @(0.0000 mm, 0.0000 mm): Footprint J3
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(2.5400 mm, 2.5400 mm): NPTH pad of J4
+    @(0.0000 mm, 0.0000 mm): Footprint J3
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): Footprint J3
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): Footprint J3
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint J4
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint J4
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(5.0000 mm, 0.0000 mm): PTH pad 3 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): Footprint J4
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(-2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+    @(0.0000 mm, 0.0000 mm): Footprint J4
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 2.5400 mm): NPTH pad of J4
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(2.5400 mm, 2.5400 mm): NPTH pad of J4
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): Footprint U2
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+    @(0.0000 mm, 0.0000 mm): Footprint J4
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 2.5400 mm): NPTH pad of J4
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(2.5400 mm, 2.5400 mm): NPTH pad of J4
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): Footprint J1
+[npth_inside_courtyard]: NPTH inside courtyard
+    Local override; error
+    @(2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(0.0000 mm, 0.0000 mm): Footprint J4
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(-2.2050 mm, -1.6725 mm): PTH pad 39 [<no net>] of U1
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(-2.2050 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(-1.4425 mm, -2.4350 mm): PTH pad 39 [<no net>] of U1
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(-1.4425 mm, -0.9100 mm): PTH pad 39 [<no net>] of U1
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(-1.4425 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(-0.6800 mm, -1.6725 mm): PTH pad 39 [<no net>] of U1
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(-0.6800 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(0.0825 mm, -2.4350 mm): PTH pad 39 [<no net>] of U1
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(0.0825 mm, -0.9100 mm): PTH pad 39 [<no net>] of U1
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(0.0825 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(0.8450 mm, -1.6725 mm): PTH pad 39 [<no net>] of U1
+[drill_out_of_range]: Hole size out of range (board setup constraints min hole 0.3000 mm; actual 0.2000 mm)
+    Rule: board setup constraints; error
+    @(0.8450 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[invalid_outline]: Board has malformed outline (no edges found on Edge.Cuts layer)
+    Local override; error
+    @(0.0000 mm, 0.0000 mm): PCB
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.2050 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+    @(3.2000 mm, -3.6800 mm): Pad A12 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -4.4450 mm): Pad 1 [<no net>] of Q1 on F.Cu
+    @(-2.4000 mm, -3.6800 mm): Pad A4 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.2050 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-2.4750 mm, -1.9050 mm): Pad 3 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+    @(3.2000 mm, -3.6800 mm): Pad B1 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -4.4450 mm): Pad 1 [<no net>] of Q1 on F.Cu
+    @(-3.2000 mm, -3.6800 mm): Pad A1 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.2050 mm, -2.4350 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+    @(2.4000 mm, -3.6800 mm): Pad B4 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -4.4450 mm): Pad 1 [<no net>] of Q1 on F.Cu
+    @(-3.2000 mm, -3.6800 mm): Pad B12 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.2050 mm, -1.6725 mm): PTH pad 39 [<no net>] of U1
+    @(-2.4750 mm, -1.9050 mm): Pad 3 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+    @(2.4000 mm, -3.6800 mm): Pad A9 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -4.4450 mm): Pad 1 [<no net>] of Q1 on F.Cu
+    @(-1.7500 mm, -3.6800 mm): Pad B8 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+    @(1.7500 mm, -3.6800 mm): Pad B5 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -4.4450 mm): Pad 1 [<no net>] of Q1 on F.Cu
+    @(-2.4000 mm, -3.6800 mm): Pad B9 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -4.4450 mm): Pad 16 [<no net>] of Q1 on F.Cu
+    @(3.2000 mm, -3.6800 mm): Pad A12 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+    @(-2.4000 mm, -3.6800 mm): Pad B9 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.2050 mm, -1.6725 mm): PTH pad 39 [<no net>] of U1
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+    @(-3.2000 mm, -3.6800 mm): Pad B12 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.8900 mm, -2.6050 mm): NPTH pad of J1
+    @(2.4750 mm, -3.1750 mm): Pad 15 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-3.2000 mm, -3.6800 mm): Pad A1 [<no net>] of J1 on F.Cu
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -4.4450 mm): Pad 16 [<no net>] of Q1 on F.Cu
+    @(3.2000 mm, -3.6800 mm): Pad B1 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-3.2000 mm, -3.6800 mm): Pad A1 [<no net>] of J1 on F.Cu
+    @(-3.2000 mm, -3.6800 mm): Pad B12 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+    @(-2.4000 mm, -3.6800 mm): Pad A4 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -4.4450 mm): Pad 16 [<no net>] of Q1 on F.Cu
+    @(2.4000 mm, -3.6800 mm): Pad A9 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4000 mm, -3.6800 mm): Pad A4 [<no net>] of J1 on F.Cu
+    @(-2.4000 mm, -3.6800 mm): Pad B9 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0825 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-1.7500 mm, -3.6800 mm): Pad B8 [<no net>] of J1 on F.Cu
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -3.1750 mm): Pad 2 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0825 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.2050 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -1.9050 mm): Pad 3 [<no net>] of Q1 on F.Cu
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -4.4450 mm): Pad 16 [<no net>] of Q1 on F.Cu
+    @(2.4000 mm, -3.6800 mm): Pad B4 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4000 mm, -3.6800 mm): Pad A9 [<no net>] of J1 on F.Cu
+    @(2.4000 mm, -3.6800 mm): Pad B4 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -1.9050 mm): Pad 3 [<no net>] of Q1 on F.Cu
+    @(-1.4425 mm, -2.4350 mm): PTH pad 39 [<no net>] of U1
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -4.4450 mm): Pad 16 [<no net>] of Q1 on F.Cu
+    @(1.7500 mm, -3.6800 mm): Pad B5 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-5.1100 mm, -3.1050 mm): Pad SH [<no net>] of J1 on F.Cu
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.2050 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-2.4750 mm, -0.6350 mm): Pad 4 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(3.2000 mm, -3.6800 mm): Pad A12 [<no net>] of J1 on F.Cu
+    @(3.2000 mm, -3.6800 mm): Pad B1 [<no net>] of J1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-5.1100 mm, 0.8250 mm): Pad SH [<no net>] of J1 on F.Cu
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.2050 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -1.9050 mm): Pad 3 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.2050 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+    @(-2.4750 mm, -0.6350 mm): Pad 4 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-5.1100 mm, 0.8250 mm): Pad SH [<no net>] of J1 on F.Cu
+    @(-3.1500 mm, 2.3000 mm): Pad 3 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -0.6350 mm): Pad 4 [<no net>] of Q1 on F.Cu
+    @(-1.4425 mm, -0.9100 mm): PTH pad 39 [<no net>] of U1
+[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0825 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.2050 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-2.4750 mm, 0.6350 mm): Pad 5 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -0.6350 mm): Pad 4 [<no net>] of Q1 on F.Cu
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(5.1100 mm, 0.8250 mm): Pad SH [<no net>] of J1 on F.Cu
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.2050 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, -0.6350 mm): Pad 4 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(5.1100 mm, 0.8250 mm): Pad SH [<no net>] of J1 on F.Cu
+    @(5.0000 mm, 0.0000 mm): PTH pad 3 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, 0.6350 mm): Pad 5 [<no net>] of Q1 on F.Cu
+    @(-1.4425 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0825 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.5400 mm, 2.5400 mm): NPTH pad of J4
+    @(2.4750 mm, 3.1750 mm): Pad 10 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, 0.6350 mm): Pad 5 [<no net>] of Q1 on F.Cu
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.5400 mm, 2.5400 mm): NPTH pad of J4
+    @(2.4750 mm, 1.9050 mm): Pad 11 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, 0.6350 mm): Pad 5 [<no net>] of Q1 on F.Cu
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.8450 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(-0.6800 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, 1.9050 mm): Pad 6 [<no net>] of Q1 on F.Cu
+    @(-3.1500 mm, 2.3000 mm): Pad 3 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.0825 mm, -0.9100 mm): PTH pad 39 [<no net>] of U1
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.8450 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.8450 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-2.4750 mm, 3.1750 mm): Pad 7 [<no net>] of Q1 on F.Cu
+    @(-3.1500 mm, 2.3000 mm): Pad 3 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.8450 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, 1.9050 mm): Pad 11 [<no net>] of Q1 on F.Cu
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.8450 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, 0.6350 mm): Pad 12 [<no net>] of Q1 on F.Cu
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-0.6800 mm, -0.9100 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(-3.1500 mm, -2.3000 mm): Pad 1 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, 0.6350 mm): Pad 12 [<no net>] of Q1 on F.Cu
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.8450 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, 0.6350 mm): Pad 12 [<no net>] of Q1 on F.Cu
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-0.6800 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -0.6350 mm): Pad 13 [<no net>] of Q1 on F.Cu
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.8450 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-0.6800 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.8450 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -0.6350 mm): Pad 13 [<no net>] of Q1 on F.Cu
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-0.6800 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(2.4750 mm, -0.6350 mm): Pad 13 [<no net>] of Q1 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.0825 mm, -0.9100 mm): PTH pad 39 [<no net>] of U1
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.4750 mm, -1.9050 mm): Pad 14 [<no net>] of Q1 on F.Cu
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-0.6800 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+    @(3.1500 mm, 0.0000 mm): Pad 2 [<no net>] of U2 on F.Cu
+[solder_mask_bridge]: Front solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(-0.6800 mm, 0.6150 mm): Pad 39 [<no net>] of U1 on F.Cu
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0825 mm, -0.9100 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+[solder_mask_bridge]: Rear solder mask aperture bridges items with different nets
+    Rule: board setup solder mask min width; error
+    @(0.0825 mm, -0.9100 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[hole_to_hole]: Drilled hole too close to other hole (board setup constraints min 0.2495 mm; actual 0.1208 mm)
+    Rule: board setup constraints; warning
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(-0.6800 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+[hole_to_hole]: Drilled hole too close to other hole (board setup constraints min 0.2495 mm; actual 0.0458 mm)
+    Rule: board setup constraints; warning
+    @(-0.6800 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[hole_to_hole]: Drilled hole too close to other hole (board setup constraints min 0.2495 mm; actual 0.0455 mm)
+    Rule: board setup constraints; warning
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.0825 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+[hole_to_hole]: Drilled hole too close to other hole (board setup constraints min 0.2495 mm; actual 0.0000 mm)
+    Rule: board setup constraints; warning
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+    @(0.0825 mm, 0.6150 mm): PTH pad 39 [<no net>] of U1
+[hole_to_hole]: Drilled hole too close to other hole (board setup constraints min 0.2495 mm; actual 0.2078 mm)
+    Rule: board setup constraints; warning
+    @(0.8450 mm, -0.1475 mm): PTH pad 39 [<no net>] of U1
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[holes_co_located]: Drilled holes co-located
+    Local override; warning
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J3
+    @(0.0000 mm, 0.0000 mm): PTH pad 1 [<no net>] of J4
+[hole_to_hole]: Drilled hole too close to other hole (board setup constraints min 0.2495 mm; actual 0.0000 mm)
+    Rule: board setup constraints; warning
+    @(2.5000 mm, 0.0000 mm): PTH pad 2 [<no net>] of J3
+    @(2.5400 mm, 0.0000 mm): PTH pad 2 [<no net>] of J4
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Footprint has no courtyard defined
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - Footprint component type doesn't match footprint pads
+
+** End of Report **
