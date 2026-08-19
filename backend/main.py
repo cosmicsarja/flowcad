@@ -117,14 +117,19 @@ async def startup_event():
     logger.info("FlowCAD API v2 ready. Docs: http://localhost:8000/docs")
     logger.info("Routes registered: %d", len(app.routes))
 
-    # LLM provider info
-    if not settings.gemini_api_key:
-        error_msg = "CRITICAL: GEMINI_API_KEY is not set. Please add it to Render environment variables or .env."
+    # LLM provider info — accept Groq OR Gemini
+    import os
+    groq_key = settings.groq_api_key or os.environ.get("GROQ_API_KEY", "")
+    gemini_key = settings.gemini_api_key or os.environ.get("GEMINI_API_KEY", "")
+    if groq_key:
+        logger.info("LLM provider: Groq (openai/gpt-oss-120b + fallbacks)")
+    elif gemini_key:
+        from core.gemini_client import active_model_name
+        logger.info("LLM provider: Google Gemini (%s)", active_model_name())
+    else:
+        error_msg = "CRITICAL: No LLM API key found. Set GROQ_API_KEY or GEMINI_API_KEY in .env"
         logger.error(error_msg)
         raise RuntimeError(error_msg)
-        
-    from core.gemini_client import active_model_name
-    logger.info("LLM provider: Google Gemini (%s)", active_model_name())
 
     # Supabase info
     if not settings.supabase_url or not settings.supabase_effective_key:

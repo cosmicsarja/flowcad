@@ -20,7 +20,10 @@ class Settings(BaseSettings):
     # ── LLM ────────────────────────────────────────────────────────────────
     gemini_api_key: str = ""
     # Default: prefer gemini-2.5-flash; auto-fallback to gemini-3.5-flash at runtime
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-2.0-flash"
+
+    # Groq (free, open-source models — primary LLM provider)
+    groq_api_key: str = ""
 
     # ── Supabase ────────────────────────────────────────────────────────────
     supabase_url: str = ""

@@ -5,9 +5,10 @@ pydantic-settings==2.5.2
 python-dotenv==1.0.1
 
 # LLM providers (one required — all three installed so you can switch)
-google-genai>=0.8.0      # Google Gemini AI Studio (primary)
-anthropic==0.36.1        # Claude fallback
-openai==1.51.0           # GPT-4o fallback
+groq>=0.9.0               # Groq — free Llama 3.3 70B (PRIMARY)
+google-genai>=0.8.0       # Google Gemini AI Studio (fallback)
+anthropic==0.36.1         # Claude fallback
+openai==1.51.0            # GPT-4o fallback
 
 # Supabase persistence (optional — non-fatal if missing)
 supabase==2.9.1

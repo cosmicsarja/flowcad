@@ -70,6 +70,49 @@ router = APIRouter(tags=["projects"])
 WORK_DIR = Path(os.environ.get("WORK_DIR", settings.work_dir if hasattr(settings, "work_dir") else "./tmp"))
 
 # ─────────────────────────────────────────────────────────────────────────────
+# File-backed project store — survives uvicorn hot-reloads
+# Stored at: tmp/local_projects.json
+# ─────────────────────────────────────────────────────────────────────────────
+import json as _json
+import threading as _threading
+
+_STORE_LOCK = _threading.Lock()
+_STORE_PATH = Path("./tmp/local_projects.json")
+
+
+def _store_load() -> dict:
+    try:
+        if _STORE_PATH.exists():
+            return _json.loads(_STORE_PATH.read_text())
+    except Exception:
+        pass
+    return {}
+
+
+def _store_save(data: dict) -> None:
+    try:
+        _STORE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        _STORE_PATH.write_text(_json.dumps(data))
+    except Exception as exc:
+        logger.warning("Local project store write failed: %s", exc)
+
+
+def _mem_set(project_id: str, patch: dict) -> None:
+    """Upsert project data into file-backed store (thread-safe)."""
+    with _STORE_LOCK:
+        store = _store_load()
+        if project_id not in store:
+            store[project_id] = {}
+        store[project_id].update(patch)
+        _store_save(store)
+
+
+def _mem_get(project_id: str) -> dict | None:
+    """Get project from file-backed store."""
+    with _STORE_LOCK:
+        return _store_load().get(project_id)
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -125,15 +168,17 @@ def _check_usage_limit(user_id: Optional[str]) -> None:
 
 
 def _set_project_status(project_id: str, status: GenerationStatus, extra: dict | None = None) -> None:
-    """Update project status + optional extra fields in Supabase (best-effort)."""
+    """Update project status + optional extra fields in Supabase and memory."""
     data: dict = {"status": status.value, "updated_at": _now_iso()}
     if extra:
         data.update(extra)
-    db.update("projects", {"id": project_id}, data)
+    _mem_set(project_id, data)  # always write to memory
+    db.update("projects", {"id": project_id}, data)  # best-effort Supabase
 
 
 def _write_design_state(project_id: str, design_state: dict) -> None:
-    """Persist current pipeline progress to projects.design_state (best-effort)."""
+    """Persist current pipeline progress to memory and Supabase (best-effort)."""
+    _mem_set(project_id, {"design_state": design_state, "updated_at": _now_iso()})  # always
     db.update("projects", {"id": project_id}, {
         "design_state": design_state,
         "updated_at": _now_iso(),
@@ -205,7 +250,6 @@ def _run_pipeline(
         design_state["stage"] = "architecture"
         _write_design_state(project_id, design_state)
 
-        time.sleep(1.5)  # respect Gemini RPM limit
 
         # ── Stage 2: Architecture ─────────────────────────────────────────────
         logger.info("[%s] Stage 2 — architecture", project_id)
@@ -215,7 +259,6 @@ def _run_pipeline(
         design_state["stage"] = "components"
         _write_design_state(project_id, design_state)
 
-        time.sleep(1.5)  # respect Gemini RPM limit
 
         # ── Stage 3: Components ───────────────────────────────────────────────
         logger.info("[%s] Stage 3 — components", project_id)
@@ -377,20 +420,23 @@ def generate_project(
     _check_usage_limit(resolved_user)
 
     # ── 2. Ensure project exists and mark as generating ──────────────────────
-    db.upsert("projects", {
+    proj_data = {
         "id": project_id,
         "prompt": body.prompt,
         "name": body.name or "New Project",
         "status": GenerationStatus.generating.value,
         "user_id": resolved_user,
         "updated_at": _now_iso(),
-    })
+    }
+    _mem_set(project_id, proj_data)  # always write to memory first
+    db.upsert("projects", proj_data)  # best-effort Supabase
     design_state: dict = {
         "prompt": body.prompt,
         "stage": "requirements",
         "stages_done": [],
         "last_error": None,
     }
+    _mem_set(project_id, {"design_state": design_state})
 
     # Queue the heavy lifting
     background_tasks.add_task(_run_pipeline, project_id, body, resolved_user, design_state)
@@ -422,7 +468,7 @@ def create_and_generate(
     resolved_user = _resolve_user_id(user_id or body.user_id)
 
     # Insert stub row so downstream Supabase writes have a foreign key target
-    db.insert("projects", {
+    stub = {
         "id": project_id,
         "user_id": resolved_user,
         "name": "Generating…",
@@ -431,7 +477,9 @@ def create_and_generate(
         "design_state": {},
         "created_at": _now_iso(),
         "updated_at": _now_iso(),
-    })
+    }
+    _mem_set(project_id, stub)  # always write to memory
+    db.insert("projects", stub)  # best-effort Supabase
 
     # Delegate to the main orchestration handler
     return generate_project(project_id, body, background_tasks, user_id=user_id)
@@ -443,15 +491,20 @@ def create_and_generate(
 @router.get("/projects/{project_id}", response_model=ProjectRow)
 def get_project(project_id: str):
     """Fetch current project row (status + design_state, including layout and glb_url)."""
-    rows = db.select("projects", {"id": project_id})
-    if not rows:
+    # Memory first — always up-to-date during local generation
+    row = _mem_get(project_id)
+    if row is None:
+        # Fallback: try Supabase
+        rows = db.select("projects", {"id": project_id})
+        if rows:
+            row = rows[0]
+    if row is None:
         raise HTTPException(404, detail="Project not found")
-    row = rows[0]
     return ProjectRow(
-        id=row["id"],
+        id=row.get("id", project_id),
         user_id=row.get("user_id"),
         name=row.get("name", ""),
-        status=GenerationStatus(row.get("status", "pending")),
+        status=GenerationStatus(row.get("status", "generating")),
         design_state=row.get("design_state") or {},
         thumbnail_url=row.get("thumbnail_url"),
         share_token=row.get("share_token"),

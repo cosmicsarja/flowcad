@@ -3,7 +3,7 @@ import { type Check, type ChatEntry } from "./flowcad-data";
 import { type SymKind, type BlockKind, SYM_GEO } from "./templates";
 import { supabase } from "@/integrations/supabase/client";
 import { type LayoutData, type NetlistData } from "./layout-types";
-import { API_BASE, ApiNetworkError, ApiResponseError, probeBackend, apiPost } from "./api";
+import { API_BASE, ApiNetworkError, ApiResponseError, probeBackend, apiPost, apiGet } from "./api";
 
 export type Part = {
   ref: string;
@@ -747,7 +747,8 @@ export async function runGeneration(prompt: string, projectId?: string) {
       );
     });
 
-    // 3. Poll Supabase for incremental stage progress and await completion
+    // 3. Poll backend API directly for incremental stage progress.
+    //    Works in local dev without Supabase tables.
     await new Promise<void>((resolve) => {
       pollTick = window.setInterval(async () => {
         if (genToken !== token) {
@@ -756,24 +757,21 @@ export async function runGeneration(prompt: string, projectId?: string) {
           return;
         }
         try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data } = await (supabase as any)
-            .from("projects")
-            .select("status, design_state")
-            .eq("id", projectId)
-            .single();
-          if (!data) return;
-          const ds = data.design_state || {};
-          const patch = applyDesignState(ds);
-          set(patch);
-          if (data.status === "done" || data.status === "failed") {
+          const proj = await apiGet<{ status: string; design_state?: Record<string, unknown> }>(
+            `/projects/${projectId}`,
+          );
+          if (proj.design_state) {
+            const patch = applyDesignState(proj.design_state);
+            set(patch);
+          }
+          if (proj.status === "done" || proj.status === "failed") {
             clearInterval(pollTick);
             resolve();
           }
         } catch {
-          /* Supabase may not have table yet — ignore poll errors */
+          /* Backend may not have the row yet on first tick — ignore */
         }
-      }, 1500);
+      }, 2000);
     });
 
     if (tick) window.clearInterval(tick);

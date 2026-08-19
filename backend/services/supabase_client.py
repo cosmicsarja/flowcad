@@ -80,9 +80,26 @@ def select(table: str, filters: dict[str, Any]) -> list[dict]:
     try:
         query = client.table(table).select("*")
         for col, val in filters.items():
-            query = query.eq(col, val)
+            query = query.eq(col, val)  # type: ignore[union-attr]
         resp = query.execute()
-        return resp.data or []
+        return list(resp.data) if resp.data else []
     except Exception as exc:
         logger.warning("Supabase select(%s) failed: %s", table, exc)
         return []
+
+
+def update(table: str, filters: dict[str, Any], data: dict[str, Any]) -> Optional[dict]:
+    """Update rows matching filters; returns first updated row or None."""
+    client = _get_client()
+    if client is None:
+        return None
+    try:
+        query = client.table(table).update(data)
+        for col, val in filters.items():
+            query = query.eq(col, val)  # type: ignore[union-attr]
+        resp = query.execute()
+        if resp.data:
+            return resp.data[0]
+    except Exception as exc:
+        logger.warning("Supabase update(%s) failed: %s", table, exc)
+    return None

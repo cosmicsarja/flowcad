@@ -76,10 +76,11 @@ def update(table: str, match: dict[str, Any], data: dict[str, Any]) -> Optional[
     if client is None:
         return None
     try:
-        q = client.table(table)
+        # supabase-py v2: .update(data) first, then .eq() filters
+        q = client.table(table).update(data)
         for col, val in match.items():
             q = q.eq(col, val)
-        resp = q.update(data).execute()
+        resp = q.execute()
         return resp.data[0] if resp.data else None
     except Exception as exc:
         logger.warning("Supabase update(%s) failed: %s", table, exc)
@@ -91,11 +92,12 @@ def select(table: str, match: dict[str, Any], limit: int = 1) -> Optional[list[d
     if client is None:
         return None
     try:
-        q = client.table(table)
+        # supabase-py v2: .select("*") first, then .eq() filters
+        q = client.table(table).select("*")
         for col, val in match.items():
             q = q.eq(col, val)
-        resp = q.select("*").limit(limit).execute()
-        return resp.data or []
+        resp = q.limit(limit).execute()
+        return list(resp.data) if resp.data else []
     except Exception as exc:
         logger.warning("Supabase select(%s) failed: %s", table, exc)
         return None
