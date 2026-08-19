@@ -297,32 +297,32 @@ export function PcbLayout({ projectId }: { projectId?: string }) {
               {/* ── Mounting holes ─────────────────────────────────── */}
               {mountingHoleSvg.length > 0
                 ? mountingHoleSvg.map((mh, i) => (
-                    <MountingHoleSvg key={i} cx={mh.cx} cy={mh.cy} r={Math.max(4, mh.r)} />
-                  ))
+                  <MountingHoleSvg key={i} cx={mh.cx} cy={mh.cy} r={Math.max(4, mh.r)} />
+                ))
                 : // Default corner holes when no layout data
-                  [
-                    [BX + 14, BY + 14],
-                    [BX + b.w - 14, BY + 14],
-                    [BX + 14, BY + b.h - 14],
-                    [BX + b.w - 14, BY + b.h - 14],
-                  ].map(([x, y], i) => (
-                    <g key={i}>
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r="6"
-                        className="fill-none stroke-copper/70"
-                        strokeWidth="1.2"
-                      />
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r="2.6"
-                        className="fill-background stroke-copper"
-                        strokeWidth="1"
-                      />
-                    </g>
-                  ))}
+                [
+                  [BX + 14, BY + 14],
+                  [BX + b.w - 14, BY + 14],
+                  [BX + 14, BY + b.h - 14],
+                  [BX + b.w - 14, BY + b.h - 14],
+                ].map(([x, y], i) => (
+                  <g key={i}>
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r="6"
+                      className="fill-none stroke-copper/70"
+                      strokeWidth="1.2"
+                    />
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r="2.6"
+                      className="fill-background stroke-copper"
+                      strokeWidth="1"
+                    />
+                  </g>
+                ))}
 
               {/* ── Loading skeleton ───────────────────────────────── */}
               {d.pcbLayoutStatus === "loading" && (
@@ -442,7 +442,7 @@ export function PcbLayout({ projectId }: { projectId?: string }) {
                           "fill-panel-raised stroke-silk/70",
                           bad && "stroke-warn",
                           active &&
-                            "stroke-teal fill-teal/14 [filter:drop-shadow(0_0_6px_var(--color-teal))]",
+                          "stroke-teal fill-teal/14 [filter:drop-shadow(0_0_6px_var(--color-teal))]",
                         )}
                       />
                       {/* Pin 1 marker */}

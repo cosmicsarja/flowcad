@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { bomLines, bomTotalNow, getDesign, type DesignState } from "./design-store";
+import { bomLines, bomTotalNow, fmtINR, USD_TO_INR, getDesign, type DesignState } from "./design-store";
 
 function download(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -90,17 +90,18 @@ function netlistFile(s: DesignState) {
 }
 
 function bomCsv(s: DesignState) {
+  const toINR = (usd: number) => (usd * USD_TO_INR).toFixed(2);
   const rows = [
-    ["Ref", "Name", "Qty", "Package", "Unit Cost (USD)", "Total (USD)"],
+    ["Ref", "Name", "Qty", "Package", "Unit Cost (INR)", "Total (INR)"],
     ...bomLines(s).map((l) => [
       l.ref,
       l.name,
       String(l.qty),
       l.pkg,
-      l.unit.toFixed(2),
-      l.total.toFixed(2),
+      toINR(l.unit),
+      toINR(l.total),
     ]),
-    ["", "BOARD TOTAL", "", "", "", bomTotalNow(s).toFixed(2)],
+    ["", "BOARD TOTAL", "", "", "", toINR(bomTotalNow(s))],
   ];
   return rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
 }
@@ -121,11 +122,11 @@ th{background:#121a22;color:#8aa0b0;font-weight:500}.pass{color:#4ade80}.warn{co
 <tr><th>Stackup</th><td>2-layer FR-4, 1.6 mm, 1 oz copper</td></tr>
 <tr><th>Components</th><td>${s.parts.length}</td></tr>
 <tr><th>Nets</th><td>${s.nets.length}</td></tr>
-<tr><th>BOM total</th><td>$${bomTotalNow(s).toFixed(2)} / board</td></tr>
+<tr><th>BOM total</th><td>${fmtINR(bomTotalNow(s))} / board</td></tr>
 <tr><th>Design confidence</th><td>${s.confidence}%</td></tr></table>
 <h2>Components</h2>
 <table><tr><th>Ref</th><th>Name</th><th>Package</th><th>Qty</th><th>Position (mm)</th><th>Total</th></tr>
-${s.parts.map((p) => `<tr><td>${p.ref}</td><td>${p.name}</td><td>${p.pkg}</td><td>${p.qty}</td><td>${(p.px / 9).toFixed(2)}, ${(p.py / 9).toFixed(2)}</td><td>$${(p.unit * p.qty).toFixed(2)}</td></tr>`).join("")}
+${s.parts.map((p) => `<tr><td>${p.ref}</td><td>${p.name}</td><td>${p.pkg}</td><td>${p.qty}</td><td>${(p.px / 9).toFixed(2)}, ${(p.py / 9).toFixed(2)}</td><td>${fmtINR(p.unit * p.qty)}</td></tr>`).join("")}
 </table>
 <h2>Verification</h2>
 <table><tr><th>Check</th><th>Status</th><th>Score</th><th>Note</th></tr>

@@ -5,7 +5,7 @@ import { Logo } from "@/components/flowcad/Logo";
 import { Button } from "@/components/ui/button";
 import { MeterBar, StatusBadge } from "@/components/flowcad/StatusBadge";
 import { exportArtifacts } from "@/lib/flowcad-data";
-import { bomTotalNow, useDesign } from "@/lib/design-store";
+import { bomTotalNow, fmtINR, useDesign } from "@/lib/design-store";
 import { artifactFiles, generateAll, generateArtifact } from "@/lib/export-files";
 
 export const Route = createFileRoute("/export")({
@@ -62,7 +62,7 @@ function ExportPage() {
               <p className="label-mono">Design Confidence</p>
               <p className="mt-1 font-mono text-5xl font-semibold text-teal">{d.confidence}%</p>
               <p className="mt-2 font-mono text-[11px] text-muted-foreground">
-                {`IRRIGATION_CTRL · REV B · ${d.board.w.toFixed(1)} × ${d.board.h.toFixed(1)} mm · ${d.parts.length} parts · $${bomTotalNow(d).toFixed(2)} / board`}
+                {`IRRIGATION_CTRL · REV B · ${d.board.w.toFixed(1)} × ${d.board.h.toFixed(1)} mm · ${d.parts.length} parts · ${fmtINR(bomTotalNow(d))} / board`}
               </p>
             </div>
             <div className="min-w-[280px] flex-1 space-y-2.5">

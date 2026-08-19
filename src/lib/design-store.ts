@@ -360,6 +360,14 @@ export function bomTotalNow(s: DesignState = state) {
   return bomLines(s).reduce((a, l) => a + l.total, 0);
 }
 
+/** Approximate USD → INR conversion rate */
+export const USD_TO_INR = 84;
+
+/** Format a USD value as Indian Rupees string e.g. "₹1,260.00" */
+export function fmtINR(usd: number): string {
+  return `₹${(usd * USD_TO_INR).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 /** functional blocks derived from the current parts */
 export function architectureBlocks(s: DesignState = state) {
   const withBlock = s.parts.filter((p) => p.block);
@@ -1099,7 +1107,7 @@ export function runCommand(input: string, projectId?: string) {
         ),
       });
       selectPart(part.ref);
-      reply = `✅ ${part.ref} swapped: ${part.name} → ${pretty}. Footprint kept (${part.pkg}), BOM line updated to $${(part.unit * 1.25).toFixed(2)}.`;
+      reply = `✅ ${part.ref} swapped: ${part.name} → ${pretty}. Footprint kept (${part.pkg}), BOM line updated to ${fmtINR(part.unit * 1.25)}.`;
     }
   } else if (add) {
     const key = Object.keys(catalogAdd).find((k) => t.includes(k)) ?? "capacitor";

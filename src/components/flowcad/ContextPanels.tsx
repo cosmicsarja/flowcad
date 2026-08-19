@@ -1,6 +1,6 @@
 import { ExternalLink, Cpu, Sparkles, MousePointerSquareDashed, Loader2 } from "lucide-react";
 import { components as catalog, alternatives } from "@/lib/flowcad-data";
-import { bomLines, bomTotalNow, useDesign } from "@/lib/design-store";
+import { bomLines, bomTotalNow, fmtINR, useDesign } from "@/lib/design-store";
 import { StatusBadge, MeterBar } from "./StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -27,7 +27,7 @@ export function DetailsPanel() {
             ["Board", `${d.board.w.toFixed(1)} × ${d.board.h.toFixed(1)} mm`],
             ["Components", String(d.parts.length)],
             ["Nets", String(d.nets.length)],
-            ["BOM total", `$${bomTotalNow(d).toFixed(2)}`],
+            ["BOM total", fmtINR(bomTotalNow(d))],
             ["Confidence", `${d.confidence}%`],
           ].map(([k, v]) => (
             <div key={k} className="flex justify-between px-3 py-1.5">
@@ -102,7 +102,7 @@ export function DetailsPanel() {
         <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
           <span className="font-mono text-[12px] text-muted-foreground">Unit / Qty</span>
           <span className="font-mono text-[12px]">
-            ${part.unit.toFixed(2)} × {part.qty}
+            {fmtINR(part.unit)} × {part.qty}
           </span>
         </div>
         <Button variant="secondary" size="sm" className="w-full font-mono text-[11px]" asChild>
@@ -196,7 +196,7 @@ export function BomPanel() {
                 <td className="px-1 py-2 text-right font-mono text-[11px]">{c.qty}</td>
                 <td className="px-1 py-2 font-mono text-[10px] text-muted-foreground">{c.pkg}</td>
                 <td className="px-2.5 py-2 text-right font-mono text-[11px] text-teal">
-                  ${c.total.toFixed(2)}
+                  {fmtINR(c.total)}
                 </td>
               </tr>
             ))}
@@ -205,7 +205,7 @@ export function BomPanel() {
       </div>
       <div className="mt-3 flex items-center justify-between rounded-md border border-border bg-panel-raised px-3 py-2.5">
         <span className="label-mono">Board total (qty 1)</span>
-        <span className="font-mono text-[14px] text-teal">${bomTotalNow(d).toFixed(2)}</span>
+        <span className="font-mono text-[14px] text-teal">{fmtINR(bomTotalNow(d))}</span>
       </div>
     </div>
   );
