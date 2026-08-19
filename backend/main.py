@@ -64,11 +64,15 @@ _ORIGIN_REGEX = (
     r"|^https://([a-zA-Z0-9\-]+\.)?onrender\.com$"
 )
 
+allow_all = "*" in _explicit_origins
+if allow_all:
+    _explicit_origins.remove("*")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_explicit_origins,
-    allow_origin_regex=_ORIGIN_REGEX,
-    allow_credentials=True,
+    allow_origins=["*"] if allow_all else _explicit_origins,
+    allow_origin_regex=None if allow_all else _ORIGIN_REGEX,
+    allow_credentials=not allow_all,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
@@ -114,20 +118,21 @@ async def startup_event():
     logger.info("Routes registered: %d", len(app.routes))
 
     # LLM provider info
-    if settings.gemini_api_key:
-        from core.gemini_client import active_model_name
-        logger.info("LLM provider: Google Gemini (%s)", active_model_name())
-    elif not settings.gemini_api_key:
-        logger.warning(
-            "⚠️  No GEMINI_API_KEY found. Stages 1–3 will fail. "
-            "Add GEMINI_API_KEY to backend/.env"
-        )
+    if not settings.gemini_api_key:
+        error_msg = "CRITICAL: GEMINI_API_KEY is not set. Please add it to Render environment variables or .env."
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
+        
+    from core.gemini_client import active_model_name
+    logger.info("LLM provider: Google Gemini (%s)", active_model_name())
 
     # Supabase info
-    if settings.supabase_url and settings.supabase_effective_key:
-        logger.info("Supabase: %s", settings.supabase_url)
-    else:
-        logger.info("Supabase: not configured — persistence disabled (pipeline still works)")
+    if not settings.supabase_url or not settings.supabase_effective_key:
+        error_msg = "CRITICAL: SUPABASE_URL and SUPABASE_KEY (or SUPABASE_SERVICE_ROLE_KEY) must be set. Please add them to Render environment variables or .env."
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
+        
+    logger.info("Supabase: %s", settings.supabase_url)
 
     # Free-tier limit
     logger.info("Free-tier monthly limit: %d generations", settings.free_tier_monthly_limit)

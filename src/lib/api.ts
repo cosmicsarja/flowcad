@@ -22,7 +22,7 @@ export const API_BASE: string = (() => {
 })();
 
 /** Maximum time in ms to wait for the health check (must be long enough for Render free tier cold starts) */
-export const HEALTH_TIMEOUT_MS = 60_000;
+export const HEALTH_TIMEOUT_MS = 120_000;
 
 /** Maximum time in ms to wait for the full pipeline (8 stages × ~30s each) */
 export const GENERATE_TIMEOUT_MS = 5 * 60 * 1_000;
