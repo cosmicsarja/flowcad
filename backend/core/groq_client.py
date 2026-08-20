@@ -43,6 +43,9 @@ def _client():
 
 
 def _extract_json(raw: str) -> str:
+    # Strip <think>...</think> blocks which some models output
+    raw = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL).strip()
+    
     fence = re.search(r"```(?:json)?\s*([\s\S]+?)\s*```", raw)
     if fence:
         candidate = fence.group(1).strip()
@@ -85,7 +88,7 @@ def call_groq(
     retries: int = 5,
 ) -> dict[str, Any]:
     global _active_model
-    token_limit = max(max_tokens, 4096)
+    token_limit = max_tokens  # Do not force to 4096, as this causes 413 when prompt + 4096 > model context
     preferred = _active_model or _FALLBACK_MODELS[0]
     candidates = [preferred] + [m for m in _FALLBACK_MODELS if m != preferred]
     current_user_prompt = user

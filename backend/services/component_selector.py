@@ -61,6 +61,45 @@ Rules:
 """
 
 
+def _build_fallback_queries(reqs: RequirementsOutput) -> list[tuple[str, str]]:
+    """
+    Build (query, category) pairs from RequirementsOutput when architecture nodes are empty.
+    This ensures the component search runs even when the architecture stage failed.
+    """
+    queries: list[tuple[str, str]] = []
+
+    # MCU
+    if reqs.microcontroller:
+        queries.append((reqs.microcontroller, "mcu"))
+
+    # Power: determine input/output
+    inp_v = reqs.power_constraints.input_voltage or ""
+    out_v = reqs.power_constraints.output_voltage or ""
+    is_ac = any(x in inp_v.lower() for x in ("ac", "220", "110", "mains", "230", "115"))
+    if is_ac:
+        queries.append(("bridge rectifier diode", "passive"))
+        queries.append(("filter capacitor electrolytic", "passive"))
+        queries.append((f"voltage regulator {out_v}", "power"))
+        queries.append(("AC power connector terminal", "io"))
+    else:
+        queries.append((f"voltage regulator {out_v}", "power"))
+        queries.append((f"USB connector power input {inp_v}", "io"))
+
+    # Sensors
+    for sensor in reqs.sensors[:5]:
+        queries.append((sensor, "sensor"))
+
+    # Actuators
+    for actuator in reqs.actuators[:4]:
+        queries.append((actuator, "actuator"))
+
+    # Interfaces → IO
+    for iface in reqs.interfaces[:3]:
+        queries.append((f"{iface} connector", "io"))
+
+    return queries
+
+
 def select_components(inp: ComponentsInput) -> ComponentsOutput:
     arch = inp.architecture
     reqs = inp.requirements
@@ -68,17 +107,28 @@ def select_components(inp: ComponentsInput) -> ComponentsOutput:
     seen_ids = set()
     lib = get_library()
 
-    for node in arch.nodes:
-        # Provide more context to the search (e.g. "USB-C 5V IN")
-        query = f"{node.label} {node.sub}"
-        # We mapped node.kind directly to category
-        candidates = lib.search_components(query, category=node.kind, limit=10)
-        for c in candidates:
-            if c["id"] not in seen_ids:
-                seen_ids.add(c["id"])
-                library_subset.append(c)
-                
-    # Also include some common passives so the LLM can add them (decoupling caps, resistors)
+    if arch.nodes:
+        # Normal path: search from architecture nodes
+        for node in arch.nodes:
+            # Provide more context to the search (e.g. "USB-C 5V IN")
+            query = f"{node.label} {node.sub}"
+            candidates = lib.search_components(query, category=node.kind, limit=10)
+            for c in candidates:
+                if c["id"] not in seen_ids:
+                    seen_ids.add(c["id"])
+                    library_subset.append(c)
+    else:
+        # Fallback path: architecture stage failed — derive queries from requirements
+        logger.warning(
+            "Architecture nodes empty — building component candidates from requirements directly"
+        )
+        for query, category in _build_fallback_queries(reqs):
+            for c in lib.search_components(query, category=category, limit=8):
+                if c["id"] not in seen_ids:
+                    seen_ids.add(c["id"])
+                    library_subset.append(c)
+
+    # Always include common passives so the LLM can add decoupling caps / pull-ups
     for q in ["100nF capacitor", "10uF capacitor", "10k resistor", "330 resistor"]:
         for c in lib.search_components(q, category="passive", limit=3):
             if c["id"] not in seen_ids:
@@ -116,11 +166,29 @@ Power: {reqs.power_constraints.input_voltage} → {reqs.power_constraints.output
 
 Select components and return JSON."""
 
-    raw: dict[str, Any] = call_llm(
-        system_prompt=SYSTEM_PROMPT,
-        user_prompt=user_prompt,
-        max_tokens=3000,
-    )
+    try:
+        raw: dict[str, Any] = call_llm(
+            system_prompt=SYSTEM_PROMPT,
+            user_prompt=user_prompt,
+            max_tokens=3000,
+        )
+    except Exception as exc:
+        logger.error("LLM component selection completely failed (%s) — using fallback synthesis", exc)
+        raw = {"selections": []}
+        for i, node in enumerate(arch.nodes):
+            prefix = "U"
+            if node.kind == "power": prefix = "U"
+            elif node.kind == "io": prefix = "J"
+            elif node.kind == "sensor": prefix = "U"
+            elif node.kind == "actuator": prefix = "K"
+            elif node.kind == "passive": prefix = "C"
+            raw["selections"].append({
+                "node_id": node.id,
+                "ref": f"{prefix}{i+1}",
+                "library_id": "synthetic",
+                "qty": 1,
+                "justification": f"Synthesized fallback ({node.label})",
+            })
 
     # Build lookup maps
     lib_by_id = {c["id"]: c for c in library_subset}

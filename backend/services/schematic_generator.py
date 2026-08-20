@@ -158,12 +158,10 @@ def _generate_fallback_netlist(
     """
     Generate a valid KiCad netlist XML without needing KiCad libraries.
     Format: KiCad legacy netlist v0.6 compatible with pcbnew.
+    When edges is empty, derives connectivity from component ref prefixes.
     """
-    # Build net → pins mapping
+    # Build net → pins mapping from edges
     net_pins: dict[str, list[tuple[str, str]]] = {}
-
-    # Assign default pins per component based on category
-    comp_pins: dict[str, list[str]] = {}
     pin_counter: dict[str, int] = {}
 
     def next_pin(ref: str) -> str:
@@ -175,19 +173,53 @@ def _generate_fallback_netlist(
         net = edge.net
         if net not in net_pins:
             net_pins[net] = []
-
-        # Find source ref
         src_ref = _find_ref(edge.from_, comps)
         dst_ref = _find_ref(edge.to, comps)
-
         if src_ref:
-            p = next_pin(src_ref)
-            net_pins[net].append((src_ref, p))
+            net_pins[net].append((src_ref, next_pin(src_ref)))
         if dst_ref:
-            p = next_pin(dst_ref)
-            net_pins[net].append((dst_ref, p))
+            net_pins[net].append((dst_ref, next_pin(dst_ref)))
 
-    # Always add GND and VCC nets
+    # When edges is empty, derive basic power connectivity from ref prefixes
+    if not edges:
+        logger.info("No edges — synthesizing power nets from component ref prefixes")
+        # Identify power sources (regulators, connectors) and loads (ICs, sensors)
+        power_refs = [c.ref for c in comps if c.ref.upper().startswith(("U", "J", "P")) and
+                      any(k in c.name.lower() for k in ("regulator", "ldo", "ams", "connector", "usb", "terminal", "power"))]
+        active_refs = [c.ref for c in comps if c.ref.upper().startswith(("U", "Q", "IC"))]
+        passive_refs = [c.ref for c in comps if c.ref.upper().startswith(("R", "C", "L", "D"))]
+        connector_refs = [c.ref for c in comps if c.ref.upper().startswith(("J", "P", "CON"))]
+
+        # GND net: connect all components pin 2 (usually GND)
+        if "GND" not in net_pins:
+            net_pins["GND"] = []
+        for comp in comps:
+            net_pins["GND"].append((comp.ref, next_pin(comp.ref)))
+
+        # +3V3 net: connect power source to active components
+        if "+3V3" not in net_pins:
+            net_pins["+3V3"] = []
+        for ref in (power_refs or [comps[0].ref] if comps else []):
+            net_pins["+3V3"].append((ref, next_pin(ref)))
+        for ref in active_refs:
+            if ref not in (power_refs or []):
+                net_pins["+3V3"].append((ref, next_pin(ref)))
+
+        # +5V net: connect connectors
+        if "+5V" not in net_pins:
+            net_pins["+5V"] = []
+        for ref in connector_refs:
+            net_pins["+5V"].append((ref, next_pin(ref)))
+
+        # Signal nets: chain passives to active components
+        for i, ref in enumerate(passive_refs):
+            net_name = f"SIG_{i+1}"
+            net_pins[net_name] = []
+            net_pins[net_name].append((ref, next_pin(ref)))
+            if active_refs:
+                net_pins[net_name].append((active_refs[i % len(active_refs)], next_pin(active_refs[i % len(active_refs)])))
+
+    # Always ensure power nets exist
     for net_name in ["+3V3", "GND", "+5V"]:
         if net_name not in net_pins:
             net_pins[net_name] = []
@@ -241,6 +273,29 @@ def _build_net_entries(
             src = _find_ref(edge.from_, comps) or edge.from_
             dst = _find_ref(edge.to, comps) or edge.to
             nets.append(NetEntry(from_ref=src, to_ref=dst, net=edge.net))
+
+    # When edges is empty, synthesize basic power nets from component ref prefixes
+    if not edges and comps:
+        # Find power source component (regulator, connector, or first U* ref)
+        power_comp = next(
+            (c for c in comps if any(k in c.name.lower() for k in ("regulator", "ldo", "ams", "supply"))),
+            next((c for c in comps if c.ref.upper().startswith("U")), comps[0]),
+        )
+        # Connect power source to all other active components
+        for c in comps:
+            if c.ref == power_comp.ref:
+                continue
+            if c.ref.upper().startswith(("U", "Q", "J", "P")):
+                key = (power_comp.ref, c.ref, "+3V3")
+                if key not in seen:
+                    seen.add(key)
+                    nets.append(NetEntry(from_ref=power_comp.ref, to_ref=c.ref, net="+3V3"))
+            # All components connect to GND
+            key_gnd = (c.ref, "GND", "GND")
+            if key_gnd not in seen:
+                seen.add(key_gnd)
+                nets.append(NetEntry(from_ref=c.ref, to_ref="GND", net="GND"))
+
     return nets
 
 

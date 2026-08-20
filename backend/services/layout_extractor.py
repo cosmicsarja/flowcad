@@ -409,27 +409,32 @@ def _compute_layout(
             ref = c.get("ref", c.get("node_id", "U?"))
             pkg = c.get("package", c.get("footprint", "0603"))
             cw, ch, *_ = _pkg_geo(pkg)
+            
+            # Ensure we don't place outside the board bounds
+            safe_x = min(max(col_x, margin), max(margin, w - cw - margin))
+            safe_y = min(max(y, margin), max(margin, h - ch - margin))
+            
             pc = PlacedComponent(
                 ref=ref,
                 name=c.get("name", ref),
                 footprint=c.get("footprint", pkg),
-                x_mm=col_x,
-                y_mm=y,
+                x_mm=safe_x,
+                y_mm=safe_y,
                 w_mm=cw,
                 h_mm=ch,
             )
             placement.append(pc)
             ref_to_comp[ref] = pc
             y += ch + row_gap
-            if y > h - margin:
+            if y + ch > h - margin:
                 col_x += cw + col_gap * 3
                 y = margin
 
-    # Assign columns
+    # Assign columns left-to-right to prevent overlap, keeping within board
     conn_col = margin
-    ic_col   = margin + 15.0
-    pas_col  = w - margin - 12.0  # start from right, will shift left as needed
-    oth_col  = w - margin - 6.0
+    ic_col   = conn_col + 15.0
+    pas_col  = ic_col + 25.0
+    oth_col  = pas_col + 15.0
 
     place_column(connectors, conn_col)
     place_column(ics,        ic_col)
