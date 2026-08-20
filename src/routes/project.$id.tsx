@@ -176,7 +176,7 @@ function Workspace() {
                   )}
                 </TabsContent>
                 <TabsContent value="schematic" className="m-0 h-full">
-                  {hasDesign ? (
+                  {showSchematic ? (
                     <SchematicView />
                   ) : (
                     <CanvasEmpty
@@ -186,7 +186,7 @@ function Workspace() {
                   )}
                 </TabsContent>
                 <TabsContent value="pcb" className="m-0 h-full">
-                  {hasDesign ? (
+                  {showPcb ? (
                     <PcbLayout projectId={id} />
                   ) : (
                     <CanvasEmpty
@@ -196,7 +196,7 @@ function Workspace() {
                   )}
                 </TabsContent>
                 <TabsContent value="3d" className="m-0 h-full">
-                  {hasDesign ? (
+                  {show3d ? (
                     <ThreeDView />
                   ) : (
                     <CanvasEmpty
