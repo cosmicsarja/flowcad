@@ -122,22 +122,21 @@ async def startup_event():
     groq_key = settings.groq_api_key or os.environ.get("GROQ_API_KEY", "")
     gemini_key = settings.gemini_api_key or os.environ.get("GEMINI_API_KEY", "")
     if groq_key:
-        logger.info("LLM provider: Groq (openai/gpt-oss-120b + fallbacks)")
+        logger.info("LLM provider: Groq (llama-3.3-70b + fallbacks)")
     elif gemini_key:
         from core.gemini_client import active_model_name
         logger.info("LLM provider: Google Gemini (%s)", active_model_name())
     else:
-        error_msg = "CRITICAL: No LLM API key found. Set GROQ_API_KEY or GEMINI_API_KEY in .env"
-        logger.error(error_msg)
-        raise RuntimeError(error_msg)
+        logger.warning("No LLM API key found. Set GROQ_API_KEY or GEMINI_API_KEY in .env — generation will fail.")
 
     # Supabase info
-    if not settings.supabase_url or not settings.supabase_effective_key:
-        error_msg = "CRITICAL: SUPABASE_URL and SUPABASE_KEY (or SUPABASE_SERVICE_ROLE_KEY) must be set. Please add them to Render environment variables or .env."
-        logger.error(error_msg)
-        raise RuntimeError(error_msg)
-        
-    logger.info("Supabase: %s", settings.supabase_url)
+    if not settings.supabase_url:
+        logger.warning("SUPABASE_URL not set — project persistence disabled.")
+    else:
+        if not settings.supabase_effective_key:
+            logger.warning("No Supabase key set — using unauthenticated mode (anon key missing).")
+        else:
+            logger.info("Supabase: %s", settings.supabase_url)
 
     # Free-tier limit
     logger.info("Free-tier monthly limit: %d generations", settings.free_tier_monthly_limit)

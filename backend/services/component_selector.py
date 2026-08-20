@@ -144,8 +144,43 @@ Select components and return JSON."""
             # Try fuzzy fallback by name
             comp = lib_by_name.get(lib_id.lower().replace("-", " "))
         if comp is None:
-            logger.warning("LLM selected unknown library_id '%s' — skipping", lib_id)
-            continue
+            # Try partial match — LLM sometimes uses shortened or variant IDs
+            for k, v in lib_by_id.items():
+                if k in lib_id or lib_id in k:
+                    comp = v
+                    break
+        if comp is None:
+            # Synthesize a component from LLM data so the design doesn't end up empty.
+            # Extract ref prefix to pick a reasonable package
+            ref = sel.get("ref", "U?")
+            r_upper = ref.upper()
+            if r_upper.startswith("C"):
+                pkg, footprint, cost = "0603", "Capacitor_SMD:C_0603_1608Metric", 0.02
+            elif r_upper.startswith("R"):
+                pkg, footprint, cost = "0603", "Resistor_SMD:R_0603_1608Metric", 0.01
+            elif r_upper.startswith("D"):
+                pkg, footprint, cost = "SMA", "Diode_SMD:D_SMA", 0.05
+            elif r_upper.startswith("J") or r_upper.startswith("P"):
+                pkg, footprint, cost = "5mm pitch", "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MPT-0,5-2-2.54_1x02_P2.54mm_Horizontal", 0.15
+            elif r_upper.startswith("L"):
+                pkg, footprint, cost = "0603", "Inductor_SMD:L_0603_1608Metric", 0.05
+            else:
+                pkg, footprint, cost = "SOT-223", "Package_TO_SOT_SMD:SOT-223-3_TabPin2", 0.35
+            # Use library_id as a display name if we have it; otherwise use justification
+            display_name = lib_id.replace("-", " ").title() if lib_id else sel.get("justification", "Component")[:40]
+            logger.info("LLM selected unknown library_id '%s' — synthesizing component as %s (%s)", lib_id, display_name, pkg)
+            comp = {
+                "id": lib_id or f"synthetic-{ref.lower()}",
+                "name": display_name,
+                "category": "power",
+                "footprint": footprint,
+                "package": pkg,
+                "datasheet": "",
+                "unit_cost": cost,
+                "description": sel.get("justification", ""),
+                "specs": [],
+                "lib": "Device",
+            }
 
         selections.append(
             ComponentSelection(

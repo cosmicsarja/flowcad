@@ -537,5 +537,378 @@
     "tags": ["resistor", "5k1", "usb-c", "cc", "0603"],
     "skidl_lib": "Device",
     "kicad_footprint": "Resistor_SMD:R_0603_1608Metric"
+  },
+  {
+    "id": "bridge-rectifier-mb6s",
+    "name": "Bridge Rectifier MB6S",
+    "category": "power",
+    "footprint": "Diode_SMD:D_Cayenne_SMD",
+    "package": "SOP-4",
+    "datasheet_url": "https://www.onsemi.com/pub/Collateral/MB6S-D.PDF",
+    "unit_cost": 0.18,
+    "description": "600V 0.5A SMD single-phase bridge rectifier, converts AC to DC",
+    "specs": [
+      ["V_RRM", "600 V"],
+      ["I_O", "0.5 A"],
+      ["V_F", "1.1 V @ 0.5A"],
+      ["Package", "SOP-4"]
+    ],
+    "tags": ["bridge", "rectifier", "ac", "dc", "diode", "power", "ac-dc"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Diode_SMD:D_Cayenne_SMD"
+  },
+  {
+    "id": "bridge-rectifier-kbp206",
+    "name": "Bridge Rectifier KBP206",
+    "category": "power",
+    "footprint": "Diode_THT:D_Bridge_Round_D10.1mm",
+    "package": "Round D10mm",
+    "datasheet_url": "https://www.vishay.com/docs/88516/kbp.pdf",
+    "unit_cost": 0.35,
+    "description": "2A 600V THT bridge rectifier module, AC mains to DC full-wave",
+    "specs": [
+      ["V_RRM", "600 V"],
+      ["I_O", "2 A"],
+      ["I_surge", "50 A"],
+      ["V_F", "1.1 V"]
+    ],
+    "tags": ["bridge", "rectifier", "ac-dc", "mains", "power", "thru-hole"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Diode_THT:D_Bridge_Round_D10.1mm"
+  },
+  {
+    "id": "lm7805-regulator",
+    "name": "LM7805 +5V Regulator",
+    "category": "power",
+    "footprint": "Package_TO_SOT_THT:TO-220-3_Vertical",
+    "package": "TO-220",
+    "datasheet_url": "https://www.ti.com/lit/ds/symlink/lm7805.pdf",
+    "unit_cost": 0.30,
+    "description": "+5V fixed linear voltage regulator, 1A output, for DC power supplies",
+    "specs": [
+      ["V_out", "5 V ±4%"],
+      ["I_max", "1 A"],
+      ["V_in range", "7–35 V"],
+      ["Dropout", "2 V"],
+      ["θJC", "5 °C/W"]
+    ],
+    "tags": ["regulator", "ldo", "5v", "lm7805", "power", "linear", "ac-dc"],
+    "skidl_lib": "Regulator_Linear",
+    "kicad_footprint": "Package_TO_SOT_THT:TO-220-3_Vertical"
+  },
+  {
+    "id": "lm7812-regulator",
+    "name": "LM7812 +12V Regulator",
+    "category": "power",
+    "footprint": "Package_TO_SOT_THT:TO-220-3_Vertical",
+    "package": "TO-220",
+    "datasheet_url": "https://www.ti.com/lit/ds/symlink/lm7812.pdf",
+    "unit_cost": 0.32,
+    "description": "+12V fixed linear voltage regulator, 1A, for TV power supplies",
+    "specs": [
+      ["V_out", "12 V ±4%"],
+      ["I_max", "1 A"],
+      ["V_in range", "14.5–35 V"],
+      ["Dropout", "2 V"]
+    ],
+    "tags": ["regulator", "12v", "lm7812", "power", "linear", "tv"],
+    "skidl_lib": "Regulator_Linear",
+    "kicad_footprint": "Package_TO_SOT_THT:TO-220-3_Vertical"
+  },
+  {
+    "id": "lm317-adjustable",
+    "name": "LM317 Adj. Regulator",
+    "category": "power",
+    "footprint": "Package_TO_SOT_THT:TO-220-3_Vertical",
+    "package": "TO-220",
+    "datasheet_url": "https://www.ti.com/lit/ds/symlink/lm317.pdf",
+    "unit_cost": 0.28,
+    "description": "Adjustable positive linear voltage regulator 1.25V–37V, 1.5A",
+    "specs": [
+      ["V_out", "1.25–37 V adj."],
+      ["I_max", "1.5 A"],
+      ["V_in range", "3–40 V"],
+      ["Adj. pin current", "50–100 µA"]
+    ],
+    "tags": ["regulator", "adjustable", "lm317", "power", "linear"],
+    "skidl_lib": "Regulator_Linear",
+    "kicad_footprint": "Package_TO_SOT_THT:TO-220-3_Vertical"
+  },
+  {
+    "id": "cap-1000uf-50v",
+    "name": "Electrolytic 1000µF 50V",
+    "category": "passive",
+    "footprint": "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm",
+    "package": "D10×20 mm",
+    "datasheet_url": "https://www.nichicon.co.jp/",
+    "unit_cost": 0.35,
+    "description": "1000µF 50V electrolytic bulk filter capacitor, for DC smoothing after rectifier",
+    "specs": [
+      ["Value", "1000 µF"],
+      ["Voltage", "50 V"],
+      ["ESR", "0.06 Ω"],
+      ["Temp", "105 °C"]
+    ],
+    "tags": ["capacitor", "electrolytic", "1000uf", "50v", "filter", "smoothing", "ac-dc"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm"
+  },
+  {
+    "id": "cap-2200uf-35v",
+    "name": "Electrolytic 2200µF 35V",
+    "category": "passive",
+    "footprint": "Capacitor_THT:CP_Radial_D12.5mm_P5.00mm",
+    "package": "D12.5×25 mm",
+    "datasheet_url": "https://www.nichicon.co.jp/",
+    "unit_cost": 0.55,
+    "description": "2200µF 35V large electrolytic cap, main reservoir for rectified DC",
+    "specs": [
+      ["Value", "2200 µF"],
+      ["Voltage", "35 V"],
+      ["ESR", "0.04 Ω"]
+    ],
+    "tags": ["capacitor", "electrolytic", "2200uf", "reservoir", "ac-dc", "filter"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Capacitor_THT:CP_Radial_D12.5mm_P5.00mm"
+  },
+  {
+    "id": "fuse-250v-2a",
+    "name": "Fuse 2A 250V",
+    "category": "protection",
+    "footprint": "Fuse:Fuse_1206_3216Metric",
+    "package": "1206",
+    "datasheet_url": "https://www.littelfuse.com/",
+    "unit_cost": 0.08,
+    "description": "2A 250VAC SMD fuse, mains protection for AC power supply",
+    "specs": [
+      ["Rating", "2 A / 250 VAC"],
+      ["Breaking capacity", "100 A"],
+      ["Type", "Fast-blow"]
+    ],
+    "tags": ["fuse", "mains", "protection", "ac", "250v", "safety"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Fuse:Fuse_1206_3216Metric"
+  },
+  {
+    "id": "screw-term-ac-input",
+    "name": "AC Input Screw Terminal",
+    "category": "connector",
+    "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MPT-0,5-3-2.54_1x03_P2.54mm_Horizontal",
+    "package": "5mm pitch 3P",
+    "datasheet_url": "https://www.phoenix-contact.com/",
+    "unit_cost": 0.20,
+    "description": "3-pin screw terminal (L, N, GND) for mains AC power input",
+    "specs": [
+      ["Pitch", "5 mm"],
+      ["Pins", "3 (L, N, PE)"],
+      ["Current", "10 A"],
+      ["Voltage", "300 VAC"]
+    ],
+    "tags": ["connector", "screw", "ac", "mains", "l", "n", "gnd", "input"],
+    "skidl_lib": "Connector",
+    "kicad_footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MPT-0,5-3-2.54_1x03_P2.54mm_Horizontal"
+  },
+  {
+    "id": "varistor-mov-14d",
+    "name": "Varistor MOV 14D431K",
+    "category": "protection",
+    "footprint": "Varistor:RV_Disc_D14mm_W3.5mm_P7.5mm",
+    "package": "D14mm THT",
+    "datasheet_url": "https://www.tdk-electronics.tdk.com/",
+    "unit_cost": 0.22,
+    "description": "Metal oxide varistor 275VAC, mains surge suppressor for TV power supply",
+    "specs": [
+      ["V_nom", "275 VAC"],
+      ["V_clamp", "710 V @ 10A"],
+      ["Energy", "105 J"],
+      ["I_max", "4500 A 8/20µs"]
+    ],
+    "tags": ["varistor", "mov", "surge", "protection", "mains", "transient", "ac"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Varistor:RV_Disc_D14mm_W3.5mm_P7.5mm"
+  },
+  {
+    "id": "transformer-connector-ew",
+    "name": "Transformer Header 2×2P",
+    "category": "connector",
+    "footprint": "Connector_PinHeader_2.54mm:PinHeader_2x02_P2.54mm_Vertical",
+    "package": "THT 2.54mm 2x2",
+    "datasheet_url": "",
+    "unit_cost": 0.10,
+    "description": "4-pin THT header for off-board mains transformer (primary / secondary windings)",
+    "specs": [
+      ["Pins", "4 (2 primary + 2 secondary)"],
+      ["Pitch", "2.54 mm"],
+      ["Current", "2 A"]
+    ],
+    "tags": ["transformer", "connector", "header", "ac-dc", "mains", "power"],
+    "skidl_lib": "Connector",
+    "kicad_footprint": "Connector_PinHeader_2.54mm:PinHeader_2x02_P2.54mm_Vertical"
+  },
+  {
+    "id": "opto-4n35",
+    "name": "Optocoupler 4N35",
+    "category": "passive",
+    "footprint": "Package_DIP:DIP-6_W7.62mm",
+    "package": "DIP-6",
+    "datasheet_url": "https://www.vishay.com/docs/83725/4n35.pdf",
+    "unit_cost": 0.28,
+    "description": "Phototransistor optocoupler, isolates primary/secondary in SMPS feedback",
+    "specs": [
+      ["CTR", "100%"],
+      ["V_iso", "5300 VRMS"],
+      ["I_F", "60 mA"],
+      ["V_CEO", "80 V"]
+    ],
+    "tags": ["optocoupler", "isolation", "opto", "feedback", "smps", "4n35"],
+    "skidl_lib": "Isolator",
+    "kicad_footprint": "Package_DIP:DIP-6_W7.62mm"
+  },
+  {
+    "id": "dc-output-terminal",
+    "name": "DC Output Terminal 2P",
+    "category": "connector",
+    "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MPT-0,5-2-2.54_1x02_P2.54mm_Horizontal",
+    "package": "5mm pitch",
+    "datasheet_url": "https://www.phoenix-contact.com/",
+    "unit_cost": 0.15,
+    "description": "2-pin screw terminal for DC output (+V, GND) of power supply",
+    "specs": [
+      ["Pitch", "5 mm"],
+      ["Pins", "2"],
+      ["Current", "10 A"],
+      ["Voltage", "50 V DC"]
+    ],
+    "tags": ["connector", "screw", "dc", "output", "power"],
+    "skidl_lib": "Connector",
+    "kicad_footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MPT-0,5-2-2.54_1x02_P2.54mm_Horizontal"
+  },
+  {
+    "id": "heatsink-to220",
+    "name": "Heat Sink Pad TO-220",
+    "category": "passive",
+    "footprint": "MountingHole:MountingHole_3.2mm_M3",
+    "package": "M3 mounting hole",
+    "datasheet_url": "",
+    "unit_cost": 0.12,
+    "description": "Mounting hole and thermal pad for TO-220 heat sink attachment",
+    "specs": [
+      ["Hole dia.", "3.2 mm (M3)"],
+      ["Rth", "< 5 °C/W with clip"]
+    ],
+    "tags": ["heatsink", "thermal", "to-220", "mounting", "power"],
+    "skidl_lib": "MechanicalHole",
+    "kicad_footprint": "MountingHole:MountingHole_3.2mm_M3"
+  },
+  {
+    "id": "inductor-10uh-power",
+    "name": "Inductor 10µH 2A",
+    "category": "passive",
+    "footprint": "Inductor_SMD:L_Bourns_SRR1260",
+    "package": "12.5×12.5mm SMD",
+    "datasheet_url": "https://www.bourns.com/",
+    "unit_cost": 0.42,
+    "description": "Power shielded inductor 10µH 2A, for DC-DC converter / EMI filter",
+    "specs": [
+      ["Inductance", "10 µH ±20%"],
+      ["I_sat", "2 A"],
+      ["DCR", "0.07 Ω"],
+      ["SRF", "34 MHz"]
+    ],
+    "tags": ["inductor", "10uh", "power", "smps", "filter", "dc-dc"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Inductor_SMD:L_Bourns_SRR1260"
+  },
+  {
+    "id": "cap-100uf-25v",
+    "name": "Electrolytic 100µF 25V",
+    "category": "passive",
+    "footprint": "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm",
+    "package": "D6.3×11 mm",
+    "datasheet_url": "https://www.nichicon.co.jp/",
+    "unit_cost": 0.09,
+    "description": "100µF 25V electrolytic capacitor, output filter on regulated DC rail",
+    "specs": [
+      ["Value", "100 µF"],
+      ["Voltage", "25 V"],
+      ["ESR", "0.17 Ω"]
+    ],
+    "tags": ["capacitor", "electrolytic", "100uf", "25v", "filter", "output"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Capacitor_THT:CP_Radial_D6.3mm_P2.50mm"
+  },
+  {
+    "id": "res-1k-0603",
+    "name": "Resistor 1kΩ",
+    "category": "passive",
+    "footprint": "Resistor_SMD:R_0603_1608Metric",
+    "package": "0603",
+    "datasheet_url": "https://www.yageo.com/",
+    "unit_cost": 0.01,
+    "description": "Thick film resistor 1kΩ ±1%, general purpose",
+    "specs": [
+      ["Value", "1 kΩ ±1%"],
+      ["Power", "0.1 W"],
+      ["Tolerance", "1%"]
+    ],
+    "tags": ["resistor", "1k", "0603", "general"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Resistor_SMD:R_0603_1608Metric"
+  },
+  {
+    "id": "diode-1n4007",
+    "name": "Rectifier Diode 1N4007",
+    "category": "passive",
+    "footprint": "Diode_THT:D_DO-41_SOD81_P7.62mm_Horizontal",
+    "package": "DO-41",
+    "datasheet_url": "https://www.vishay.com/docs/88503/1n4001.pdf",
+    "unit_cost": 0.03,
+    "description": "General purpose rectifier diode 1A 1000V, for free-wheeling and protection",
+    "specs": [
+      ["V_RRM", "1000 V"],
+      ["I_F", "1 A"],
+      ["V_F", "1.1 V @ 1A"],
+      ["I_surge", "30 A"]
+    ],
+    "tags": ["diode", "rectifier", "1n4007", "protection", "freewheeling"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Diode_THT:D_DO-41_SOD81_P7.62mm_Horizontal"
+  },
+  {
+    "id": "zener-5v1",
+    "name": "Zener 5.1V BZX55C",
+    "category": "passive",
+    "footprint": "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal",
+    "package": "DO-35",
+    "datasheet_url": "https://www.vishay.com/",
+    "unit_cost": 0.04,
+    "description": "5.1V 500mW zener diode, voltage reference or clamp",
+    "specs": [
+      ["V_Z", "5.1 V ±5%"],
+      ["P_max", "500 mW"],
+      ["I_ZT", "5 mA"]
+    ],
+    "tags": ["zener", "5v", "reference", "clamp", "diode"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal"
+  },
+  {
+    "id": "tvs-p6ke18a",
+    "name": "TVS Diode P6KE18A",
+    "category": "protection",
+    "footprint": "Diode_THT:D_DO-204AC_DO-15_Horizontal_P12.7mm",
+    "package": "DO-15",
+    "datasheet_url": "https://www.littelfuse.com/",
+    "unit_cost": 0.15,
+    "description": "600W TVS transient voltage suppressor 18V, protects DC rail",
+    "specs": [
+      ["V_br", "20 V"],
+      ["V_clamp", "29.2 V @ 20A"],
+      ["P_peak", "600 W"],
+      ["I_PP", "20 A"]
+    ],
+    "tags": ["tvs", "transient", "protection", "surge", "esd", "power"],
+    "skidl_lib": "Device",
+    "kicad_footprint": "Diode_THT:D_DO-204AC_DO-15_Horizontal_P12.7mm"
   }
 ]

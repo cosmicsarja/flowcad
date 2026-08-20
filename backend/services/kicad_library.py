@@ -11,25 +11,58 @@ logger = logging.getLogger(__name__)
 # Hardcoded for Mac default install. In production, this would be an env var.
 KICAD_SYM_DIR = os.environ.get("KICAD_SYMBOL_LIBS", "/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols")
 INDEX_FILE = Path(__file__).parent.parent / "component_library" / "kicad_index.json"
+CURATED_LIB_FILE = Path(__file__).parent.parent / "component_library" / "components.json"
 
 class KiCadLibrary:
     def __init__(self):
         self.parts: List[Dict[str, Any]] = []
-        self._load_or_build_index()
+        self._load_curated_library()   # Always load curated lib first
+        self._load_or_build_index()    # Then augment with KiCad symbols if available
+
+    def _load_curated_library(self):
+        """Load the curated components.json library — always available, no KiCad needed."""
+        if not CURATED_LIB_FILE.exists():
+            logger.warning("Curated library not found at %s", CURATED_LIB_FILE)
+            return
+        try:
+            curated = json.loads(CURATED_LIB_FILE.read_text())
+            for comp in curated:
+                # Normalise to internal format
+                tags = comp.get("tags", [])
+                self.parts.append({
+                    "id": comp["id"],
+                    "name": comp["name"],
+                    "lib": comp.get("skidl_lib", "Device"),
+                    "footprint": comp.get("kicad_footprint", comp.get("footprint", "")),
+                    "description": comp.get("description", ""),
+                    "keywords": " ".join(tags),
+                    "datasheet": comp.get("datasheet_url", ""),
+                    "category": comp.get("category", "passive"),
+                    "package": comp.get("package", ""),
+                    "unit_cost": comp.get("unit_cost", 0.10),
+                    "specs": comp.get("specs", []),
+                    "extends": None,
+                    "_source": "curated",
+                })
+            logger.info("Loaded %d parts from curated library", len(curated))
+        except Exception as exc:
+            logger.warning("Failed to load curated library: %s", exc)
 
     def _load_or_build_index(self):
         if INDEX_FILE.exists():
             try:
-                self.parts = json.loads(INDEX_FILE.read_text())
-                logger.info(f"Loaded {len(self.parts)} parts from KiCad index cache.")
+                kicad_parts = json.loads(INDEX_FILE.read_text())
+                self.parts.extend(kicad_parts)  # extend, not replace
+                logger.info(f"Loaded {len(kicad_parts)} parts from KiCad index cache.")
                 return
             except Exception as e:
                 logger.warning(f"Failed to load cache, rebuilding... ({e})")
         
-        self.parts = self._build_index()
+        kicad_parts = self._build_index()
+        self.parts.extend(kicad_parts)  # extend, not replace
         try:
             INDEX_FILE.parent.mkdir(parents=True, exist_ok=True)
-            INDEX_FILE.write_text(json.dumps(self.parts, indent=2))
+            INDEX_FILE.write_text(json.dumps(kicad_parts, indent=2))
             logger.info(f"Saved KiCad index cache to {INDEX_FILE}")
         except Exception as e:
             logger.warning(f"Failed to save KiCad index cache: {e}")
@@ -147,16 +180,23 @@ class KiCadLibrary:
         results = []
         
         for part in self.parts:
-            if category and part["category"] != category:
-                continue
+            # Curated parts are always searched regardless of category filter
+            # (they have accurate categories already)
+            if category and part.get("category") != category:
+                if part.get("_source") != "curated":
+                    continue
+                # Still include curated parts from other categories at half score
+                # so they appear as alternatives
                 
-            text = f"{part['name']} {part['keywords']} {part['description']}".lower()
+            text = f"{part['name']} {part.get('keywords','')} {part.get('description','')}".lower()
             
-            # Count matches
+            # Count matches — curated parts get a small bonus
             score = 0
             for q in query:
                 if q in text:
                     score += 1
+            if part.get("_source") == "curated" and score > 0:
+                score += 0.5  # prefer curated over generic KiCad symbols
                     
             if score > 0:
                 results.append((score, part))

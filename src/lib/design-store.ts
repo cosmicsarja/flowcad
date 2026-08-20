@@ -539,7 +539,16 @@ let genToken = 0;
 const wait = (ms: number) => new Promise((r) => window.setTimeout(r, ms));
 
 export function isGenerationPrompt(text: string) {
-  return /^(design|generate|build|create|make|new board|new design)\b/i.test(text.trim());
+  const t = text.trim();
+  // Direct action verbs at the start
+  if (/^(design|generate|build|create|make|new board|new design)\b/i.test(t)) return true;
+  // "I want to / I need to / want to / need to + design/build/create/make/generate..."
+  if (/^(i\s+)?(want|need|would like|like)\s+to\s+(design|build|create|make|generate)\b/i.test(t)) return true;
+  // "design a circuit for", "circuit for", "schematic for", "PCB for..."
+  if (/\b(circuit|schematic|pcb|board)\s+(for|to)\b/i.test(t) && t.length > 15) return true;
+  // "...to be used in..." (typical manufacturing intent phrase)
+  if (/\bto be used in\b/i.test(t) && t.length > 20) return true;
+  return false;
 }
 
 /**
