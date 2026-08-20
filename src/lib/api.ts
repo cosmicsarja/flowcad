@@ -15,7 +15,7 @@ export const API_BASE: string = (() => {
   // Vite exposes VITE_* vars through import.meta.env at build time
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const env = (import.meta as any).env as Record<string, string> | undefined;
-  const fromEnv = env?.VITE_API_URL;
+  const fromEnv = env?.['VITE_API_URL'];
   if (fromEnv && fromEnv.trim() !== "") return fromEnv.replace(/\/$/, "");
   // Fallback for SSR / Jest where import.meta.env is unavailable
   return "http://127.0.0.1:8000";
@@ -56,7 +56,7 @@ export class ApiResponseError extends Error {
   ) {
     let detail = "";
     if (typeof body === "object" && body !== null) {
-      const d = (body as Record<string, unknown>).detail;
+      const d = (body as Record<string, unknown>)['detail'];
       detail =
         d !== undefined ? (typeof d === "string" ? d : JSON.stringify(d)) : JSON.stringify(body);
     } else {
@@ -96,7 +96,7 @@ export async function apiPost<T>(path: string, body: unknown, signal?: AbortSign
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
-      signal,
+      signal: signal ?? null,
     });
   } catch (err) {
     throw new ApiNetworkError(url, err);
@@ -116,7 +116,7 @@ export async function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> 
   const url = `${API_BASE}${path}`;
   let res: Response;
   try {
-    res = await fetch(url, { signal });
+    res = await fetch(url, { signal: signal ?? null });
   } catch (err) {
     throw new ApiNetworkError(url, err);
   }
