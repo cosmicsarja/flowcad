@@ -55,7 +55,15 @@ function Workspace() {
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   const design = useDesign();
-  const hasDesign = design.parts.length > 0 || design.gen.active;
+  const hasArch = (design.architecture?.nodes?.length ?? 0) > 0;
+  const hasParts = design.parts.length > 0;
+  const hasNets = design.nets.length > 0;
+  const has3d = Boolean(design.glbUrl);
+  const hasDesign = hasParts || hasArch || hasNets || has3d || design.gen.active;
+  const showBlock = hasArch || design.gen.active;
+  const showSchematic = hasParts || hasNets || design.gen.active;
+  const showPcb = hasParts || Boolean(design.layout) || design.gen.active;
+  const show3d = has3d || design.ready['3d'] || design.gen.active;
 
   // On mount: if a prompt was queued from the landing page, run it
   useEffect(() => {
