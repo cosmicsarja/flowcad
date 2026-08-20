@@ -557,11 +557,11 @@ export function isGenerationPrompt(text: string) {
  * sets all per-view status fields.
  */
 function applyDesignState(ds: Record<string, unknown>): Partial<DesignState> {
-  const stagesDone: string[] = (ds.stages_done as string[]) || [];
-  const currentStage: string = (ds.stage as string) || "requirements";
+  const stagesDone: string[] = (ds['stages_done'] as string[]) || [];
+  const currentStage: string = (ds['stage'] as string) || "requirements";
 
   // Architecture
-  const arch = ds.architecture as { nodes?: unknown[]; edges?: unknown[] } | null;
+  const arch = ds['architecture'] as { nodes?: unknown[]; edges?: unknown[] } | null;
 
   // Layout → Parts + Nets
   let parts: Part[] = [];
@@ -572,8 +572,8 @@ function applyDesignState(ds: Record<string, unknown>): Partial<DesignState> {
   let schematicStatus: ViewStatus = "idle";
   let schematicError: string | null = null;
 
-  if (ds.layout) {
-    layout = ds.layout as LayoutData;
+  if (ds['layout']) {
+    layout = ds['layout'] as LayoutData;
     try {
       const mapped = layoutDataToParts(layout);
       parts = mapped.parts;
@@ -594,7 +594,7 @@ function applyDesignState(ds: Record<string, unknown>): Partial<DesignState> {
   }
 
   // GLB URL
-  let glbUrl = (ds.glb_url as string) || null;
+  let glbUrl = (ds['glb_url'] as string) || null;
   // Rewrite old hardcoded URLs and prepend API_BASE to relative URLs
   if (glbUrl) {
     if (glbUrl.startsWith("http://127.0.0.1:8000")) {
@@ -622,17 +622,17 @@ function applyDesignState(ds: Record<string, unknown>): Partial<DesignState> {
     blockDiagramStatus === "error" ? "Architecture data missing after stage completion" : null;
 
   // Netlist
-  const netlist = (ds.netlist as NetlistData) || null;
+  const netlist = (ds['netlist'] as NetlistData) || null;
 
   // Board dimensions from layout or fallback
   const board = layout
     ? { w: layout.board_w_mm, h: layout.board_h_mm }
-    : (ds.board as { w: number; h: number }) || { w: 60, h: 45 };
+    : (ds['board'] as { w: number; h: number }) || { w: 60, h: 45 };
 
   // Checks from backend verification
-  const checks = (ds.checks as Check[]) || [];
-  const confidence = (ds.confidence as number) || 0;
-  const drcNote = (ds.drc_note as string) || null;
+  const checks = (ds['checks'] as Check[]) || [];
+  const confidence = (ds['confidence'] as number) || 0;
+  const drcNote = (ds['drc_note'] as string) || null;
 
   return {
     gen: {

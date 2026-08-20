@@ -468,7 +468,7 @@ export function PcbLayout({ projectId }: { projectId?: string }) {
               {/* ── DRC note + footer ──────────────────────────────── */}
               <text x={BX} y={BY + b.h + 20} className="fill-muted-foreground font-mono text-[9px]">
                 {d.pcbLayoutStatus === "ready"
-                  ? `GND POUR L2 · MIN TRACE ${d.layout?.trace_widths?.Default?.toFixed(2) ?? "0.20"} mm · ${d.parts.length} PLACED`
+                  ? `GND POUR L2 · MIN TRACE ${d.layout?.trace_widths?.['Default']?.toFixed(2) ?? "0.20"} mm · ${d.parts.length} PLACED`
                   : ""}
               </text>
               {d.drcNote && (

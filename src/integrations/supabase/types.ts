@@ -81,6 +81,7 @@ export type Database = {
           created_at: string
           design_state: Json
           id: string
+          name: string | null
           prompt: string
           share_token: string | null
           status: string
@@ -93,6 +94,7 @@ export type Database = {
           created_at?: string
           design_state?: Json
           id?: string
+          name?: string | null
           prompt?: string
           share_token?: string | null
           status?: string
@@ -105,6 +107,7 @@ export type Database = {
           created_at?: string
           design_state?: Json
           id?: string
+          name?: string | null
           prompt?: string
           share_token?: string | null
           status?: string
