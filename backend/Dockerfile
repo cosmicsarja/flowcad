@@ -28,7 +28,7 @@ COPY requirements.txt .
 
 # Install Python requirements
 # Using --break-system-packages because we are in a container where system python is meant for the app
-RUN pip3 install --no-cache-dir -r requirements.txt --break-system-packages
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Set up environment variables
 ENV KICAD_CLI_PATH=kicad-cli
