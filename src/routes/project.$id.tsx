@@ -166,7 +166,7 @@ function Workspace() {
 
               <div className="min-h-0 flex-1 overflow-hidden bg-background">
                 <TabsContent value="block" className="m-0 h-full">
-                  {hasDesign ? (
+                  {showBlock ? (
                     <BlockDiagram />
                   ) : (
                     <CanvasEmpty
