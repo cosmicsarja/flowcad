@@ -661,9 +661,12 @@ function applyDesignState(ds: Record<string, unknown>): Partial<DesignState> {
       components: stagesDone.includes("components"),
       schematic: stagesDone.includes("schematic"),
       placement: stagesDone.includes("placement"),
-      routing: stagesDone.includes("routing"),
+      routing:
+        stagesDone.includes("routing") ||
+        stagesDone.includes("placement") ||
+        stagesDone.includes("pcb"),
       verification: stagesDone.includes("verification"),
-      "3d": stagesDone.includes("verification"),
+      "3d": Boolean(glbUrl) || stagesDone.includes("export") || stagesDone.includes("verification"),
       export: stagesDone.includes("export"),
     },
     layout,
