@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Add KiCad 8.0 PPA and install KiCad
-RUN add-apt-repository --yes ppa:kicad/kicad-8.0 \
+RUN add-apt-repository --yes ppa:kicad/kicad-8.0-releases \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
     kicad \
