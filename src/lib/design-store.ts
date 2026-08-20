@@ -597,10 +597,11 @@ function applyDesignState(ds: Record<string, unknown>): Partial<DesignState> {
   let glbUrl = (ds['glb_url'] as string) || null;
   // Rewrite old hardcoded URLs and prepend API_BASE to relative URLs
   if (glbUrl) {
-    if (glbUrl.startsWith("http://127.0.0.1:8000")) {
-      glbUrl = glbUrl.replace("http://127.0.0.1:8000", API_BASE);
-    } else if (glbUrl.startsWith("/")) {
-      glbUrl = API_BASE + glbUrl;
+    glbUrl = glbUrl.trim();
+    if (/^https?:\/\/(127\.0\.0\.1|localhost):8000/i.test(glbUrl)) {
+      glbUrl = glbUrl.replace(/^https?:\/\/(127\.0\.0\.1|localhost):8000/i, API_BASE);
+    } else if (!/^https?:\/\//i.test(glbUrl) && !glbUrl.startsWith("data:")) {
+      glbUrl = `${API_BASE}/${glbUrl.replace(/^\//, "")}`;
     }
   }
 
