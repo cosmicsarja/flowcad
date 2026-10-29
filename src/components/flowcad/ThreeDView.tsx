@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { RotateCcw, ZoomIn, ZoomOut, Box, AlertTriangle, Loader2, Move3d } from "lucide-react";
 import { CanvasBtn } from "./CadCanvas";
 import { useDesign } from "@/lib/design-store";
@@ -181,18 +182,10 @@ export function ThreeDView() {
     };
   }, []);
 
-  // ── Load / Build 3D Model when layout changes ───────────────────────────────────
-  useEffect(() => {
+  // ── Helper: build primitives from layout data ─────────────────────
+  const buildFromLayout = () => {
     const layout = d.layout;
-    if (!layout || !sceneRef.current) {
-      if (!layout && d.threeDStatus === "idle") {
-        setLoadState("idle");
-      }
-      return;
-    }
-
-    setLoadState("loading");
-    setLoadError(null);
+    if (!layout || !sceneRef.current) return;
 
     // Remove any previous model
     if (modelRef.current && sceneRef.current) {
@@ -319,7 +312,99 @@ export function ThreeDView() {
       setLoadState("error");
       setLoadError(err instanceof Error ? err.message : "Failed to generate 3D PCB view.");
     }
-  }, [d.layout]);
+  };
+
+  // ── Load GLB via GLTFLoader when glbUrl is available ─────────────
+  useEffect(() => {
+    if (!d.glbUrl || !sceneRef.current) {
+      // No GLB URL — handled by the layout effect below
+      return;
+    }
+
+    setLoadState("loading");
+    setLoadError(null);
+
+    // Remove any previous model
+    if (modelRef.current && sceneRef.current) {
+      sceneRef.current.remove(modelRef.current);
+      modelRef.current = null;
+    }
+
+    const loader = new GLTFLoader();
+    loader.load(
+      d.glbUrl,
+      (gltf) => {
+        if (!sceneRef.current) return;
+
+        // Remove any previous model in case of concurrent loads
+        if (modelRef.current) {
+          sceneRef.current.remove(modelRef.current);
+        }
+
+        const model = gltf.scene;
+
+        // Enable shadows on all meshes
+        model.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+
+        // Center and scale to fit the view
+        const box = new THREE.Box3().setFromObject(model);
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+        model.position.sub(center);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        if (maxDim > 0) model.scale.setScalar(60 / maxDim);
+
+        sceneRef.current.add(model);
+        modelRef.current = model;
+
+        // Reset camera to a nice isometric angle
+        const cam = cameraRef.current!;
+        cam.position.set(60, 50, 80);
+        controlsRef.current?.target.set(0, 0, 0);
+        controlsRef.current?.update();
+
+        setLoadState("ready");
+      },
+      undefined,
+      (err) => {
+        console.error("[ThreeDView] GLB load failed, falling back to primitives:", err);
+        // Fall back to primitive rendering using layout data
+        if (d.layout) {
+          buildFromLayout();
+        } else {
+          setLoadState("error");
+          setLoadError("Failed to load 3D model.");
+        }
+      },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d.glbUrl]);
+
+  // ── Build primitives from layout when no GLB is available ────────
+  useEffect(() => {
+    // If a GLB URL is present, the GLB effect above takes priority
+    if (d.glbUrl) return;
+
+    const layout = d.layout;
+    if (!layout || !sceneRef.current) {
+      if (!layout && d.threeDStatus === "idle") {
+        setLoadState("idle");
+      }
+      return;
+    }
+
+    setLoadState("loading");
+    setLoadError(null);
+    buildFromLayout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [d.layout, d.glbUrl]);
 
   // ── Sync threeDStatus to loadState ────────────────────────────────
   useEffect(() => {

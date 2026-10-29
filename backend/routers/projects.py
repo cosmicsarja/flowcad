@@ -226,11 +226,11 @@ def create_project(body: CreateProjectInput):
         data["user_id"] = resolved_user
 
     inserted = db.insert("projects", data)
-    if not inserted:
-        # Fallback to returning a mocked row if Supabase is down
-        return ProjectRow(**data)
-
-    return ProjectRow(**inserted[0])
+    if isinstance(inserted, list) and inserted:
+        return ProjectRow(**inserted[0])
+    if isinstance(inserted, dict):
+        return ProjectRow(**inserted)
+    return ProjectRow(**data)
 
 def _run_pipeline(
     project_id: str,

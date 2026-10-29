@@ -151,46 +151,443 @@ def _generate_via_cli(netlist_path: str, pcb_path: str, bc: BoardConstraints) ->
 
 def _generate_skeleton_pcb(pcb_path: str, bc: BoardConstraints) -> None:
     """
-    Write a minimal valid .kicad_pcb file with board outline only.
-    This is the fallback when KiCad is not installed.
+    Write a minimal valid .kicad_pcb file with board outline and placeholder
+    footprints for common component types (resistor, capacitor, LED, regulator,
+    connector). This ensures downstream PCB stages always have something to
+    work with even when the LLM / netlist pipeline fails.
     """
     w = bc.max_width_mm
     h = bc.max_height_mm
     layers = bc.layers
     layer_list = _kicad_layer_list(layers)
 
+    # Generate stable UUIDs for each footprint / pad so the file is valid
+    def _u() -> str:
+        return str(uuid.uuid4())
+
     content = f"""(kicad_pcb
-  (version 20221018)
-  (generator flowcad)
+  (version 20260206)
+  (generator "flowcad")
+  (generator_version "10.0")
   (general
     (thickness 1.6)
+    (legacy_teardrops no)
   )
   (paper "A4")
   (layers
 {layer_list}
   )
   (setup
-    (pad_to_mask_clearance 0.051)
-    (solder_mask_min_width 0.25)
+    (pad_to_mask_clearance 0)
+    (allow_soldermask_bridges_in_footprints no)
     (pcbplotparams
-      (layerselection 0x00010fc_ffffffff)
+      (layerselection 0x00000000_00000000_55555555_5755f5ff)
       (outputformat 1)
-      (mirror false)
-      (drillshape 0)
+      (mirror no)
+      (drillshape 1)
       (scaleselection 1)
-      (outputdirectory "gerbers/")
+      (outputdirectory "")
     )
   )
   (net 0 "")
   (net 1 "+3V3")
   (net 2 "GND")
   (net 3 "+5V")
+
+  (footprint "Resistor_SMD:R_0603_1608Metric"
+    (layer "F.Cu")
+    (uuid "{_u()}")
+    (at 10 10)
+    (descr "Resistor SMD 0603 (1608 Metric)")
+    (tags "resistor")
+    (property "Reference" "R1"
+      (at 0 -1.5 0)
+      (layer "F.SilkS")
+      (uuid "{_u()}")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (property "Value" "10k"
+      (at 0 1.5 0)
+      (layer "F.Fab")
+      (uuid "{_u()}")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (property "Datasheet" "~"
+      (at 0 0 0)
+      (layer "F.Fab")
+      (hide yes)
+      (uuid "{_u()}")
+      (effects (font (size 1.27 1.27)))
+    )
+    (attr smd)
+    (fp_line
+      (start -1.6 -0.8) (end 1.6 -0.8)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_line
+      (start -1.6 0.8) (end 1.6 0.8)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_rect
+      (start -1.8 -1.0) (end 1.8 1.0)
+      (stroke (width 0.05) (type solid))
+      (fill no)
+      (layer "F.CrtYd") (uuid "{_u()}")
+    )
+    (fp_rect
+      (start -0.8 -0.4) (end 0.8 0.4)
+      (stroke (width 0.1) (type solid))
+      (fill no)
+      (layer "F.Fab") (uuid "{_u()}")
+    )
+    (pad "1" smd roundrect
+      (at -1.5125 0)
+      (size 1.975 1.8)
+      (layers "F.Cu" "F.Mask" "F.Paste")
+      (roundrect_rratio 0.25)
+      (net 2 "GND")
+      (uuid "{_u()}")
+    )
+    (pad "2" smd roundrect
+      (at 1.5125 0)
+      (size 1.975 1.8)
+      (layers "F.Cu" "F.Mask" "F.Paste")
+      (roundrect_rratio 0.25)
+      (net 1 "+3V3")
+      (uuid "{_u()}")
+    )
+    (model "${{KICAD10_3DMODEL_DIR}}/Resistor_SMD.3dshapes/R_0603_1608Metric.step"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
+  )
+
+  (footprint "Capacitor_SMD:C_0603_1608Metric"
+    (layer "F.Cu")
+    (uuid "{_u()}")
+    (at 20 10)
+    (descr "Capacitor SMD 0603 (1608 Metric)")
+    (tags "capacitor")
+    (property "Reference" "C1"
+      (at 0 -1.5 0)
+      (layer "F.SilkS")
+      (uuid "{_u()}")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (property "Value" "100nF"
+      (at 0 1.5 0)
+      (layer "F.Fab")
+      (uuid "{_u()}")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (property "Datasheet" "~"
+      (at 0 0 0)
+      (layer "F.Fab")
+      (hide yes)
+      (uuid "{_u()}")
+      (effects (font (size 1.27 1.27)))
+    )
+    (attr smd)
+    (fp_line
+      (start -1.6 -0.8) (end 1.6 -0.8)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_line
+      (start -1.6 0.8) (end 1.6 0.8)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_rect
+      (start -1.8 -1.0) (end 1.8 1.0)
+      (stroke (width 0.05) (type solid))
+      (fill no)
+      (layer "F.CrtYd") (uuid "{_u()}")
+    )
+    (fp_rect
+      (start -0.8 -0.4) (end 0.8 0.4)
+      (stroke (width 0.1) (type solid))
+      (fill no)
+      (layer "F.Fab") (uuid "{_u()}")
+    )
+    (pad "1" smd roundrect
+      (at -1.5125 0)
+      (size 1.975 1.8)
+      (layers "F.Cu" "F.Mask" "F.Paste")
+      (roundrect_rratio 0.25)
+      (net 3 "+5V")
+      (uuid "{_u()}")
+    )
+    (pad "2" smd roundrect
+      (at 1.5125 0)
+      (size 1.975 1.8)
+      (layers "F.Cu" "F.Mask" "F.Paste")
+      (roundrect_rratio 0.25)
+      (net 2 "GND")
+      (uuid "{_u()}")
+    )
+    (model "${{KICAD10_3DMODEL_DIR}}/Capacitor_SMD.3dshapes/C_0603_1608Metric.step"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
+  )
+
+  (footprint "Package_TO_SOT_SMD:SOT-23-5"
+    (layer "F.Cu")
+    (uuid "{_u()}")
+    (at 30 10)
+    (descr "SOT-23-5 voltage regulator / LDO")
+    (tags "SOT-23-5 regulator LDO")
+    (property "Reference" "U1"
+      (at 0 -2.0 0)
+      (layer "F.SilkS")
+      (uuid "{_u()}")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (property "Value" "MIC5205"
+      (at 0 2.0 0)
+      (layer "F.Fab")
+      (uuid "{_u()}")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (property "Datasheet" "~"
+      (at 0 0 0)
+      (layer "F.Fab")
+      (hide yes)
+      (uuid "{_u()}")
+      (effects (font (size 1.27 1.27)))
+    )
+    (attr smd)
+    (fp_line
+      (start -1.4 -0.85) (end 1.4 -0.85)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_line
+      (start -1.4 0.85) (end 1.4 0.85)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_rect
+      (start -1.9 -1.5) (end 1.9 1.5)
+      (stroke (width 0.05) (type solid))
+      (fill no)
+      (layer "F.CrtYd") (uuid "{_u()}")
+    )
+    (fp_rect
+      (start -0.75 -0.95) (end 0.75 0.95)
+      (stroke (width 0.1) (type solid))
+      (fill no)
+      (layer "F.Fab") (uuid "{_u()}")
+    )
+    (pad "1" smd roundrect
+      (at -1.575 -0.95)
+      (size 1.15 0.7)
+      (layers "F.Cu" "F.Mask" "F.Paste")
+      (roundrect_rratio 0.25)
+      (net 3 "+5V")
+      (uuid "{_u()}")
+    )
+    (pad "2" smd roundrect
+      (at -1.575 0)
+      (size 1.15 0.7)
+      (layers "F.Cu" "F.Mask" "F.Paste")
+      (roundrect_rratio 0.25)
+      (net 2 "GND")
+      (uuid "{_u()}")
+    )
+    (pad "3" smd roundrect
+      (at -1.575 0.95)
+      (size 1.15 0.7)
+      (layers "F.Cu" "F.Mask" "F.Paste")
+      (roundrect_rratio 0.25)
+      (net 2 "GND")
+      (uuid "{_u()}")
+    )
+    (pad "4" smd roundrect
+      (at 1.575 0.95)
+      (size 1.15 0.7)
+      (layers "F.Cu" "F.Mask" "F.Paste")
+      (roundrect_rratio 0.25)
+      (net 1 "+3V3")
+      (uuid "{_u()}")
+    )
+    (pad "5" smd roundrect
+      (at 1.575 -0.95)
+      (size 1.15 0.7)
+      (layers "F.Cu" "F.Mask" "F.Paste")
+      (roundrect_rratio 0.25)
+      (net 1 "+3V3")
+      (uuid "{_u()}")
+    )
+    (model "${{KICAD10_3DMODEL_DIR}}/Package_TO_SOT_SMD.3dshapes/SOT-23-5.step"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
+  )
+
+  (footprint "LED_SMD:LED_0805_2012Metric"
+    (layer "F.Cu")
+    (uuid "{_u()}")
+    (at 10 20)
+    (descr "LED SMD 0805 (2012 Metric)")
+    (tags "led 0805")
+    (property "Reference" "D1"
+      (at 0 -1.5 0)
+      (layer "F.SilkS")
+      (uuid "{_u()}")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (property "Value" "LED"
+      (at 0 1.5 0)
+      (layer "F.Fab")
+      (uuid "{_u()}")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (property "Datasheet" "~"
+      (at 0 0 0)
+      (layer "F.Fab")
+      (hide yes)
+      (uuid "{_u()}")
+      (effects (font (size 1.27 1.27)))
+    )
+    (attr smd)
+    (fp_line
+      (start -1.9 -0.95) (end 1.9 -0.95)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_line
+      (start -1.9 0.95) (end 1.9 0.95)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_rect
+      (start -2.2 -1.2) (end 2.2 1.2)
+      (stroke (width 0.05) (type solid))
+      (fill no)
+      (layer "F.CrtYd") (uuid "{_u()}")
+    )
+    (fp_rect
+      (start -1.0 -0.6) (end 1.0 0.6)
+      (stroke (width 0.1) (type solid))
+      (fill no)
+      (layer "F.Fab") (uuid "{_u()}")
+    )
+    (pad "A" smd roundrect
+      (at -1.8625 0)
+      (size 2.175 1.8)
+      (layers "F.Cu" "F.Mask" "F.Paste")
+      (roundrect_rratio 0.25)
+      (net 1 "+3V3")
+      (uuid "{_u()}")
+    )
+    (pad "K" smd roundrect
+      (at 1.8625 0)
+      (size 2.175 1.8)
+      (layers "F.Cu" "F.Mask" "F.Paste")
+      (roundrect_rratio 0.25)
+      (net 2 "GND")
+      (uuid "{_u()}")
+    )
+    (model "${{KICAD10_3DMODEL_DIR}}/LED_SMD.3dshapes/LED_0805_2012Metric.step"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
+  )
+
+  (footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+    (layer "F.Cu")
+    (uuid "{_u()}")
+    (at 20 20)
+    (descr "2-pin 2.54mm pitch vertical connector / terminal block")
+    (tags "connector 2pin")
+    (property "Reference" "J1"
+      (at 0 -2.5 0)
+      (layer "F.SilkS")
+      (uuid "{_u()}")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (property "Value" "PWR_IN"
+      (at 0 2.5 0)
+      (layer "F.Fab")
+      (uuid "{_u()}")
+      (effects (font (size 1 1) (thickness 0.15)))
+    )
+    (property "Datasheet" "~"
+      (at 0 0 0)
+      (layer "F.Fab")
+      (hide yes)
+      (uuid "{_u()}")
+      (effects (font (size 1.27 1.27)))
+    )
+    (fp_line
+      (start -1.33 -3.81) (end 1.33 -3.81)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_line
+      (start -1.33 3.81) (end 1.33 3.81)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_line
+      (start -1.33 -3.81) (end -1.33 3.81)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_line
+      (start 1.33 -3.81) (end 1.33 3.81)
+      (stroke (width 0.12) (type solid))
+      (layer "F.SilkS") (uuid "{_u()}")
+    )
+    (fp_rect
+      (start -1.8 -4.3) (end 1.8 4.3)
+      (stroke (width 0.05) (type solid))
+      (fill no)
+      (layer "F.CrtYd") (uuid "{_u()}")
+    )
+    (fp_rect
+      (start -0.635 -4.445) (end 0.635 4.445)
+      (stroke (width 0.1) (type solid))
+      (fill no)
+      (layer "F.Fab") (uuid "{_u()}")
+    )
+    (pad "1" thru_hole rect
+      (at 0 -1.27)
+      (size 1.7 1.7)
+      (drill 1.0)
+      (layers "*.Cu" "*.Mask")
+      (net 3 "+5V")
+      (uuid "{_u()}")
+    )
+    (pad "2" thru_hole oval
+      (at 0 1.27)
+      (size 1.7 1.7)
+      (drill 1.0)
+      (layers "*.Cu" "*.Mask")
+      (net 2 "GND")
+      (uuid "{_u()}")
+    )
+    (model "${{KICAD10_3DMODEL_DIR}}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x02_P2.54mm_Vertical.step"
+      (offset (xyz 0 0 0))
+      (scale (xyz 1 1 1))
+      (rotate (xyz 0 0 0))
+    )
+  )
+
   (gr_rect
     (start 0 0)
     (end {w} {h})
     (stroke (width 0.05) (type solid))
     (layer "Edge.Cuts")
-    (tstamp "{uuid.uuid4()}")
+    (uuid "{_u()}")
   )
 )
 """

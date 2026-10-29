@@ -784,7 +784,7 @@ export async function runGeneration(prompt: string, projectId?: string) {
         } catch {
           /* Backend may not have the row yet on first tick — ignore */
         }
-      }, 2000);
+      }, 1000);
     });
 
     if (tick) window.clearInterval(tick);

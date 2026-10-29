@@ -195,9 +195,20 @@ def _synthetic_drill(drill_dir: Path) -> None:
 
 
 def _export_glb(pcb_path: str, glb_path: str) -> None:
+    model_dir = os.environ.get(
+        "KICAD10_3DMODEL_DIR",
+        "/Applications/KiCad/KiCad.app/Contents/SharedSupport/3dmodels"
+    )
     cmd = [
         KICAD_CLI, "pcb", "export", "glb",
-        "--output", glb_path,
+        "-D", f"KICAD10_3DMODEL_DIR={model_dir}",
+        "--subst-models",
+        "--include-tracks",
+        "--include-pads",
+        "--include-silkscreen",
+        "--include-soldermask",
+        "--force",
+        "-o", glb_path,
         pcb_path,
     ]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
