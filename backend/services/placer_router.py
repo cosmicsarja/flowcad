@@ -98,9 +98,9 @@ try:
         if 'V' in name or 'GND' in name or 'POWER' in name:
             net.SetNetClass(nc_power)
             
-    # 2. Intelligent Placement
-    margin = pcbnew.FromMM(3.0)
-    gap = pcbnew.FromMM(2.0)
+    # 2. Intelligent Non-Overlapping Placement
+    margin = pcbnew.FromMM(4.0)
+    gap = pcbnew.FromMM(2.5)
     board_w = pcbnew.FromMM({bc.max_width_mm})
     board_h = pcbnew.FromMM({bc.max_height_mm})
     
@@ -127,41 +127,83 @@ try:
     cy = margin
     for fp in connectors:
         bb = fp.GetBoundingBox()
-        fp.SetPosition(pcbnew.VECTOR2I(margin + bb.GetWidth()//2, cy + bb.GetHeight()//2))
-        cy += bb.GetHeight() + gap
+        w = max(bb.GetWidth(), pcbnew.FromMM(5.0))
+        h = max(bb.GetHeight(), pcbnew.FromMM(5.0))
+        fp.SetPosition(pcbnew.VECTOR2I(margin + w // 2, cy + h // 2))
+        cy += h + gap
         
     # Place ICs in the center
-    cx = pcbnew.FromMM({bc.max_width_mm} / 2)
-    cy = margin
+    cx = pcbnew.FromMM({bc.max_width_mm} * 0.45)
+    cy = margin + pcbnew.FromMM(4.0)
     for fp in ics:
         bb = fp.GetBoundingBox()
-        fp.SetPosition(pcbnew.VECTOR2I(cx, cy + bb.GetHeight()//2))
-        cy += bb.GetHeight() + gap * 2
+        w = max(bb.GetWidth(), pcbnew.FromMM(8.0))
+        h = max(bb.GetHeight(), pcbnew.FromMM(8.0))
+        fp.SetPosition(pcbnew.VECTOR2I(int(cx), cy + h // 2))
+        cy += h + gap * 2
         
-    # Place decoupling caps near ICs (find closest IC by net or just geometry)
-    for cap in caps:
-        placed = False
-        # Simplified: just place near the first IC for now
+    # Place decoupling caps neatly flanking the ICs (never overlapping)
+    for i, cap in enumerate(caps):
         if ics:
-            ic = ics[0]
-            ic_pos = ic.GetPosition()
-            cap.SetPosition(pcbnew.VECTOR2I(ic_pos.x - pcbnew.FromMM(5.0), ic_pos.y))
-            placed = True
-        if not placed:
+            target_ic = ics[i % len(ics)]
+            ic_pos = target_ic.GetPosition()
+            side = -1 if (i % 2 == 0) else 1
+            offset_x = side * pcbnew.FromMM(7.0 + (i // 4) * 3.0)
+            offset_y = pcbnew.FromMM(((i % 4) - 1.5) * 4.0)
+            cap.SetPosition(pcbnew.VECTOR2I(int(ic_pos.x + offset_x), int(ic_pos.y + offset_y)))
+        else:
             others.append(cap)
             
-    # Place others in a grid on the right side
+    # Place others in a neat grid on the right side
     ox = pcbnew.FromMM({bc.max_width_mm}) - margin
     oy = margin
-    row_h = 0
+    col_w = pcbnew.FromMM(8.0)
     for fp in others:
         bb = fp.GetBoundingBox()
-        if oy + bb.GetHeight() > board_h - margin:
-            ox -= pcbnew.FromMM(10.0)
+        h = max(bb.GetHeight(), pcbnew.FromMM(3.0))
+        w = max(bb.GetWidth(), pcbnew.FromMM(3.0))
+        if oy + h > board_h - margin:
+            ox -= col_w + gap
             oy = margin
-        fp.SetPosition(pcbnew.VECTOR2I(ox - bb.GetWidth()//2, oy + bb.GetHeight()//2))
-        oy += bb.GetHeight() + gap
-        row_h = max(row_h, bb.GetHeight())
+        fp.SetPosition(pcbnew.VECTOR2I(int(ox - w // 2), int(oy + h // 2)))
+        oy += h + gap
+
+    # 3. Route Real Copper Traces Connecting Net Pads
+    net_pads = {{}}
+    for fp in footprints:
+        for pad in fp.Pads():
+            net_name = pad.GetNetname()
+            if net_name and net_name.strip() != "":
+                net_pads.setdefault(net_name, []).append(pad)
+
+    for net_name, pads in net_pads.items():
+        if len(pads) < 2:
+            continue
+        is_power = any(p in net_name.upper() for p in ['V', 'GND', 'POWER', '5V', '3V3', '12V'])
+        track_w = pcbnew.FromMM(0.5 if is_power else 0.25)
+        net_item = board.FindNet(net_name)
+        for i in range(len(pads) - 1):
+            p1 = pads[i].GetPosition()
+            p2 = pads[i+1].GetPosition()
+            mid = pcbnew.VECTOR2I(p2.x, p1.y)
+
+            t1 = pcbnew.PCB_TRACK(board)
+            t1.SetStart(p1)
+            t1.SetEnd(mid)
+            t1.SetWidth(track_w)
+            t1.SetLayer(pcbnew.F_Cu)
+            if net_item:
+                t1.SetNet(net_item)
+            board.Add(t1)
+
+            t2 = pcbnew.PCB_TRACK(board)
+            t2.SetStart(mid)
+            t2.SetEnd(p2)
+            t2.SetWidth(track_w)
+            t2.SetLayer(pcbnew.F_Cu)
+            if net_item:
+                t2.SetNet(net_item)
+            board.Add(t2)
 
     pcbnew.SaveBoard('{pcb_path}', board)
 except Exception as e:

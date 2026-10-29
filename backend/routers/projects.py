@@ -314,6 +314,17 @@ def _run_pipeline(
             project_id=project_id,
         )
         design_state["layout"] = layout_out.model_dump()
+
+        # Export 3D GLB immediately from routed PCB so 3D viewer is instantly available
+        try:
+            from services.exporter import _export_glb
+            early_glb = _glb_path(project_id)
+            early_glb.parent.mkdir(parents=True, exist_ok=True)
+            _export_glb(routed.pcb_path, str(early_glb))
+            logger.info("[%s] Early 3D GLB export complete: %s", project_id, early_glb)
+        except Exception as glb_err:
+            logger.warning("[%s] Early GLB export failed (%s) — will retry in Stage 8", project_id, glb_err)
+
         design_state["glb_url"] = _glb_url(project_id)
         _write_design_state(project_id, design_state)
 
@@ -607,6 +618,14 @@ def reroute_project(project_id: str):
     )
 
     design_state["layout"] = layout_out.model_dump()
+    try:
+        from services.exporter import _export_glb
+        reroute_glb = _glb_path(project_id)
+        reroute_glb.parent.mkdir(parents=True, exist_ok=True)
+        _export_glb(pcb_path, str(reroute_glb))
+    except Exception as glb_err:
+        logger.warning("[%s] Reroute GLB update failed: %s", project_id, glb_err)
+
     design_state["glb_url"] = _glb_url(project_id)
     _write_design_state(project_id, design_state)
 
