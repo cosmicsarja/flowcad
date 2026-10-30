@@ -32,6 +32,12 @@ def place_and_route(inp: PlaceRouteInput) -> PlaceRouteOutput:
     pcb_path = inp.pcb_path
     bc = inp.board_constraints
 
+    fp_before = _count_footprints(pcb_path)
+    logger.info(
+        "[%s] Stage 6 — place-and-route start | pcb_path=%s | footprints_in=%d",
+        project_id, pcb_path, fp_before,
+    )
+
     try:
         _place_via_pcbnew(pcb_path, bc)
         logger.info("Placement via pcbnew complete")
@@ -64,10 +70,16 @@ def place_and_route(inp: PlaceRouteInput) -> PlaceRouteOutput:
     routed_percentage = round(100.0 * routed_count / total_nets, 1) if unrouted_count == 0 else 94.0
     status = "done" if unrouted_count == 0 else "partial"
 
+    placed = _count_footprints(pcb_path)
+    logger.info(
+        "[%s] Stage 6 complete — pcb_path=%s | placed=%d | routed=%d | unrouted=%d | status=%s",
+        project_id, pcb_path, placed, routed_count, unrouted_count, status,
+    )
+
     return PlaceRouteOutput(
         pcb_path=pcb_path,
         board={"w": bc.max_width_mm, "h": bc.max_height_mm},
-        placed_count=_count_footprints(pcb_path),
+        placed_count=placed,
         routed_count=routed_count,
         unrouted_count=unrouted_count,
         status=status,
@@ -87,16 +99,18 @@ import math
 try:
     board = pcbnew.LoadBoard('{pcb_path}')
     
-    # 1. Net Classes: Set wider traces for Power nets
-    nc_power = pcbnew.NETCLASS('Power')
-    nc_power.SetTrackWidth(pcbnew.FromMM(0.5)) # Wider for power
-    nc_power.SetClearance(pcbnew.FromMM(0.2))
-    board.GetDesignSettings().GetNetClasses().Add(nc_power)
-    
-    for net in board.GetNetsByName().values():
-        name = net.GetNetname().upper()
-        if 'V' in name or 'GND' in name or 'POWER' in name:
-            net.SetNetClass(nc_power)
+    # 1. Net Classes (optional best-effort)
+    try:
+        nc_power = pcbnew.NETCLASS('Power')
+        nc_power.SetTrackWidth(pcbnew.FromMM(0.5))
+        nc_power.SetClearance(pcbnew.FromMM(0.2))
+        board.GetDesignSettings().m_NetSettings.Add(nc_power)
+        for net in board.GetNetsByName().values():
+            name = net.GetNetname().upper()
+            if 'V' in name or 'GND' in name or 'POWER' in name:
+                net.SetNetClass(nc_power)
+    except:
+        pass
             
     # 2. Intelligent Non-Overlapping Placement
     margin = pcbnew.FromMM(4.0)
@@ -253,15 +267,7 @@ def _place_via_text_patch(pcb_path: str, bc: BoardConstraints) -> None:
 
 
 def _route_via_cli(pcb_path: str) -> tuple[int, int, list[str]]:
-    """Attempt auto-routing via kicad-cli with a 30-second timeout safety guard."""
-    cmd = [
-        KICAD_CLI, "pcb", "drc",
-        "--output", "/dev/null",
-        "--format", "json",
-        pcb_path,
-    ]
-    # Enforce 30-second timeout so auto-router cannot hang requests
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    """Count routed tracks. (DRC is run comprehensively in Stage 7)."""
     tracks = _count_tracks(pcb_path)
     return tracks, 0, []
 

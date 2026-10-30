@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import logging
+import hashlib
 import os
 import uuid
 from pathlib import Path
@@ -45,17 +46,34 @@ def generate_schematic(inp: SchematicInput) -> SchematicOutput:
     comps = inp.components.components
     edges = inp.architecture.edges
 
+    logger.info(
+        "[%s] Stage 4 — schematic generation | component_count=%d | edge_count=%d",
+        project_id, len(comps), len(edges),
+    )
+
     try:
         _generate_with_skidl(comps, edges, netlist_path)
-        logger.info("SKiDL netlist generated: %s", netlist_path)
+        logger.info("[%s] SKiDL netlist generated: %s", project_id, netlist_path)
     except Exception as exc:
-        logger.warning("SKiDL failed (%s) — using fallback netlist generator", exc)
+        logger.warning("[%s] SKiDL failed (%s) — using fallback netlist generator", project_id, exc)
         _generate_fallback_netlist(comps, edges, netlist_path)
-        logger.info("Fallback netlist generated: %s", netlist_path)
+        logger.info("[%s] Fallback netlist generated: %s", project_id, netlist_path)
+
+    # Compute netlist hash for cross-stage traceability
+    try:
+        import hashlib
+        netlist_hash = hashlib.sha256(Path(netlist_path).read_bytes()).hexdigest()[:12]
+    except Exception:
+        netlist_hash = "unavailable"
 
     # Build JSON net list for frontend
     net_entries = _build_net_entries(comps, edges)
     parts_json = _build_parts_json(comps)
+
+    logger.info(
+        "[%s] Stage 4 complete — netlist_path=%s | netlist_hash=%s | net_count=%d | part_count=%d",
+        project_id, netlist_path, netlist_hash, len(net_entries), len(comps),
+    )
 
     result = SchematicOutput(
         netlist_path=netlist_path,

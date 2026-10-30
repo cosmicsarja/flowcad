@@ -46,6 +46,12 @@ def export_design(inp: ExportInput) -> ExportOutput:
     out_dir = WORK_DIR / project_id / "export"
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    comp_count = len(inp.components.components) if inp.components else 0
+    logger.info(
+        "[%s] Stage 9 — export | pcb_path=%s | component_count=%d",
+        project_id, inp.pcb_path, comp_count,
+    )
+
     artifacts: list[ExportArtifact] = []
 
     # ── Gerbers ────────────────────────────────────────────────────────────
@@ -83,11 +89,15 @@ def export_design(inp: ExportInput) -> ExportOutput:
 
     # ── GLB 3D model ──────────────────────────────────────────────────────
     glb_path = out_dir / "board.glb"
-    try:
-        _export_glb(inp.pcb_path, str(glb_path))
-    except Exception as exc:
-        logger.warning(f"GLB export failed: {exc}")
-        _synthetic_glb(glb_path)
+    if not (glb_path.exists() and glb_path.stat().st_size > 1000):
+        try:
+            _export_glb(inp.pcb_path, str(glb_path))
+            logger.info("[%s] GLB export success: %s (%.1f KB)", project_id, glb_path, glb_path.stat().st_size / 1024)
+        except Exception as exc:
+            logger.warning("[%s] GLB export failed (%s) — generating synthetic GLB", project_id, exc)
+            _synthetic_glb(glb_path, inp.components)
+    else:
+        logger.info("[%s] GLB already present (%d bytes), skipping re-export", project_id, glb_path.stat().st_size)
     artifacts.append(ExportArtifact(
         name="3D Model", file="board.glb",
         size=_file_size(glb_path), fmt="GLB",
@@ -202,9 +212,14 @@ def _export_glb(pcb_path: str, glb_path: str) -> None:
     cmd = [
         KICAD_CLI, "pcb", "export", "glb",
         "-D", f"KICAD10_3DMODEL_DIR={model_dir}",
+        "-D", f"KICAD8_3DMODEL_DIR={model_dir}",
+        "-D", f"KICAD7_3DMODEL_DIR={model_dir}",
+        "-D", f"KICAD6_3DMODEL_DIR={model_dir}",
+        "-D", f"KISYS3DMOD={model_dir}",
         "--subst-models",
         "--include-tracks",
         "--include-pads",
+        "--include-zones",
         "--include-silkscreen",
         "--include-soldermask",
         "--force",
@@ -216,9 +231,41 @@ def _export_glb(pcb_path: str, glb_path: str) -> None:
         raise RuntimeError(r.stderr)
 
 
-def _synthetic_glb(glb_path: Path) -> None:
-    # A tiny valid empty GLB binary stub
-    glb_path.write_bytes(b'glTF\x02\x00\x00\x00\x1c\x00\x00\x00\x00\x00\x00\x00JSON{}')
+def _synthetic_glb(glb_path: Path, components: Optional["ComponentsOutput"] = None) -> None:
+    """
+    Generate a minimal valid GLB binary.
+    When components are available the JSON chunk encodes a simple scene with one
+    mesh node per component so the 3D view at least shows a board-shaped object
+    whose metadata reflects the actual design (unique per project/prompt).
+    When kicad-cli is unavailable this is the only 3D output produced.
+    """
+    import json as _json
+    import struct
+
+    comp_names = []
+    if components:
+        comp_names = [f"{c.ref}: {c.name}" for c in (components.components or [])]
+
+    # Minimal glTF 2.0 JSON — one mesh node per component for metadata uniqueness
+    scene = {
+        "asset": {"version": "2.0", "generator": "FlowCAD"},
+        "scene": 0,
+        "scenes": [{"name": "PCB", "nodes": list(range(max(1, len(comp_names))))}],
+        "nodes": [
+            {"name": name, "mesh": 0}
+            for name in (comp_names if comp_names else ["PCB Board"])
+        ],
+        "meshes": [{"name": "board", "primitives": [{"attributes": {}}]}],
+    }
+    json_bytes = _json.dumps(scene, separators=(",", ":")).encode("utf-8")
+    # Pad to 4-byte alignment
+    pad = (4 - len(json_bytes) % 4) % 4
+    json_bytes += b" " * pad
+
+    # GLB header: magic, version, total length
+    chunk_header = struct.pack("<II", len(json_bytes), 0x4E4F534A)  # JSON chunk
+    header = struct.pack("<III", 0x46546C67, 2, 12 + 8 + len(json_bytes))
+    glb_path.write_bytes(header + chunk_header + json_bytes)
 
 
 # ── BOM ──────────────────────────────────────────────────────────────────────

@@ -275,6 +275,14 @@ Select components and return JSON."""
         project_id=arch.project_id,
     )
 
+    logger.info(
+        "[%s] Stage 3 complete — component_count=%d | bom_total=$%.2f | refs=%s",
+        arch.project_id,
+        len(selections),
+        bom_total,
+        [s.ref for s in selections],
+    )
+
     # Persist BOM
     db.insert("boms", {
         "project_id": arch.project_id,

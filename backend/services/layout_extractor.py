@@ -139,18 +139,36 @@ def extract_layout(
     h = float(bc.get("max_height_mm", 80.0))
     layers = int(bc.get("layers", 2))
 
+    # Count components in input data for logging
+    _comp_count = 0
+    if components_data and "components" in components_data:
+        _comp_count = len(components_data["components"])
+    elif netlist_data and "parts" in netlist_data:
+        _comp_count = len(netlist_data["parts"])
+
+    logger.info(
+        "[%s] Stage layout-extract — pcb_path=%s | input_component_count=%d",
+        project_id, pcb_path, _comp_count,
+    )
+
     # Try pcbnew first
     if pcb_path and Path(pcb_path).exists():
         try:
             result = _extract_via_pcbnew(pcb_path, w, h, layers, project_id)
-            logger.info("[%s] Layout extracted via pcbnew from %s", project_id, pcb_path)
+            logger.info(
+                "[%s] Layout extracted via pcbnew — placed=%d nets=%d data_source=kicad",
+                project_id, len(result.placement), len(result.net_index),
+            )
             return result
         except Exception as exc:
             logger.warning("[%s] pcbnew layout extraction failed (%s) — computing fallback", project_id, exc)
 
     # Computed fallback
     result = _compute_layout(netlist_data, components_data, w, h, layers, project_id)
-    logger.info("[%s] Layout computed (fallback) — %d components", project_id, len(result.placement))
+    logger.info(
+        "[%s] Layout computed (fallback) — placed=%d nets=%d data_source=computed",
+        project_id, len(result.placement), len(result.net_index),
+    )
     return result
 
 
@@ -161,110 +179,151 @@ def extract_layout(
 def _extract_via_pcbnew(
     pcb_path: str, w: float, h: float, layers: int, project_id: str
 ) -> LayoutOutput:
-    """Use pcbnew Python API to read real footprint / routing data."""
-    import pcbnew  # type: ignore
+    """Use pcbnew Python API via KiCad Python subprocess to read real footprint / routing data."""
+    import subprocess
+    import json
+    import os
 
-    board = pcbnew.LoadBoard(pcb_path)
+    kicad_python = "/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/Current/bin/python3"
+    if not os.path.exists(kicad_python):
+        kicad_python = "python3"
+
+    json_out_path = pcb_path + ".layout.json"
+    extractor_script = f"""
+import pcbnew
+import json
+import os
+import sys
+
+try:
+    board = pcbnew.LoadBoard(r'{pcb_path}')
+    
+    # ── Board outline ─────────────────────────────────────────────────────
+    bb = board.GetBoardEdgesBoundingBox()
+    bw = round(pcbnew.ToMM(bb.GetWidth()), 2)
+    bh = round(pcbnew.ToMM(bb.GetHeight()), 2)
+    if bw <= 0: bw = {w}
+    if bh <= 0: bh = {h}
 
     # ── Placement ─────────────────────────────────────────────────────────
-    placement: list[PlacedComponent] = []
+    placement = []
     for fp in board.GetFootprints():
         pos = fp.GetPosition()
-        bb = fp.GetBoundingBox()
-        placement.append(PlacedComponent(
-            ref=fp.GetReference(),
-            name=fp.GetValue(),
-            footprint=fp.GetFPID().GetUniStringLibItemName(),
-            x_mm=pcbnew.ToMM(bb.GetLeft()),
-            y_mm=pcbnew.ToMM(bb.GetTop()),
-            w_mm=pcbnew.ToMM(bb.GetWidth()),
-            h_mm=pcbnew.ToMM(bb.GetHeight()),
-            layer="F.Cu" if fp.GetLayer() == pcbnew.F_Cu else "B.Cu",
-            rotation=fp.GetOrientationDegrees(),
-        ))
+        fbb = fp.GetBoundingBox()
+        placement.append({{
+            'ref': fp.GetReference(),
+            'name': fp.GetValue(),
+            'footprint': fp.GetFPID().GetUniStringLibItemName(),
+            'x_mm': round(pcbnew.ToMM(pos.x), 3),
+            'y_mm': round(pcbnew.ToMM(pos.y), 3),
+            'w_mm': round(pcbnew.ToMM(fbb.GetWidth()), 3),
+            'h_mm': round(pcbnew.ToMM(fbb.GetHeight()), 3),
+            'layer': 'F.Cu' if fp.GetLayer() == pcbnew.F_Cu else 'B.Cu',
+            'rotation': round(fp.GetOrientationDegrees(), 1),
+        }})
 
     # ── Routing ──────────────────────────────────────────────────────────
-    routing: list[RouteSegment] = []
+    routing = []
     for seg in board.GetTracks():
-        if seg.GetClass() == "PCB_TRACK":
-            routing.append(RouteSegment(
-                net=seg.GetNetname(),
-                x1_mm=pcbnew.ToMM(seg.GetStart().x),
-                y1_mm=pcbnew.ToMM(seg.GetStart().y),
-                x2_mm=pcbnew.ToMM(seg.GetEnd().x),
-                y2_mm=pcbnew.ToMM(seg.GetEnd().y),
-                width_mm=pcbnew.ToMM(seg.GetWidth()),
-                layer="F.Cu" if seg.GetLayer() == pcbnew.F_Cu else "B.Cu",
-            ))
+        if seg.GetClass() == 'PCB_TRACK':
+            routing.append({{
+                'net': seg.GetNetname(),
+                'x1_mm': round(pcbnew.ToMM(seg.GetStart().x), 3),
+                'y1_mm': round(pcbnew.ToMM(seg.GetStart().y), 3),
+                'x2_mm': round(pcbnew.ToMM(seg.GetEnd().x), 3),
+                'y2_mm': round(pcbnew.ToMM(seg.GetEnd().y), 3),
+                'width_mm': round(pcbnew.ToMM(seg.GetWidth()), 3),
+                'layer': 'F.Cu' if seg.GetLayer() == pcbnew.F_Cu else 'B.Cu',
+            }})
 
     # ── Pads ──────────────────────────────────────────────────────────────
-    pads: list[Pad] = []
+    pads = []
     for fp in board.GetFootprints():
         for i, pad in enumerate(fp.Pads()):
-            pads.append(Pad(
-                ref=fp.GetReference(),
-                pad_num=i + 1,
-                x_mm=pcbnew.ToMM(pad.GetPosition().x),
-                y_mm=pcbnew.ToMM(pad.GetPosition().y),
-                w_mm=pcbnew.ToMM(pad.GetSizeX()),
-                h_mm=pcbnew.ToMM(pad.GetSizeY()),
-                net=pad.GetNetname(),
-                layer="F.Cu" if pad.GetLayer() == pcbnew.F_Cu else "B.Cu",
-            ))
+            pads.append({{
+                'ref': fp.GetReference(),
+                'pad_num': i + 1,
+                'x_mm': round(pcbnew.ToMM(pad.GetPosition().x), 3),
+                'y_mm': round(pcbnew.ToMM(pad.GetPosition().y), 3),
+                'w_mm': round(pcbnew.ToMM(pad.GetSizeX()), 3),
+                'h_mm': round(pcbnew.ToMM(pad.GetSizeY()), 3),
+                'net': pad.GetNetname(),
+                'layer': 'F.Cu' if pad.GetLayer() == pcbnew.F_Cu else 'B.Cu',
+            }})
 
     # ── Vias ─────────────────────────────────────────────────────────────
-    vias: list[Via] = []
+    vias = []
     for seg in board.GetTracks():
-        if seg.GetClass() == "PCB_VIA":
-            vias.append(Via(
-                x_mm=pcbnew.ToMM(seg.GetPosition().x),
-                y_mm=pcbnew.ToMM(seg.GetPosition().y),
-                drill_mm=pcbnew.ToMM(seg.GetDrillValue()),
-                outer_mm=pcbnew.ToMM(seg.GetWidth()),
-                net=seg.GetNetname(),
-            ))
-
-    # ── Mounting holes ────────────────────────────────────────────────────
-    mounting_holes = _corner_mounting_holes(w, h)
-
-    # ── Keepouts ─────────────────────────────────────────────────────────
-    keepouts: list[KeepoutZone] = []
-    for zone in board.Zones():
-        if zone.GetIsRuleArea() and zone.GetDoNotAllowCopperPour():
-            pts = zone.Outline().CPoints(0)
-            polygon = [(pcbnew.ToMM(p.x), pcbnew.ToMM(p.y)) for p in pts]
-            keepouts.append(KeepoutZone(
-                label=zone.GetNetname() or "KEEPOUT",
-                polygon=polygon,
-            ))
+        if seg.GetClass() == 'PCB_VIA':
+            vias.append({{
+                'x_mm': round(pcbnew.ToMM(seg.GetPosition().x), 3),
+                'y_mm': round(pcbnew.ToMM(seg.GetPosition().y), 3),
+                'drill_mm': round(pcbnew.ToMM(seg.GetDrillValue()), 3),
+                'outer_mm': round(pcbnew.ToMM(seg.GetWidth()), 3),
+                'net': seg.GetNetname(),
+            }})
 
     # ── Net index ─────────────────────────────────────────────────────────
-    net_index: dict[str, list[str]] = {}
+    net_index = {{}}
     for net in board.GetNetInfo().NetsByName().values():
         name = net.GetNetname()
         if name:
             net_index.setdefault(name, [])
     for pad in pads:
-        if pad.net:
-            net_index.setdefault(pad.net, [])
-            if pad.ref not in net_index[pad.net]:
-                net_index[pad.net].append(pad.ref)
+        if pad['net']:
+            net_index.setdefault(pad['net'], [])
+            if pad['ref'] not in net_index[pad['net']]:
+                net_index[pad['net']].append(pad['ref'])
 
-    # ── Trace widths ──────────────────────────────────────────────────────
-    trace_widths = _trace_widths_from_pcbnew(board)
+    data = {{
+        'board_w_mm': bw,
+        'board_h_mm': bh,
+        'layers': {layers},
+        'placement': placement,
+        'routing': routing,
+        'pads': pads,
+        'vias': vias,
+        'net_index': net_index,
+        'data_source': 'kicad',
+        'project_id': '{project_id}',
+    }}
+
+    with open(r'{json_out_path}', 'w') as out_f:
+        json.dump(data, out_f)
+    print("SUCCESS")
+except Exception as e:
+    print(f"Error: {{e}}", file=sys.stderr)
+    sys.exit(1)
+"""
+    script_path = pcb_path + ".extract.py"
+    Path(script_path).write_text(extractor_script)
+
+    res = subprocess.run([kicad_python, script_path], capture_output=True, text=True, timeout=30)
+    if res.returncode != 0 or not Path(json_out_path).exists():
+        raise RuntimeError(f"KiCad layout extraction failed: {res.stderr}")
+
+    raw_data = json.loads(Path(json_out_path).read_text())
+    
+    # Trace widths
+    tw: dict[str, float] = {"Power": 0.50, "Default": 0.25}
+    
+    # Mounting holes
+    bw = raw_data.get("board_w_mm", w)
+    bh = raw_data.get("board_h_mm", h)
+    mounting_holes = _corner_mounting_holes(bw, bh)
 
     return LayoutOutput(
-        board_w_mm=w,
-        board_h_mm=h,
-        layers=layers,
-        placement=placement,
-        routing=routing,
-        trace_widths=trace_widths,
-        pads=pads,
-        vias=vias,
+        board_w_mm=bw,
+        board_h_mm=bh,
+        layers=raw_data.get("layers", layers),
+        placement=[PlacedComponent(**p) for p in raw_data.get("placement", [])],
+        routing=[RouteSegment(**r) for r in raw_data.get("routing", [])],
+        trace_widths=tw,
+        pads=[Pad(**p) for p in raw_data.get("pads", [])],
+        vias=[Via(**v) for v in raw_data.get("vias", [])],
         mounting_holes=mounting_holes,
-        keepouts=keepouts,
-        net_index=net_index,
+        keepouts=[],
+        net_index=raw_data.get("net_index", {}),
         data_source="kicad",
         project_id=project_id,
     )
